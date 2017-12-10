@@ -4,6 +4,7 @@ Rules for importing Nixpkgs packages into Bazel.
 
 ## Rules
 
+* [nixpkgs_git_repository](#nixpkgs_git_repository)
 * [nixpkgs_package](#nixpkgs_package)
 
 ## Setup
@@ -21,28 +22,73 @@ http_archive(
 and this to your BUILD files.
 
 ```bzl
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_binary", "nixpkgs_library")
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
+```
+
+## Example
+
+```bzl
+nixpkgs_git_repository(
+    name = "nixpkgs",
+    revision = "17.09", # Any tag or commit hash
+)
+
+nixpkgs_package(
+    name = "hello",
+    repository = "@nixpkgs"
+)
 ```
 
 ## Rules
 
+### nixpkgs_git_repository
+
+Name a specific revision of Nixpkgs on GitHub or a local checkout.
+
+```bzl
+nixpkgs_git_repository(name, revision)
+```
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name; required</code></p>
+        <p>A unique name for this target</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>revision</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>Git commit hash or tag identifying the version of Nixpkgs
+           to use.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 ### nixpkgs_package
 
-Creates a new external repository, with the content symlinked from the
-given Nixpkgs package.
+Make the content of a Nixpkgs package available in the Bazel workspace.
 
 ```bzl
-nixpkgs_package(name, attribute_path, revision, path, build_file, build_file_content)
+nixpkgs_package(name, attribute_path, repository, build_file, build_file_content)
 ```
 
-#### Example
-
-```bzl
-nixpkgs_package(
-    name = "hello",
-    revision = "17.09" # Any tag or commit hash
-)
-```
+If neither `repository` or `path` are specified, `<nixpkgs>` is
+assumed. Specifying one of `repository` or `path` is strongly
+recommended. The two are mutually exclusive.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
@@ -72,14 +118,11 @@ nixpkgs_package(
       </td>
     </tr>
     <tr>
-      <td><code>revision</code></td>
+      <td><code>repository</code></td>
       <td>
-        <p><code>String; optional</code></p>
-        <p>Git commit hash or tag identifying the version of Nixpkgs
-           to use. If neither `revision` or `path` are specified,
-           `<nixpkgs>` is assumed. Specifying one of `revision` or
-           `path` is strongly recommended. The two are mutually
-           exclusive.</p>
+        <p><code>Label; optional</code></p>
+        <p>A Nixpkgs repository label. Specify one of `path` or
+		   `repository`.</p>
       </td>
     </tr>
     <tr>
@@ -87,7 +130,8 @@ nixpkgs_package(
       <td>
         <p><code>String; optional</code></p>
         <p>The path to the directory containing Nixpkgs, as
-           interpreted by `nix-build`.</p>
+           interpreted by `nix-build`. Specify one of `path` or
+		   `repository`.</p>
       </td>
     </tr>
     <tr>

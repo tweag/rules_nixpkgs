@@ -7,4 +7,3 @@ sh_test(
   data = ["@hello//:bin"],
   timeout = "short",
 )
-  
