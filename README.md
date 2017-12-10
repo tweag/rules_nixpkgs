@@ -32,7 +32,7 @@ Creates a new external repository, with the content symlinked from the
 given Nixpkgs package.
 
 ```bzl
-nixpkgs_library(name, attribute, revision, path)
+nixpkgs_package(name, attribute_path, revision, path)
 ```
 
 #### Example
@@ -88,59 +88,6 @@ nixpkgs_package(
         <p><code>String; optional</code></p>
         <p>The path to the directory containing Nixpkgs, as
            interpreted by `nix-build`.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-### nixpkgs_library
-
-Generates a Nixpkgs library.
-
-```bzl
-nixpkgs_library(name, srcs, deps)
-```
-
-#### Example
-
-```bzl
-nixpkgs_library(
-    name = 'hello_lib',
-    srcs = glob(['hello_lib/**/*.hs']),
-    deps = ["//hello_sublib:lib"]
-)
-```
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>A unique name for this target</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>srcs</code></td>
-      <td>
-        <p><code>List of labels, required</code></p>
-        <p>List of Nixpkgs <code>.hs</code> source files used to build the library</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>deps</code></td>
-      <td>
-        <p><code>List of labels, required</code></p>
-        <p>List of other Nixpkgs libraries to be linked to this target</p>
       </td>
     </tr>
   </tbody>
