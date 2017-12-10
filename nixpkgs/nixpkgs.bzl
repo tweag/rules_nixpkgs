@@ -7,7 +7,7 @@ def _nixpkgs_package_impl(ctx):
     ctx.download_and_extract(
       url = "https://github.com/NixOS/nixpkgs/archive/%s.tar.gz" % ctx.attr.revision,
       output = path,
-      strip_prefix = "nixpkgs-" + ctx.attr.revision,
+      stripPrefix = "nixpkgs-" + ctx.attr.revision,
     )
   if ctx.attr.path:
     path = ctx.attr.path

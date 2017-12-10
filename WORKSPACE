@@ -5,4 +5,5 @@ load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
 # For tests
 nixpkgs_package(
   name = "hello",
+  revision = "17.09",
 )
