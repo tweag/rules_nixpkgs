@@ -17,11 +17,15 @@ def _nixpkgs_package_impl(ctx):
     path = res.stdout.splitlines()[-1]
   else:
     fail("Cannot build Nix attribute %s." % ctx.attr.name)
-  ctx.template(
-    "BUILD",
-    Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"),
-  )
   ctx.symlink(path, "nix")
+  if ctx.attr.build_file and ctx.attr.build_file_content:
+    fail("Specify one of 'build_file' or 'build_file_content', but not both.")
+  elif ctx.attr.build_file:
+    ctx.symlink(ctx.attr.build_file, "BUILD")
+  elif ctx.attr.build_file_content:
+    ctx.file("BUILD", content = ctx.attr.build_file_content)
+  else:
+    ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
@@ -29,6 +33,8 @@ nixpkgs_package = repository_rule(
     "attribute_path": attr.string(),
     "path": attr.string(),
     "revision": attr.string(),
+    "build_file": attr.string(),
+    "build_file_content": attr.string(),
   },
   local = True,
   environ = ["NIX_PATH"],

@@ -32,7 +32,7 @@ Creates a new external repository, with the content symlinked from the
 given Nixpkgs package.
 
 ```bzl
-nixpkgs_package(name, attribute_path, revision, path)
+nixpkgs_package(name, attribute_path, revision, path, build_file, build_file_content)
 ```
 
 #### Example
@@ -88,6 +88,22 @@ nixpkgs_package(
         <p><code>String; optional</code></p>
         <p>The path to the directory containing Nixpkgs, as
            interpreted by `nix-build`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>build_file</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The file to use as the BUILD file for this repository. This
+           attribute is a label relative to the main workspace. The
+           file does not need to be named BUILD, but can be.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>build_file_content</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The content for the BUILD file for this repository.</p>
       </td>
     </tr>
   </tbody>
