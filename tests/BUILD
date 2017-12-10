@@ -1,10 +1,10 @@
 package(default_testonly = 1)
 
 sh_test(
-  name = "RunGHC",
+  name = "run-jq",
   srcs = ["test_bin.sh"],
-  args = ["$(location @jq//:jq)", "--version"],
-  data = ["@jq//:jq"],
+  args = ["$(location @jq//:bin)", "--version"],
+  data = ["@jq//:bin"],
   timeout = "short",
 )
   
