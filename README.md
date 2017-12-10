@@ -32,7 +32,7 @@ Creates a new external repository, with the content symlinked from the
 given Nixpkgs package.
 
 ```bzl
-nixpkgs_library(name, attribute, path, build_file, build_file_content)
+nixpkgs_library(name, attribute, revision, path)
 ```
 
 #### Example
@@ -40,7 +40,7 @@ nixpkgs_library(name, attribute, path, build_file, build_file_content)
 ```bzl
 nixpkgs_package(
     name = "hello",
-	revision = "17.09" # Any tag or commit hash
+    revision = "17.09" # Any tag or commit hash
 )
 ```
 
