@@ -1,10 +1,10 @@
 package(default_testonly = 1)
 
 sh_test(
-  name = "run-jq",
+  name = "run-hello",
   srcs = ["test_bin.sh"],
-  args = ["$(location @jq//:bin)", "--version"],
-  data = ["@jq//:bin"],
+  args = ["$(location @hello//:bin)"],
+  data = ["@hello//:bin"],
   timeout = "short",
 )
   
