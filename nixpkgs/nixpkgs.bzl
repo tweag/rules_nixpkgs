@@ -38,6 +38,6 @@ nixpkgs_package = repository_rule(
     "build_file": attr.string(),
     "build_file_content": attr.string(),
   },
-  local = True,
+  local = False,
   environ = ["NIX_PATH"],
 )
