@@ -1,7 +1,7 @@
 def _nixpkgs_package_impl(ctx):
-  attribute = ctx.attr.attribute or ctx.name
+  attr_path = ctx.attr.attribute_path or ctx.name
   path = ctx.attr.path or '<nixpkgs>'
-  res = ctx.execute(["nix-build", path, "-A", attribute, "--no-out-link"])
+  res = ctx.execute(["nix-build", path, "-A", attr_path, "--no-out-link"])
   if res.return_code == 0:
     path = res.stdout.splitlines()[-1]
   else:
@@ -15,7 +15,7 @@ def _nixpkgs_package_impl(ctx):
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
   attrs = {
-    "attribute": attr.string(),
+    "attribute_path": attr.string(),
     "path": attr.string(),
   },
   local = True,
