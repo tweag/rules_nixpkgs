@@ -1,5 +1,7 @@
 # rules_nixpkgs
 
+[![CircleCI](https://circleci.com/gh/tweag/rules_nixpkgs.svg?style=svg)](https://circleci.com/gh/tweag/rules_nixpkgs)
+
 Rules for importing Nixpkgs packages into Bazel.
 
 ## Rules
