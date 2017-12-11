@@ -1,0 +1,17 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: nixos/nix
+    working_directory: ~/rules_nixpkgs
+    steps:
+      - checkout
+      - run:
+          name: System dependencies
+          command: |
+            apk update && apk add bash ca-certificates
+            nix-channel --update && nix-env -iA nixpkgs.bazel
+      - run:
+          name: Run tests
+          command: bazel test //...
