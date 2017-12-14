@@ -19,11 +19,7 @@ http_archive(
     strip_prefix = "rules_nixpkgs-$COMMIT",
     urls = ["https://github.com/tweag/rules_nixpkgs/archive/$COMMIT.tar.gz"],
 )
-```
 
-and this to your BUILD files.
-
-```bzl
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
 ```
 
