@@ -1,5 +1,5 @@
 /bazel-bin
 /bazel-genfiles
 /bazel-out
-/bazel-rules_haskell
+/bazel-rules_nixpkgs
 /bazel-testlogs
