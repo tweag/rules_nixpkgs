@@ -15,6 +15,19 @@ nixpkgs_git_repository = repository_rule(
   local = False,
 )
 
+def _mk_build_expression(ctx):
+  """Generate a nix expression that picks a package from nixpkgs.
+  """
+  # If user specified expression only, use expression only: they may
+  # be picking their attributes in the expression itself already.
+  if ctx.attr.expression and not ctx.attr.attribute:
+    return ["-E", ctx.attr.expression]
+  # In all other cases we can craft a correct query by using user's
+  # input with some defaults.
+  else:
+    return ["-E", ctx.attr.expression or "import <nixpkgs> {}",
+            "-A", ctx.attr.attribute or ctx.attr.name]
+
 def _nixpkgs_package_impl(ctx):
   if ctx.attr.build_file and ctx.attr.build_file_content:
     fail("Specify one of 'build_file' or 'build_file_content', but not both.")
@@ -25,19 +38,22 @@ def _nixpkgs_package_impl(ctx):
   else:
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
-  path = '<nixpkgs>'
+  # If neither repository or path are set, leave empty which will use
+  # default value from NIX_PATH
+  path = []
   if ctx.attr.repository and ctx.attr.path:
     fail("'repository' and 'path' fields are mutually exclusive.")
   if ctx.attr.repository:
     # XXX Another hack: the repository label typically resolves to
     # some top-level package in the external workspace. So we use
     # dirname to get the actual workspace path.
-    path = ctx.path(ctx.attr.repository).dirname
+    path = ["-I", "nixpkgs={0}".format(ctx.path(ctx.attr.repository).dirname)]
   if ctx.attr.path:
-    path = ctx.attr.path
+    path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
 
-  attr_path = ctx.attr.attribute_path or ctx.name
-  buildCmd = ["nix-build", path, "-A", attr_path, "--no-out-link"]
+  buildExpr = _mk_build_expression(ctx)
+  buildCmd = ["nix-build"] + path + ["--no-out-link"] + buildExpr
+
   res = ctx.execute(buildCmd, quiet = False)
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
@@ -48,7 +64,12 @@ def _nixpkgs_package_impl(ctx):
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
   attrs = {
-    "attribute_path": attr.string(),
+    "attribute": attr.string(
+      doc="Nix attribute to build. Exclusive to expression."
+    ),
+    "expression": attr.string(
+      doc="Nix expression to build. Rule name used as attribute if not present.",
+    ),
     "path": attr.string(),
     "repository": attr.label(),
     "build_file": attr.label(),
