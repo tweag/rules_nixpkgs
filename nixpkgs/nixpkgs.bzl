@@ -37,7 +37,8 @@ def _nixpkgs_package_impl(ctx):
     path = ctx.attr.path
 
   attr_path = ctx.attr.attribute_path or ctx.name
-  res = ctx.execute(["nix-build", path, "-A", attr_path, "--no-out-link"])
+  buildCmd = ["nix-build", path, "-A", attr_path, "--no-out-link"]
+  res = ctx.execute(buildCmd, quiet = False)
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
