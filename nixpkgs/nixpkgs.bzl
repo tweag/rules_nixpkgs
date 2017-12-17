@@ -51,7 +51,7 @@ nixpkgs_package = repository_rule(
     "attribute_path": attr.string(),
     "path": attr.string(),
     "repository": attr.label(),
-    "build_file": attr.string(),
+    "build_file": attr.label(),
     "build_file_content": attr.string(),
   },
   local = True,
