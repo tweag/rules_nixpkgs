@@ -4,3 +4,8 @@ filegroup(
   name = "bin",
   srcs = glob(["nix/bin/*"]),
 )
+
+filegroup(
+  name = "lib",
+  srcs = glob(["nix/lib/*.so"]),
+)
