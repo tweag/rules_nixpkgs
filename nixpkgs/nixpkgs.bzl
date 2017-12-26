@@ -25,19 +25,27 @@ def _nixpkgs_package_impl(ctx):
   else:
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
-  path = '<nixpkgs>'
+  # If neither repository or path are set, leave empty which will use
+  # default value from NIX_PATH.
+  path = []
   if ctx.attr.repository and ctx.attr.path:
     fail("'repository' and 'path' fields are mutually exclusive.")
   if ctx.attr.repository:
     # XXX Another hack: the repository label typically resolves to
     # some top-level package in the external workspace. So we use
     # dirname to get the actual workspace path.
-    path = ctx.path(ctx.attr.repository).dirname
+    path = ["-I", "nixpkgs={0}".format(ctx.path(ctx.attr.repository).dirname)]
   if ctx.attr.path:
-    path = ctx.attr.path
+    path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
 
-  attr_path = ctx.attr.attribute_path or ctx.name
-  buildCmd = ["nix-build", path, "-A", attr_path, "--no-out-link"]
+  extraArgs = [
+    "-E", ctx.attr.expression or "import <nixpkgs> {}",
+    "-A", ctx.attr.attribute_path
+          if ctx.attr.expression
+          else ctx.attr.attribute_path or ctx.attr.name,
+  ]
+  buildCmd = ["nix-build"] + path + ["--no-out-link"] + extraArgs
+
   res = ctx.execute(buildCmd, quiet = False)
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
@@ -48,7 +56,12 @@ def _nixpkgs_package_impl(ctx):
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
   attrs = {
-    "attribute_path": attr.string(),
+    "attribute_path": attr.string(
+      doc="Nix attribute to build. Exclusive to expression."
+    ),
+    "expression": attr.string(
+      doc="Nix expression to build. Rule name used as attribute if not present.",
+    ),
     "path": attr.string(),
     "repository": attr.label(),
     "build_file": attr.label(),
