@@ -15,19 +15,6 @@ nixpkgs_git_repository = repository_rule(
   local = False,
 )
 
-def _mk_build_expression(ctx):
-  """Generate a nix expression that picks a package from nixpkgs.
-  """
-  # If user specified expression only, use expression only: they may
-  # be picking their attributes in the expression itself already.
-  if ctx.attr.expression and not ctx.attr.attribute_path:
-    return ["-E", ctx.attr.expression]
-  # In all other cases we can craft a correct query by using user's
-  # input with some defaults.
-  else:
-    return ["-E", ctx.attr.expression or "import <nixpkgs> {}",
-            "-A", ctx.attr.attribute_path or ctx.attr.name]
-
 def _nixpkgs_package_impl(ctx):
   if ctx.attr.build_file and ctx.attr.build_file_content:
     fail("Specify one of 'build_file' or 'build_file_content', but not both.")
@@ -39,7 +26,7 @@ def _nixpkgs_package_impl(ctx):
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
   # If neither repository or path are set, leave empty which will use
-  # default value from NIX_PATH
+  # default value from NIX_PATH.
   path = []
   if ctx.attr.repository and ctx.attr.path:
     fail("'repository' and 'path' fields are mutually exclusive.")
@@ -51,8 +38,13 @@ def _nixpkgs_package_impl(ctx):
   if ctx.attr.path:
     path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
 
-  buildExpr = _mk_build_expression(ctx)
-  buildCmd = ["nix-build"] + path + ["--no-out-link"] + buildExpr
+  extraArgs = [
+    "-E", ctx.attr.expression or "import <nixpkgs> {}",
+    "-A", ctx.attr.attribute_path
+          if ctx.attr.expression
+          else ctx.attr.attribute_path or ctx.attr.name,
+  ]
+  buildCmd = ["nix-build"] + path + ["--no-out-link"] + extraArgs
 
   res = ctx.execute(buildCmd, quiet = False)
   if res.return_code == 0:
