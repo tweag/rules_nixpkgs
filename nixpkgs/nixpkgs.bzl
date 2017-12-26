@@ -1,3 +1,5 @@
+"""Rules for importing Nixpkgs packages."""
+
 def _nixpkgs_git_repository_impl(ctx):
   ctx.file('BUILD', content = 'filegroup(name = "%s", glob = ["**"])' % ctx.name)
   # XXX Hack because ctx.path below bails out if resolved path not a regular file.
@@ -38,15 +40,15 @@ def _nixpkgs_package_impl(ctx):
   if ctx.attr.path:
     path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
 
-  extraArgs = [
+  expr_args = [
     "-E", ctx.attr.expression or "import <nixpkgs> {}",
     "-A", ctx.attr.attribute_path
           if ctx.attr.expression
           else ctx.attr.attribute_path or ctx.attr.name,
   ]
-  buildCmd = ["nix-build"] + path + ["--no-out-link"] + extraArgs
+  nix_build = ["nix-build"] + path + ["--no-out-link"] + expr_args
 
-  res = ctx.execute(buildCmd, quiet = False)
+  res = ctx.execute(nix_build, quiet = False)
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
