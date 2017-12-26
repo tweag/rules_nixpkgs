@@ -7,5 +7,5 @@ filegroup(
 
 filegroup(
   name = "lib",
-  srcs = glob(["nix/lib/*.so"]),
+  srcs = glob(["nix/lib/**/*.so"]),
 )
