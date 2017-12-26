@@ -20,13 +20,13 @@ def _mk_build_expression(ctx):
   """
   # If user specified expression only, use expression only: they may
   # be picking their attributes in the expression itself already.
-  if ctx.attr.expression and not ctx.attr.attribute:
+  if ctx.attr.expression and not ctx.attr.attribute_path:
     return ["-E", ctx.attr.expression]
   # In all other cases we can craft a correct query by using user's
   # input with some defaults.
   else:
     return ["-E", ctx.attr.expression or "import <nixpkgs> {}",
-            "-A", ctx.attr.attribute or ctx.attr.name]
+            "-A", ctx.attr.attribute_path or ctx.attr.name]
 
 def _nixpkgs_package_impl(ctx):
   if ctx.attr.build_file and ctx.attr.build_file_content:
@@ -64,7 +64,7 @@ def _nixpkgs_package_impl(ctx):
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
   attrs = {
-    "attribute": attr.string(
+    "attribute_path": attr.string(
       doc="Nix attribute to build. Exclusive to expression."
     ),
     "expression": attr.string(

@@ -19,13 +19,13 @@ nixpkgs_package(
 
 nixpkgs_package(
   name = "attribute-test",
-  attribute = "hello",
+  attribute_path = "hello",
   repository = "@nixpkgs"
 )
 
 nixpkgs_package(
   name = "expr-attribute-test",
   expression = "import <nixpkgs> {}",
-  attribute = "hello",
+  attribute_path = "hello",
   repository = "@nixpkgs",
 )
