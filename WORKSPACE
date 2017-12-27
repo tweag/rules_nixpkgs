@@ -13,7 +13,7 @@ nixpkgs_package(name = "hello", repository = "@nixpkgs")
 
 nixpkgs_package(
   name = "expr-test",
-  expression = "let pkgs = import <nixpkgs> {}; in pkgs.hello",
+  nix_file_content = "let pkgs = import <nixpkgs> {}; in pkgs.hello",
   repository = "@nixpkgs"
 )
 
@@ -25,7 +25,7 @@ nixpkgs_package(
 
 nixpkgs_package(
   name = "expr-attribute-test",
-  expression = "import <nixpkgs> {}",
+  nix_file_content = "import <nixpkgs> {}",
   attribute_path = "hello",
   repository = "@nixpkgs",
 )

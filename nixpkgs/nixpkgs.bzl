@@ -27,6 +27,21 @@ def _nixpkgs_package_impl(ctx):
   else:
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
+  if ctx.attr.nix_file and ctx.attr.nix_file_content:
+    fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
+  elif ctx.attr.nix_file:
+    ctx.symlink(ctx.attr.nix_file, "default.nix")
+  elif ctx.attr.nix_file_content:
+    expr_args = ["-E", ctx.attr.nix_file_content]
+  else:
+    expr_args = ["-E", "import <nixpkgs> {}"]
+
+  expr_args.extend([
+    "-A", ctx.attr.attribute_path
+          if ctx.attr.nix_file or ctx.attr.nix_file_content
+          else ctx.attr.attribute_path or ctx.attr.name,
+  ])
+
   # If neither repository or path are set, leave empty which will use
   # default value from NIX_PATH.
   path = []
@@ -40,12 +55,6 @@ def _nixpkgs_package_impl(ctx):
   if ctx.attr.path:
     path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
 
-  expr_args = [
-    "-E", ctx.attr.expression or "import <nixpkgs> {}",
-    "-A", ctx.attr.attribute_path
-          if ctx.attr.expression
-          else ctx.attr.attribute_path or ctx.attr.name,
-  ]
   nix_build = ["nix-build"] + path + ["--no-out-link"] + expr_args
 
   res = ctx.execute(nix_build, quiet = False)
@@ -58,12 +67,9 @@ def _nixpkgs_package_impl(ctx):
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
   attrs = {
-    "attribute_path": attr.string(
-      doc="Nix attribute to build. Exclusive to expression."
-    ),
-    "expression": attr.string(
-      doc="Nix expression to build. Rule name used as attribute if not present.",
-    ),
+    "attribute_path": attr.string(),
+    "nix_file": attr.label(allow_single_file = [".nix"]),
+    "nix_file_content": attr.string(),
     "path": attr.string(),
     "repository": attr.label(),
     "build_file": attr.label(),
