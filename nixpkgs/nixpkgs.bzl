@@ -55,7 +55,11 @@ def _nixpkgs_package_impl(ctx):
   if ctx.attr.path:
     path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
 
-  nix_build = ["nix-build"] + path + ["--no-out-link"] + expr_args
+  nix_build_path = ctx.which("nix-build")
+  if nix_build_path == None:
+    fail("Could not find nix-build on the path. Please install it. See: https://nixos.org/nix/")
+
+  nix_build = [nix_build_path] + path + ["--no-out-link"] + expr_args
 
   res = ctx.execute(nix_build, quiet = False)
   if res.return_code == 0:
