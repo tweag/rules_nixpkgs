@@ -61,7 +61,11 @@ def _nixpkgs_package_impl(ctx):
 
   nix_build = [nix_build_path] + path + ["--no-out-link"] + expr_args
 
-  res = ctx.execute(nix_build, quiet = False)
+  # Large enough integer that Bazel can still parse. We don't have
+  # access to MAX_INT and 0 is not a valid timeout so this is as good
+  # as we can do.
+  timeout = 1073741824
+  res = ctx.execute(nix_build, quiet = False, timeout = timeout)
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
