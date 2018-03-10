@@ -70,7 +70,21 @@ def _nixpkgs_package_impl(ctx):
     output_path = res.stdout.splitlines()[-1]
   else:
     fail("Cannot build Nix attribute %s." % ctx.attr.name)
-  ctx.symlink(output_path, "nix")
+
+  # Build a forest of symlinks (like new_local_package() does) to the
+  # Nix store.
+
+  find_path = ctx.which("find")
+  if find_path == None:
+    fail("Could not find the 'find' command. Please ensure it is in your PATH.")
+
+  res = ctx.execute(["find", output_path, "-maxdepth", "1"])
+  if res.return_code == 0:
+    for i in res.stdout.splitlines():
+      basename = i.rpartition("/")[-1]
+      ctx.symlink(i, ctx.path(basename))
+  else:
+    fail(res.stderr)
 
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
