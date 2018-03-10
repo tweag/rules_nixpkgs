@@ -1,7 +1,7 @@
 """Rules for importing Nixpkgs packages."""
 
 def _nixpkgs_git_repository_impl(ctx):
-  ctx.file('BUILD', content = 'filegroup(name = "%s", glob = ["**"])' % ctx.name)
+  ctx.file('BUILD')
   # XXX Hack because ctx.path below bails out if resolved path not a regular file.
   ctx.file(ctx.name)
   ctx.download_and_extract(
