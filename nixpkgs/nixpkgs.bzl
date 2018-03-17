@@ -27,6 +27,7 @@ def _nixpkgs_package_impl(ctx):
   else:
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
+  expr_args = []
   if ctx.attr.nix_file and ctx.attr.nix_file_content:
     fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
   elif ctx.attr.nix_file:

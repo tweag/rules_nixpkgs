@@ -29,3 +29,10 @@ nixpkgs_package(
   attribute_path = "hello",
   repository = "@nixpkgs",
 )
+
+nixpkgs_package(
+  name = "nix-file-test",
+  nix_file = "//tests:nixpkgs.nix",
+  attribute_path = "hello",
+  repository = "@nixpkgs",
+)

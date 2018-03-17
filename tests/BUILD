@@ -11,4 +11,5 @@ package(default_testonly = 1)
     "expr-test",
     "attribute-test",
     "expr-attribute-test",
+    "nix-file-test",
 ]]
