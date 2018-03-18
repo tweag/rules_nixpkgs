@@ -9,3 +9,8 @@ filegroup(
   name = "lib",
   srcs = glob(["lib/**/*.so*", "lib/**/*.a"]),
 )
+
+filegroup(
+  name = "include",
+  srcs = glob(["include/*.h"]),
+)
