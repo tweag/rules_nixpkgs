@@ -60,7 +60,7 @@ def _nixpkgs_package_impl(ctx):
   if nix_build_path == None:
     fail("Could not find nix-build on the path. Please install it. See: https://nixos.org/nix/")
 
-  nix_build = [nix_build_path] + path + ["--no-out-link"] + expr_args
+  nix_build = [nix_build_path] + path + expr_args
 
   # Large enough integer that Bazel can still parse. We don't have
   # access to MAX_INT and 0 is not a valid timeout so this is as good
