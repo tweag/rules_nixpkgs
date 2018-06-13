@@ -43,6 +43,10 @@ def _nixpkgs_package_impl(ctx):
           else ctx.attr.attribute_path or ctx.attr.name,
   ])
 
+  # FORCE caching of sources files
+  for i in ctx.attr.srcs:
+    ctx.path(i)
+
   # If neither repository or path are set, leave empty which will use
   # default value from NIX_PATH.
   path = []
@@ -98,6 +102,7 @@ nixpkgs_package = repository_rule(
   attrs = {
     "attribute_path": attr.string(),
     "nix_file": attr.label(allow_single_file = [".nix"]),
+    "nix_file_deps": attr.label_list(),
     "nix_file_content": attr.string(),
     "path": attr.string(),
     "repository": attr.label(),

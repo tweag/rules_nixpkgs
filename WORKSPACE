@@ -36,3 +36,12 @@ nixpkgs_package(
   attribute_path = "hello",
   repository = "@nixpkgs",
 )
+
+nixpkgs_package(
+  name = "nix-file-deps-test",
+  nix_file = "//tests:version.nix",
+  nix_file_deps = ["//tests:minor.nix", "//tests:major.nix"],
+  attribute_path = "hello",
+  repository = "@nixpkgs",
+)
+
