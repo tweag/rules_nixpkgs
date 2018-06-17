@@ -39,9 +39,8 @@ nixpkgs_package(
 
 nixpkgs_package(
   name = "nix-file-deps-test",
-  nix_file = "//tests:version.nix",
-  nix_file_deps = ["//tests:minor.nix", "//tests:major.nix"],
-  attribute_path = "hello",
+  nix_file = "//tests:hello.nix",
+  nix_file_deps = ["//tests:pkgname.nix"],
   repository = "@nixpkgs",
 )
 
