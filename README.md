@@ -81,8 +81,10 @@ nixpkgs_git_repository(name, revision)
 Make the content of a Nixpkgs package available in the Bazel workspace.
 
 ```bzl
-nixpkgs_package(name, attribute_path, nix_file, nix_file_content,
-                path, repository, build_file, build_file_content)
+nixpkgs_package(
+    name, attribute_path, nix_file, nix_file_deps, nix_file_content,
+    path, repository, build_file, build_file_content,
+)
 ```
 
 If neither `repository` or `path` are specified, `<nixpkgs>` is
@@ -121,6 +123,13 @@ recommended. The two are mutually exclusive.
       <td>
         <p><code>String; optional</code></p>
         <p>A file containing an expression for a Nix derivation.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file_deps</code></td>
+      <td>
+        <p><code>List of labels; optional</code></p>
+        <p>Dependencies of `nix_file` if any.</p>
       </td>
     </tr>
     <tr>

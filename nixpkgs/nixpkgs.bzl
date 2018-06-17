@@ -37,6 +37,13 @@ def _nixpkgs_package_impl(ctx):
   else:
     expr_args = ["-E", "import <nixpkgs> {}"]
 
+  # Introduce an artificial dependency with a bogus name on each of
+  # the nix_file_deps.
+  for dep in ctx.attr.nix_file_deps:
+    components = [c for c in [dep.workspace_root, dep.package, dep.name] if c]
+    link = '/'.join(components).replace('_', '_U').replace('/', '_S')
+    ctx.symlink(dep, link)
+
   expr_args.extend([
     "-A", ctx.attr.attribute_path
           if ctx.attr.nix_file or ctx.attr.nix_file_content
@@ -98,6 +105,7 @@ nixpkgs_package = repository_rule(
   attrs = {
     "attribute_path": attr.string(),
     "nix_file": attr.label(allow_single_file = [".nix"]),
+    "nix_file_deps": attr.label_list(),
     "nix_file_content": attr.string(),
     "path": attr.string(),
     "repository": attr.label(),
