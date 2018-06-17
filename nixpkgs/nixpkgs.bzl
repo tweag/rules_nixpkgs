@@ -37,15 +37,18 @@ def _nixpkgs_package_impl(ctx):
   else:
     expr_args = ["-E", "import <nixpkgs> {}"]
 
+  # Introduce an artificial dependency with a bogus name on each of
+  # the nix_file_deps.
+  for dep in ctx.attr.nix_file_deps:
+    components = [c for c in [dep.workspace_root, dep.package, dep.name] if c]
+    link = '/'.join(components).replace('_', '_U').replace('/', '_S')
+    ctx.symlink(dep, link)
+
   expr_args.extend([
     "-A", ctx.attr.attribute_path
           if ctx.attr.nix_file or ctx.attr.nix_file_content
           else ctx.attr.attribute_path or ctx.attr.name,
   ])
-
-  # FORCE caching of sources files
-  for i in ctx.attr.srcs:
-    ctx.path(i)
 
   # If neither repository or path are set, leave empty which will use
   # default value from NIX_PATH.
