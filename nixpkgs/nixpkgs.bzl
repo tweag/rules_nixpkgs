@@ -47,14 +47,20 @@ def _nixpkgs_package_impl(ctx):
   # default value from NIX_PATH.
   path = []
   if ctx.attr.repository and ctx.attr.path:
-    fail("'repository' and 'path' fields are mutually exclusive.")
-  if ctx.attr.repository:
+    fail("'repository' and 'path' attributes are mutually exclusive.")
+  elif ctx.attr.repository:
     # XXX Another hack: the repository label typically resolves to
     # some top-level package in the external workspace. So we use
     # dirname to get the actual workspace path.
     path = ["-I", "nixpkgs={0}".format(ctx.path(ctx.attr.repository).dirname)]
-  if ctx.attr.path:
+  elif ctx.attr.path:
     path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
+  else:
+    print("""
+WARNING: Implicitly using '<nixpkgs>' as the location of Nixpkgs.
+This is not recommended because it makes the build non-hermetic.
+Set which Nixpkgs to use explicitly using 'repository' or 'path' attributes.
+    """)
 
   nix_build_path = ctx.which("nix-build")
   if nix_build_path == None:
