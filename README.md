@@ -29,6 +29,7 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "
 nixpkgs_git_repository(
     name = "nixpkgs",
     revision = "17.09", # Any tag or commit hash
+    sha256 = "" # optional sha to verify package integrity!
 )
 
 nixpkgs_package(
@@ -44,7 +45,7 @@ nixpkgs_package(
 Name a specific revision of Nixpkgs on GitHub or a local checkout.
 
 ```bzl
-nixpkgs_git_repository(name, revision)
+nixpkgs_git_repository(name, revision, sha256)
 ```
 
 <table class="table table-condensed table-bordered table-params">
@@ -71,6 +72,13 @@ nixpkgs_git_repository(name, revision)
         <p><code>String; optional</code></p>
         <p>Git commit hash or tag identifying the version of Nixpkgs
            to use.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>sha256</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The SHA256 used to verify the integrity of the repository</p>
       </td>
     </tr>
   </tbody>
