@@ -7,6 +7,7 @@ load("//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
 nixpkgs_git_repository(
   name = "nixpkgs",
   revision = "17.09",
+  sha256 = "405f1d6ba523630c83fbabef93f0da11ea388510a576adf2ded26a744fbf793e",
 )
 
 nixpkgs_package(name = "hello", repository = "@nixpkgs")
