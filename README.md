@@ -75,6 +75,14 @@ nixpkgs_git_repository(name, revision, sha256)
       </td>
     </tr>
     <tr>
+      <td><code>remote</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The URI of the remote Git repository. This must be a HTTP
+           URL. There is currently no support for authentication.</p>
+      </td>
+    </tr>
+    <tr>
       <td><code>sha256</code></td>
       <td>
         <p><code>String; optional</code></p>

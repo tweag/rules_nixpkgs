@@ -5,7 +5,7 @@ def _nixpkgs_git_repository_impl(ctx):
   # XXX Hack because ctx.path below bails out if resolved path not a regular file.
   ctx.file(ctx.name)
   ctx.download_and_extract(
-    url = "https://github.com/NixOS/nixpkgs/archive/%s.tar.gz" % ctx.attr.revision,
+    url = "%s/archive/%s.tar.gz" % (ctx.attr.remote, ctx.attr.revision),
     stripPrefix = "nixpkgs-" + ctx.attr.revision,
     sha256 = ctx.attr.sha256,
   )
@@ -14,9 +14,8 @@ nixpkgs_git_repository = repository_rule(
   implementation = _nixpkgs_git_repository_impl,
   attrs = {
     "revision": attr.string(),
-    "sha256": attr.string(
-      default = "",
-      ),
+    "remote": attr.string(default = "https://github.com/NixOS/nixpkgs"),
+    "sha256": attr.string(),
   },
   local = False,
 )
