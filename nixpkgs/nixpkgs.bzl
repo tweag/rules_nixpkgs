@@ -86,7 +86,9 @@ Set which Nixpkgs to use explicitly using 'repository' or 'path' attributes.
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
-    fail("Cannot build Nix attribute %s." % ctx.attr.name)
+    fail("Cannot build Nix attribute %s.\nstdout:\n%s\n\nstderr:\n%s\n" %
+            (ctx.attr.name, res.stdout, res.stderr)
+        )
 
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
