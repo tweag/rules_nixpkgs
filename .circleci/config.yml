@@ -11,7 +11,7 @@ jobs:
           name: System dependencies
           command: |
             apk update --no-progress && apk --no-progress add bash ca-certificates
-            nix-channel --update && nix-env -iA nixpkgs.bazel
+            nix-channel --update && nix-env -iA nixpkgs.bazel nixpkgs.gcc
       - run:
           name: Run tests
           command: bazel test //...
