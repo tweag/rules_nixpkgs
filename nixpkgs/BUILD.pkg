@@ -12,5 +12,5 @@ filegroup(
 
 filegroup(
   name = "include",
-  srcs = glob(["include/*.h"]),
+  srcs = glob(["include/**/*.h"]),
 )
