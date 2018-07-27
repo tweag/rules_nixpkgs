@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
+
 """Rules for importing Nixpkgs packages."""
 
 def _nixpkgs_git_repository_impl(ctx):
@@ -120,3 +122,68 @@ nixpkgs_package = repository_rule(
   local = True,
   environ = ["NIX_PATH"],
 )
+
+def _cc_configure_custom(ctx):
+  overriden_tools = {
+    "gcc": ctx.path(ctx.attr.gcc),
+    "ld": ctx.path(ctx.attr.ld),
+  }
+  return cc_autoconf_impl(ctx, overriden_tools)
+
+cc_configure_custom = repository_rule(
+  implementation = _cc_configure_custom,
+  attrs = {
+    "gcc": attr.label(
+      executable=True,
+      cfg="host",
+      allow_single_file=True,
+      doc="`gcc` to use in cc toolchain",
+    ),
+    "ld": attr.label(
+      executable=True,
+      cfg="host",
+      allow_single_file=True,
+      doc="`ld` to use in cc toolchain",
+    ),
+  },
+  local = True,
+  environ = [
+        "ABI_LIBC_VERSION",
+        "ABI_VERSION",
+        "BAZEL_COMPILER",
+        "BAZEL_HOST_SYSTEM",
+        "BAZEL_LINKOPTS",
+        "BAZEL_PYTHON",
+        "BAZEL_SH",
+        "BAZEL_TARGET_CPU",
+        "BAZEL_TARGET_LIBC",
+        "BAZEL_TARGET_SYSTEM",
+        "BAZEL_USE_CPP_ONLY_TOOLCHAIN",
+        "BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE",
+        "BAZEL_VC",
+        "BAZEL_VS",
+        "CC",
+        "CC_CONFIGURE_DEBUG",
+        "CC_TOOLCHAIN_NAME",
+        "CPLUS_INCLUDE_PATH",
+        "CUDA_COMPUTE_CAPABILITIES",
+        "CUDA_PATH",
+        "GCOV",
+        "HOMEBREW_RUBY_PATH",
+        "NO_WHOLE_ARCHIVE_OPTION",
+        "SYSTEMROOT",
+        "USE_DYNAMIC_CRT",
+        "USE_MSVC_WRAPPER",
+        "VS90COMNTOOLS",
+        "VS100COMNTOOLS",
+        "VS110COMNTOOLS",
+        "VS120COMNTOOLS",
+        "VS140COMNTOOLS",
+    ],
+)
+"""Overwrite cc toolchain by supplying custom `gcc` and `ld` (e.g. from
+Nix). This allows to fix mismatch of `gcc` versions between what is used by
+packages that come from Nix (e.g. `ghc`) and what Bazel detects
+automatically (i.e. system-level `gcc`).
+"""
