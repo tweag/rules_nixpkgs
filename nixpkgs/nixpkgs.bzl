@@ -30,6 +30,10 @@ def _nixpkgs_package_impl(ctx):
   else:
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
+  strFailureImplicitNixpkgs = (
+     "One of 'path', 'repository', 'nix_file' or 'nix_file_content' must be provided. "
+     + "The NIX_PATH environment variable is not inherited.")
+
   expr_args = []
   if ctx.attr.nix_file and ctx.attr.nix_file_content:
     fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
@@ -37,6 +41,8 @@ def _nixpkgs_package_impl(ctx):
     ctx.symlink(ctx.attr.nix_file, "default.nix")
   elif ctx.attr.nix_file_content:
     expr_args = ["-E", ctx.attr.nix_file_content]
+  elif not (ctx.attr.path or ctx.attr.repository):
+    fail(strFailureImplicitNixpkgs)
   else:
     expr_args = ["-E", "import <nixpkgs> {}"]
 
@@ -54,35 +60,34 @@ def _nixpkgs_package_impl(ctx):
   ])
 
   # If neither repository or path are set, leave empty which will use
-  # default value from NIX_PATH.
-  path = []
+  # default value from NIX_PATH, which will fail unless a pinned nixpkgs is
+  # set in the 'nix_file' attribute.
+  nix_path = ""
   if ctx.attr.repository and ctx.attr.path:
     fail("'repository' and 'path' attributes are mutually exclusive.")
   elif ctx.attr.repository:
     # XXX Another hack: the repository label typically resolves to
     # some top-level package in the external workspace. So we use
     # dirname to get the actual workspace path.
-    path = ["-I", "nixpkgs={0}".format(ctx.path(ctx.attr.repository).dirname)]
+    nix_path = str(ctx.path(ctx.attr.repository).dirname)
   elif ctx.attr.path:
-    path = ["-I", "nixpkgs={0}".format(ctx.attr.path)]
-  else:
-    print("""
-WARNING: Implicitly using '<nixpkgs>' as the location of Nixpkgs.
-This is not recommended because it makes the build non-hermetic.
-Set which Nixpkgs to use explicitly using 'repository' or 'path' attributes.
-    """)
+    nix_path = str(ctx.attr_path)
+  elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
+    fail(strFailureImplicitNixpkgs)
 
   nix_build_path = ctx.which("nix-build")
   if nix_build_path == None:
     fail("Could not find nix-build on the path. Please install it. See: https://nixos.org/nix/")
 
-  nix_build = [nix_build_path] + path + expr_args
+  nix_build = [nix_build_path] + expr_args
 
   # Large enough integer that Bazel can still parse. We don't have
   # access to MAX_INT and 0 is not a valid timeout so this is as good
   # as we can do.
   timeout = 1073741824
-  res = ctx.execute(nix_build, quiet = False, timeout = timeout)
+
+  res = ctx.execute(nix_build, quiet = False, timeout = timeout,
+                    environment=dict(NIX_PATH="nixpkgs=" + nix_path))
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
@@ -118,5 +123,4 @@ nixpkgs_package = repository_rule(
     "build_file_content": attr.string(),
   },
   local = True,
-  environ = ["NIX_PATH"],
 )

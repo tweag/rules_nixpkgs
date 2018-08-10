@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Changed
+
+* `nixpkgs_packages` does not accept implicit `<nixpkgs>` version. See
+   [#25](https://github.com/tweag/rules_nixpkgs/pull/25).
+
 ## [0.2.3] - 2018-07-01
 
 ### Added

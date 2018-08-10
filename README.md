@@ -103,9 +103,8 @@ nixpkgs_package(
 )
 ```
 
-If neither `repository` or `path` are specified, `<nixpkgs>` is
-assumed. Specifying one of `repository` or `path` is strongly
-recommended. The two are mutually exclusive.
+If neither `repository` or `path` are specified, you must provide a
+nixpkgs clone in `nix_file` or `nix_file_content`.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
