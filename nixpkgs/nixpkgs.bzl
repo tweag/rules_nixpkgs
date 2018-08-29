@@ -92,9 +92,8 @@ def _nixpkgs_package_impl(ctx):
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
-    fail("Cannot build Nix attribute %s.\nstdout:\n%s\n\nstderr:\n%s\n" %
-            (ctx.attr.name, res.stdout, res.stderr)
-        )
+    _execute_error(res, "Cannot build Nix attribute `{}`"
+                          .format(ctx.attr.attribute_path))
 
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
@@ -107,7 +106,7 @@ def _nixpkgs_package_impl(ctx):
       basename = i.rpartition("/")[-1]
       ctx.symlink(i, ctx.path(basename))
   else:
-    fail(res.stderr)
+    _execute_error(res, "find failed on {}".format(output_path))
 
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
@@ -132,3 +131,19 @@ def _executable_path(exe_name, rep_ctx, extra_msg=""):
     fail("Could not find the `{}` executable in PATH.{}\n"
           .format(exe_name, " " + extra_msg if extra_msg else ""))
   return path
+
+
+def _execute_error(exec_result, msg):
+  """Print a nice error message for a failed `execute`."""
+  fail("""
+execute() error: {msg}
+status code: {code}
+stdout:
+{stdout}
+stderr:
+{stderr}
+""".format(
+  msg=msg,
+  code=exec_result.return_code,
+  stdout=exec_result.stdout,
+  stderr=exec_result.stderr))
