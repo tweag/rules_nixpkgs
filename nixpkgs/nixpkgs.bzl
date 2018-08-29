@@ -76,10 +76,10 @@ def _nixpkgs_package_impl(ctx):
   elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
     fail(strFailureImplicitNixpkgs)
 
-  nix_build_path = ctx.which("nix-build")
-  if nix_build_path == None:
-    fail("Could not find nix-build on the path. Please install it. See: https://nixos.org/nix/")
-
+  nix_build_path = _executable_path(
+    "nix-build", ctx,
+    extra_msg = "See: https://nixos.org/nix/"
+  )
   nix_build = [nix_build_path] + expr_args
 
   # Large enough integer that Bazel can still parse. We don't have
@@ -99,11 +99,9 @@ def _nixpkgs_package_impl(ctx):
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
 
-  find_path = ctx.which("find")
-  if find_path == None:
-    fail("Could not find the 'find' command. Please ensure it is in your PATH.")
+  find_path = _executable_path("find", ctx)
 
-  res = ctx.execute(["find", output_path, "-maxdepth", "1"])
+  res = ctx.execute([find_path, output_path, "-maxdepth", "1"])
   if res.return_code == 0:
     for i in res.stdout.splitlines():
       basename = i.rpartition("/")[-1]
@@ -125,3 +123,12 @@ nixpkgs_package = repository_rule(
   },
   local = True,
 )
+
+
+def _executable_path(exe_name, rep_ctx, extra_msg=""):
+  """Try to find the executable, fail with an error."""
+  path = rep_ctx.which(exe_name)
+  if path == None:
+    fail("Could not find the `{}` executable in PATH.{}\n"
+          .format(exe_name, " " + extra_msg if extra_msg else ""))
+  return path
