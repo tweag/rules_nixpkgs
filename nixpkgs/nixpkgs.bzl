@@ -57,6 +57,7 @@ def _nixpkgs_package_impl(ctx):
     "-A", ctx.attr.attribute_path
           if ctx.attr.nix_file or ctx.attr.nix_file_content
           else ctx.attr.attribute_path or ctx.attr.name,
+    "--no-out-link",
   ])
 
   # If neither repository or path are set, leave empty which will use
