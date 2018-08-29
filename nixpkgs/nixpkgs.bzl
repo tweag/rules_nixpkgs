@@ -97,16 +97,8 @@ def _nixpkgs_package_impl(ctx):
 
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
+  _symlink_children(output_path, ctx)
 
-  find_path = _executable_path("find", ctx)
-
-  res = ctx.execute([find_path, output_path, "-maxdepth", "1"])
-  if res.return_code == 0:
-    for i in res.stdout.splitlines():
-      basename = i.rpartition("/")[-1]
-      ctx.symlink(i, ctx.path(basename))
-  else:
-    _execute_error(res, "find failed on {}".format(output_path))
 
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
@@ -122,6 +114,27 @@ nixpkgs_package = repository_rule(
   },
   local = True,
 )
+
+
+def _symlink_children(target_dir, rep_ctx):
+  """Create a symlink to all children of `target_dir` in the current
+  build directory."""
+  find_args = [
+    _executable_path("find", rep_ctx),
+    target_dir,
+    "-maxdepth", "1",
+    # otherwise the directory is printed as well
+    "-mindepth", "1",
+    # filenames can contain \n
+    "-print0",
+  ]
+  find_res = rep_ctx.execute(find_args)
+  if find_res.return_code == 0:
+      for target in find_res.stdout.rstrip("\0").split("\0"):
+        basename = target.rpartition("/")[-1]
+        rep_ctx.symlink(target, basename)
+  else:
+    _execute_error(find_res)
 
 
 def _executable_path(exe_name, rep_ctx, extra_msg=""):
