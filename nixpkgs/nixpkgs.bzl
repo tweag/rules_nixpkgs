@@ -57,7 +57,13 @@ def _nixpkgs_package_impl(ctx):
     "-A", ctx.attr.attribute_path
           if ctx.attr.nix_file or ctx.attr.nix_file_content
           else ctx.attr.attribute_path or ctx.attr.name,
-    "--no-out-link",
+    # Creating an out link prevents nix from garbage collecting the store path.
+    # nixpkgs uses `nix-support/` for such house-keeping files, so we mirror them
+    # and use `bazel-support/`, under the assumption that no nix package has
+    # a file named `bazel-support` in its root.
+    # A `bazel clean` deletes the symlink and thus nix is free to garbage collect
+    # the store path.
+    "--out-link", "bazel-support/nix-out-link"
   ])
 
   # If neither repository or path are set, leave empty which will use
