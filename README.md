@@ -69,7 +69,7 @@ nixpkgs_git_repository(name, revision, sha256)
     <tr>
       <td><code>revision</code></td>
       <td>
-        <p><code>String; optional</code></p>
+        <p><code>String; required</code></p>
         <p>Git commit hash or tag identifying the version of Nixpkgs
            to use.</p>
       </td>
