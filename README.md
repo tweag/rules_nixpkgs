@@ -69,7 +69,7 @@ nixpkgs_git_repository(name, revision, sha256)
     <tr>
       <td><code>revision</code></td>
       <td>
-        <p><code>String; optional</code></p>
+        <p><code>String; required</code></p>
         <p>Git commit hash or tag identifying the version of Nixpkgs
            to use.</p>
       </td>
@@ -79,14 +79,16 @@ nixpkgs_git_repository(name, revision, sha256)
       <td>
         <p><code>String; optional</code></p>
         <p>The URI of the remote Git repository. This must be a HTTP
-           URL. There is currently no support for authentication.</p>
+           URL. There is currently no support for authentication.
+           Defaults to <a href="https://github.com/NixOS/nixpkgs">
+           upstream nixpkgs.</a></p>
       </td>
     </tr>
     <tr>
       <td><code>sha256</code></td>
       <td>
         <p><code>String; optional</code></p>
-        <p>The SHA256 used to verify the integrity of the repository</p>
+        <p>The SHA256 used to verify the integrity of the repository.</p>
       </td>
     </tr>
   </tbody>
