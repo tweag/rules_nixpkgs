@@ -13,7 +13,7 @@ def _nixpkgs_git_repository_impl(ctx):
 nixpkgs_git_repository = repository_rule(
   implementation = _nixpkgs_git_repository_impl,
   attrs = {
-    "revision": attr.string(),
+    "revision": attr.string(mandatory = True),
     "remote": attr.string(default = "https://github.com/NixOS/nixpkgs"),
     "sha256": attr.string(),
   },
