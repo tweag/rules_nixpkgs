@@ -57,6 +57,13 @@ def _nixpkgs_package_impl(ctx):
     "-A", ctx.attr.attribute_path
           if ctx.attr.nix_file or ctx.attr.nix_file_content
           else ctx.attr.attribute_path or ctx.attr.name,
+    # Creating an out link prevents nix from garbage collecting the store path.
+    # nixpkgs uses `nix-support/` for such house-keeping files, so we mirror them
+    # and use `bazel-support/`, under the assumption that no nix package has
+    # a file named `bazel-support` in its root.
+    # A `bazel clean` deletes the symlink and thus nix is free to garbage collect
+    # the store path.
+    "--out-link", "bazel-support/nix-out-link"
   ])
 
   # If neither repository or path are set, leave empty which will use
@@ -75,10 +82,10 @@ def _nixpkgs_package_impl(ctx):
   elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
     fail(strFailureImplicitNixpkgs)
 
-  nix_build_path = ctx.which("nix-build")
-  if nix_build_path == None:
-    fail("Could not find nix-build on the path. Please install it. See: https://nixos.org/nix/")
-
+  nix_build_path = _executable_path(
+    "nix-build", ctx,
+    extra_msg = "See: https://nixos.org/nix/"
+  )
   nix_build = [nix_build_path] + expr_args
 
   # Large enough integer that Bazel can still parse. We don't have
@@ -91,24 +98,13 @@ def _nixpkgs_package_impl(ctx):
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
-    fail("Cannot build Nix attribute %s.\nstdout:\n%s\n\nstderr:\n%s\n" %
-            (ctx.attr.name, res.stdout, res.stderr)
-        )
+    _execute_error(res, "Cannot build Nix attribute `{}`"
+                          .format(ctx.attr.attribute_path))
 
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
+  _symlink_children(output_path, ctx)
 
-  find_path = ctx.which("find")
-  if find_path == None:
-    fail("Could not find the 'find' command. Please ensure it is in your PATH.")
-
-  res = ctx.execute(["find", output_path, "-maxdepth", "1"])
-  if res.return_code == 0:
-    for i in res.stdout.splitlines():
-      basename = i.rpartition("/")[-1]
-      ctx.symlink(i, ctx.path(basename))
-  else:
-    fail(res.stderr)
 
 nixpkgs_package = repository_rule(
   implementation = _nixpkgs_package_impl,
@@ -124,3 +120,49 @@ nixpkgs_package = repository_rule(
   },
   local = True,
 )
+
+
+def _symlink_children(target_dir, rep_ctx):
+  """Create a symlink to all children of `target_dir` in the current
+  build directory."""
+  find_args = [
+    _executable_path("find", rep_ctx),
+    target_dir,
+    "-maxdepth", "1",
+    # otherwise the directory is printed as well
+    "-mindepth", "1",
+    # filenames can contain \n
+    "-print0",
+  ]
+  find_res = rep_ctx.execute(find_args)
+  if find_res.return_code == 0:
+      for target in find_res.stdout.rstrip("\0").split("\0"):
+        basename = target.rpartition("/")[-1]
+        rep_ctx.symlink(target, basename)
+  else:
+    _execute_error(find_res)
+
+
+def _executable_path(exe_name, rep_ctx, extra_msg=""):
+  """Try to find the executable, fail with an error."""
+  path = rep_ctx.which(exe_name)
+  if path == None:
+    fail("Could not find the `{}` executable in PATH.{}\n"
+          .format(exe_name, " " + extra_msg if extra_msg else ""))
+  return path
+
+
+def _execute_error(exec_result, msg):
+  """Print a nice error message for a failed `execute`."""
+  fail("""
+execute() error: {msg}
+status code: {code}
+stdout:
+{stdout}
+stderr:
+{stderr}
+""".format(
+  msg=msg,
+  code=exec_result.return_code,
+  stdout=exec_result.stdout,
+  stderr=exec_result.stderr))
