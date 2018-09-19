@@ -34,7 +34,7 @@ nixpkgs_git_repository(
 
 nixpkgs_package(
     name = "hello",
-    repository = "@nixpkgs"
+    repositories = { "@nixpkgs": "nixpkgs" }
 )
 ```
 
@@ -160,8 +160,15 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
       <td><code>repository</code></td>
       <td>
         <p><code>Label; optional</code></p>
-        <p>A Nixpkgs repository label. Specify one of `path` or
-		   `repository`.</p>
+        <p>Deprecated, use `repositories` instead.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repositorie</code></td>
+      <td>
+        <p><code>Label-keyed String dict; optional</code></p>
+        <p>A dictionary mapping repositoriy labels to `NIX_PATH` entries.
+        Specify one of `path` or `repositories`.</p>
       </td>
     </tr>
     <tr>
@@ -170,7 +177,7 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
         <p><code>String; optional</code></p>
         <p>The path to the directory containing Nixpkgs, as
            interpreted by `nix-build`. Specify one of `path` or
-		   `repository`.</p>
+		   `repositories`.</p>
       </td>
     </tr>
     <tr>

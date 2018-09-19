@@ -21,6 +21,15 @@ nixpkgs_git_repository = repository_rule(
 )
 
 def _nixpkgs_package_impl(ctx):
+  repositories = None
+  if ctx.attr.repositories:
+    repositories = ctx.attr.repositories
+
+  if ctx.attr.repository:
+    print("The 'repository' attribute is deprecated, use 'repositories' instead")
+    repositories = { ctx.attr.repository: "nixpkgs" } + \
+        (repositories if repositories else {})
+
   if ctx.attr.build_file and ctx.attr.build_file_content:
     fail("Specify one of 'build_file' or 'build_file_content', but not both.")
   elif ctx.attr.build_file:
@@ -31,7 +40,7 @@ def _nixpkgs_package_impl(ctx):
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
   strFailureImplicitNixpkgs = (
-     "One of 'path', 'repository', 'nix_file' or 'nix_file_content' must be provided. "
+     "One of 'path', 'repositories', 'nix_file' or 'nix_file_content' must be provided. "
      + "The NIX_PATH environment variable is not inherited.")
 
   expr_args = []
@@ -41,7 +50,7 @@ def _nixpkgs_package_impl(ctx):
     ctx.symlink(ctx.attr.nix_file, "default.nix")
   elif ctx.attr.nix_file_content:
     expr_args = ["-E", ctx.attr.nix_file_content]
-  elif not (ctx.attr.path or ctx.attr.repository):
+  elif not (ctx.attr.path or repositories):
     fail(strFailureImplicitNixpkgs)
   else:
     expr_args = ["-E", "import <nixpkgs> {}"]
@@ -66,17 +75,18 @@ def _nixpkgs_package_impl(ctx):
     "--out-link", "bazel-support/nix-out-link"
   ])
 
-  # If neither repository or path are set, leave empty which will use
+  # If neither repositories or path are set, leave empty which will use
   # default value from NIX_PATH, which will fail unless a pinned nixpkgs is
   # set in the 'nix_file' attribute.
   nix_path = ""
-  if ctx.attr.repository and ctx.attr.path:
-    fail("'repository' and 'path' attributes are mutually exclusive.")
-  elif ctx.attr.repository:
+  if repositories and ctx.attr.path:
+      fail("'repositories' and 'path' attributes are mutually exclusive.")
+  elif repositories:
     # XXX Another hack: the repository label typically resolves to
     # some top-level package in the external workspace. So we use
     # dirname to get the actual workspace path.
-    nix_path = str(ctx.path(ctx.attr.repository).dirname)
+    nix_path = ":".join([(path_name + "=" + str(ctx.path(path).dirname)) \
+                         for (path, path_name) in repositories.items()])
   elif ctx.attr.path:
     nix_path = str(ctx.attr_path)
   elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
@@ -94,7 +104,7 @@ def _nixpkgs_package_impl(ctx):
   timeout = 1073741824
 
   res = ctx.execute(nix_build, quiet = False, timeout = timeout,
-                    environment=dict(NIX_PATH="nixpkgs=" + nix_path))
+                    environment=dict(NIX_PATH=nix_path))
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
@@ -114,13 +124,13 @@ nixpkgs_package = repository_rule(
     "nix_file_deps": attr.label_list(),
     "nix_file_content": attr.string(),
     "path": attr.string(),
+    "repositories": attr.label_keyed_string_dict(),
     "repository": attr.label(),
     "build_file": attr.label(),
     "build_file_content": attr.string(),
   },
   local = True,
 )
-
 
 def _symlink_children(target_dir, rep_ctx):
   """Create a symlink to all children of `target_dir` in the current
