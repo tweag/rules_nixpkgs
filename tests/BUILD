@@ -8,6 +8,7 @@ package(default_testonly = 1)
   timeout = "short",
 ) for test in [
     "hello",
+    "hello-fetchTarball",
     "expr-test",
     "attribute-test",
     "expr-attribute-test",

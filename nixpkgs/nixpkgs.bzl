@@ -1,3 +1,8 @@
+load("//lib:lib.bzl",
+     "executable_path",
+     "execute_error",
+     "symlink_children")
+
 """Rules for importing Nixpkgs packages."""
 
 def _nixpkgs_git_repository_impl(ctx):
@@ -82,7 +87,7 @@ def _nixpkgs_package_impl(ctx):
   elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
     fail(strFailureImplicitNixpkgs)
 
-  nix_build_path = _executable_path(
+  nix_build_path = executable_path(
     "nix-build", ctx,
     extra_msg = "See: https://nixos.org/nix/"
   )
@@ -98,12 +103,12 @@ def _nixpkgs_package_impl(ctx):
   if res.return_code == 0:
     output_path = res.stdout.splitlines()[-1]
   else:
-    _execute_error(res, "Cannot build Nix attribute `{}`"
+    execute_error(res, "Cannot build Nix attribute `{}`"
                           .format(ctx.attr.attribute_path))
 
-  # Build a forest of symlinks (like new_local_package() does) to the
-  # Nix store.
-  _symlink_children(output_path, ctx)
+  # Build a forest of symlinks (like `new_local_package()` does) to the
+  # Nix store. The `link_dir` is the build directory (".")
+  symlink_children(output_path, ".", ctx)
 
 
 nixpkgs_package = repository_rule(
@@ -122,47 +127,3 @@ nixpkgs_package = repository_rule(
 )
 
 
-def _symlink_children(target_dir, rep_ctx):
-  """Create a symlink to all children of `target_dir` in the current
-  build directory."""
-  find_args = [
-    _executable_path("find", rep_ctx),
-    target_dir,
-    "-maxdepth", "1",
-    # otherwise the directory is printed as well
-    "-mindepth", "1",
-    # filenames can contain \n
-    "-print0",
-  ]
-  find_res = rep_ctx.execute(find_args)
-  if find_res.return_code == 0:
-      for target in find_res.stdout.rstrip("\0").split("\0"):
-        basename = target.rpartition("/")[-1]
-        rep_ctx.symlink(target, basename)
-  else:
-    _execute_error(find_res)
-
-
-def _executable_path(exe_name, rep_ctx, extra_msg=""):
-  """Try to find the executable, fail with an error."""
-  path = rep_ctx.which(exe_name)
-  if path == None:
-    fail("Could not find the `{}` executable in PATH.{}\n"
-          .format(exe_name, " " + extra_msg if extra_msg else ""))
-  return path
-
-
-def _execute_error(exec_result, msg):
-  """Print a nice error message for a failed `execute`."""
-  fail("""
-execute() error: {msg}
-status code: {code}
-stdout:
-{stdout}
-stderr:
-{stderr}
-""".format(
-  msg=msg,
-  code=exec_result.return_code,
-  stdout=exec_result.stdout,
-  stderr=exec_result.stderr))
