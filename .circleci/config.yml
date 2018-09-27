@@ -10,8 +10,9 @@ jobs:
       - run:
           name: System dependencies
           command: |
+            export NIX_PATH=nixpkgs=$PWD/nix/default.nix
             apk update --no-progress && apk --no-progress add bash ca-certificates
-            nix-channel --update && nix-env -iA nixpkgs.bazel nixpkgs.gcc
+            nix-env -iA nixpkgs.bazel nixpkgs.gcc
       - run:
           name: Run tests
           command: bazel test //...
