@@ -63,7 +63,7 @@ nixpkgs_git_repository(name, revision, sha256)
       <td><code>name</code></td>
       <td>
         <p><code>Name; required</code></p>
-        <p>A unique name for this target</p>
+        <p>A unique name for this repository.</p>
       </td>
     </tr>
     <tr>
@@ -101,11 +101,11 @@ Make the content of a Nixpkgs package available in the Bazel workspace.
 ```bzl
 nixpkgs_package(
     name, attribute_path, nix_file, nix_file_deps, nix_file_content,
-    path, repository, build_file, build_file_content,
+    repositories, build_file, build_file_content,
 )
 ```
 
-If neither `repository` or `path` are specified, you must provide a
+If `repositories` is not specified, you must provide a
 nixpkgs clone in `nix_file` or `nix_file_content`.
 
 <table class="table table-condensed table-bordered table-params">
@@ -164,20 +164,19 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
       </td>
     </tr>
     <tr>
-      <td><code>repositorie</code></td>
+      <td><code>repositories</code></td>
       <td>
         <p><code>Label-keyed String dict; optional</code></p>
-        <p>A dictionary mapping repositoriy labels to `NIX_PATH` entries.
-        Specify one of `path` or `repositories`.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>path</code></td>
-      <td>
-        <p><code>String; optional</code></p>
-        <p>The path to the directory containing Nixpkgs, as
-           interpreted by `nix-build`. Specify one of `path` or
-		   `repositories`.</p>
+        <p>A dictionary mapping repositoriy labels to `NIX_PATH` entries.</p>
+        <p>Setting it to <pre>
+repositories = { "myrepo" : "//:myrepo" }
+</pre>
+           for example would replace all instances
+           of <code>&lt;myrepo&gt;</code> in the called nix code by the
+           path to the target <code>"//:myrepo"</code>. See the
+           <a href="https://nixos.org/nix/manual/#env-NIX_PATH">relevant
+           section in the nix manual</a> for more information.</p>
+        <p>Specify one of `path` or `repositories`.</p>
       </td>
     </tr>
     <tr>
@@ -198,3 +197,32 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
     </tr>
   </tbody>
 </table>
+
+
+## Migration
+
+### `path` Attribute
+
+`path` was an attribute from the early days of `rules_nixpkgs`, and
+its ability to reference arbitrary paths a danger to build hermeticity.
+
+Replace it with either `nixpkgs_git_repository` if you need
+a specific version of `nixpkgs`. If you absolutely *must* depend on a
+local folder, use bazel’s
+[`local_repository` workspace rule](https://docs.bazel.build/versions/master/be/workspace.html#local_repository).
+Both approaches work well with the `repositories` attribute of `nixpkgs_package`.
+
+```bzl
+local_repository(
+  name = "local-nixpkgs",
+  path = "/path/to/nixpkgs",
+)
+
+nixpkgs_package(
+  name = "somepackage",
+  repositories = {
+    "nixpkgs": "@local-nixpkgs//:default.nix",
+  },
+  …
+)
+```

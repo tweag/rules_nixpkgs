@@ -40,7 +40,7 @@ def _nixpkgs_package_impl(ctx):
     ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
   strFailureImplicitNixpkgs = (
-     "One of 'path', 'repositories', 'nix_file' or 'nix_file_content' must be provided. "
+     "One of 'repositories', 'nix_file' or 'nix_file_content' must be provided. "
      + "The NIX_PATH environment variable is not inherited.")
 
   expr_args = []
@@ -50,7 +50,7 @@ def _nixpkgs_package_impl(ctx):
     ctx.symlink(ctx.attr.nix_file, "default.nix")
   elif ctx.attr.nix_file_content:
     expr_args = ["-E", ctx.attr.nix_file_content]
-  elif not (ctx.attr.path or repositories):
+  elif not repositories:
     fail(strFailureImplicitNixpkgs)
   else:
     expr_args = ["-E", "import <nixpkgs> {}"]
@@ -75,20 +75,16 @@ def _nixpkgs_package_impl(ctx):
     "--out-link", "bazel-support/nix-out-link"
   ])
 
-  # If neither repositories or path are set, leave empty which will use
-  # default value from NIX_PATH, which will fail unless a pinned nixpkgs is
-  # set in the 'nix_file' attribute.
+  # If repositories is not set, leave empty so nix will fail
+  # unless a pinned nixpkgs is set in the `nix_file` attribute.
   nix_path = ""
-  if repositories and ctx.attr.path:
-      fail("'repositories' and 'path' attributes are mutually exclusive.")
-  elif repositories:
+  if repositories:
     # XXX Another hack: the repository label typically resolves to
     # some top-level package in the external workspace. So we use
     # dirname to get the actual workspace path.
-    nix_path = ":".join([(path_name + "=" + str(ctx.path(path).dirname)) \
-                         for (path, path_name) in repositories.items()])
-  elif ctx.attr.path:
-    nix_path = str(ctx.attr_path)
+    nix_path = ":".join(
+      [(path_name + "=" + str(ctx.path(path).dirname))
+         for (path, path_name) in repositories.items()])
   elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
     fail(strFailureImplicitNixpkgs)
 
@@ -123,7 +119,6 @@ _nixpkgs_package = repository_rule(
     "nix_file": attr.label(allow_single_file = [".nix"]),
     "nix_file_deps": attr.label_list(),
     "nix_file_content": attr.string(),
-    "path": attr.string(),
     "repositories": attr.label_keyed_string_dict(),
     "repository": attr.label(),
     "build_file": attr.label(),

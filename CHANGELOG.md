@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Removed
+
+* The `path` attribute has been removed. See `Migration` section
+  in `README.md` for instructions.
+
 ### Changed
 
 * `nixpkgs_packages` does not accept implicit `<nixpkgs>` version. See
