@@ -4,7 +4,23 @@ load("//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
 
 # For tests
 
-nixpkgs_package(name = "hello", repositories = { "nixpkgs": "//:nix/default.nix" })
+nixpkgs_git_repository(
+  name = "remote_nixpkgs",
+  remote = "https://github.com/NixOS/nixpkgs",
+  revision = "18.09",
+  sha256 = "6451af4083485e13daa427f745cbf859bc23cb8b70454c017887c006a13bd65e",
+)
+
+nixpkgs_package(
+    name = "nixpkgs-git-repository-test",
+    repositories = { "nixpkgs": "@remote_nixpkgs//:default.nix" },
+    attribute_path = "hello",
+)
+
+nixpkgs_package(
+  name = "hello",
+  repositories = { "nixpkgs": "//:nix/default.nix" }
+)
 
 nixpkgs_package(
   name = "expr-test",
