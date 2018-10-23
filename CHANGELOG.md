@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [0.3] - 2018-10-23
+
+### Added
+
+* `nixpkgks_package` now supports referencing arbitrarily named nix
+  files. A bug previously only made it possible to reference
+  `default.nix` files.
 
 ### Removed
 
