@@ -79,12 +79,9 @@ def _nixpkgs_package_impl(ctx):
   # unless a pinned nixpkgs is set in the `nix_file` attribute.
   nix_path = ""
   if repositories:
-    # XXX Another hack: the repository label typically resolves to
-    # some top-level package in the external workspace. So we use
-    # dirname to get the actual workspace path.
     nix_path = ":".join(
-      [(path_name + "=" + str(ctx.path(path).dirname))
-         for (path, path_name) in repositories.items()])
+      [(path_name + "=" + str(ctx.path(target)))
+         for (target, path_name) in repositories.items()])
   elif not (ctx.attr.nix_file or ctx.attr.nix_file_content):
     fail(strFailureImplicitNixpkgs)
 
