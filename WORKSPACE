@@ -55,3 +55,22 @@ nixpkgs_package(
   nix_file_deps = ["//tests:pkgname.nix"],
   repositories = { "nixpkgs": "//:nixpkgs.nix" },
 )
+
+nixpkgs_package(
+  name = "output-filegroup-test",
+  nix_file = "//tests:output.nix",
+  repositories = { "nixpkgs": "//:nixpkgs.nix" },
+)
+
+nixpkgs_package(
+  name = "output-filegroup-manual-test",
+  nix_file = "//tests:output.nix",
+  repositories = { "nixpkgs": "//:nixpkgs.nix" },
+  build_file_content = """
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+  name = "manual-filegroup",
+  srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
+)
+""",
+)
