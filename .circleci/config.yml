@@ -14,4 +14,4 @@ jobs:
       - run:
           name: Run tests
           command: |
-            nix-shell --pure --run 'bazel test //...'
+            nix-shell --pure --run 'bazel test --test_output errors //...'
