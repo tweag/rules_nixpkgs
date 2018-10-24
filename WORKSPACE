@@ -19,7 +19,8 @@ nixpkgs_package(
 
 nixpkgs_package(
   name = "hello",
-  repositories = { "nixpkgs": "//:nixpkgs.nix" }
+  # deliberately not repositories, to test whether repository still works
+  repository = "//:nixpkgs.nix"
 )
 
 nixpkgs_package(
