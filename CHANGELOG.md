@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.1] - 2018-10-24
+
+### Fixed
+
+* `repositories` is no longer a required argument to `nixpkgs_package`.
+
 ## [0.3] - 2018-10-23
 
 ### Added

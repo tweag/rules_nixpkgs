@@ -124,18 +124,22 @@ _nixpkgs_package = repository_rule(
   local = True,
 )
 
-def nixpkgs_package(repositories, *args, **kwargs):
-    # Because of https://github.com/bazelbuild/bazel/issues/5356 we can't
-    # directly pass a dict from strings to labels to the rule (which we'd like
-    # for the `repositories` arguments), but we can pass a dict from labels to
-    # strings. So we swap the keys and the values (assuming they all are
-    # distinct).
-    inversed_repositories = { value: key for (key, value) in repositories.items() }
+def nixpkgs_package(*args, **kwargs):
+  # Because of https://github.com/bazelbuild/bazel/issues/5356 we can't
+  # directly pass a dict from strings to labels to the rule (which we'd like
+  # for the `repositories` arguments), but we can pass a dict from labels to
+  # strings. So we swap the keys and the values (assuming they all are
+  # distinct).
+  if "repositories" in kwargs:
+    inversed_repositories = { value: key for (key, value) in kwargs["repositories"].items() }
+    kwargs.pop("repositories")
     _nixpkgs_package(
-        repositories = inversed_repositories,
-        *args,
-        **kwargs
+      repositories = inversed_repositories,
+      *args,
+      **kwargs
     )
+  else:
+    _nixpkgs_package(*args, **kwargs)
 
 def _symlink_children(target_dir, rep_ctx):
   """Create a symlink to all children of `target_dir` in the current
