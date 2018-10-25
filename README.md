@@ -168,9 +168,8 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
       <td>
         <p><code>Label-keyed String dict; optional</code></p>
         <p>A dictionary mapping repositoriy labels to `NIX_PATH` entries.</p>
-        <p>Setting it to <pre>
-repositories = { "myrepo" : "//:myrepo" }
-</pre>
+        <p>Setting it to
+           <pre><code>repositories = { "myrepo" : "//:myrepo" }</code></pre>
            for example would replace all instances
            of <code>&lt;myrepo&gt;</code> in the called nix code by the
            path to the target <code>"//:myrepo"</code>. See the
@@ -182,17 +181,46 @@ repositories = { "myrepo" : "//:myrepo" }
     <tr>
       <td><code>build_file</code></td>
       <td>
-        <p><code>String; optional</code></p>
-        <p>The file to use as the BUILD file for this repository. This
-           attribute is a label relative to the main workspace. The
-           file does not need to be named BUILD, but can be.</p>
+        <p><code>Label; optional</code></p>
+        <p>The file to use as the BUILD file for this repository.
+           Its contents are copied copied into the file
+           <code>BUILD</code> in root of the nix output folder.
+           The Label does not need to be named BUILD, but can be.
+        </p>
+        <p>For common use cases we provide filegroups that expose
+           certain files as targets:
+          <dl>
+            <dt><code>:bin</code></dt>
+            <dd>Everything in the <code>bin/</code> directory.</dd>
+            <dt><code>:lib</code></dt>
+            <dd>All <code>.so</code> and <code>.a</code> files
+              that can be found in subdirectories of
+              <code>lib/</code>.</dd>
+            <dt><code>:include</code></dt>
+            <dd>All <code>.h</code> files
+              that can be found in subdirectories of
+              <code>bin/</code>.</dd>
+          </dl>
+        </p>
+        <p>If you need different files from the nix package,
+          you can reference them like this: <pre><code>package(default_visibility = [ "//visibility:public" ])
+filegroup(
+  name = "our-docs",
+  srcs = glob(["share/doc/ourpackage/**/*"]),
+)</code></pre>
+          See the bazel documentation of
+          <a href="https://docs.bazel.build/versions/master/be/general.html#filegroup">filegroup</a>
+          and
+          <a href="https://docs.bazel.build/versions/master/be/functions.html#glob">glob</a>.
+        </p>
       </td>
     </tr>
     <tr>
       <td><code>build_file_content</code></td>
       <td>
         <p><code>String; optional</code></p>
-        <p>The content for the BUILD file for this repository.</p>
+        <p>Like <code>build_file</code>, but a string of the contents
+          instead of a file name.</p>
       </td>
     </tr>
   </tbody>
