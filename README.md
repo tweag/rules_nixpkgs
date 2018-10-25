@@ -34,7 +34,7 @@ nixpkgs_git_repository(
 
 nixpkgs_package(
     name = "hello",
-    repositories = { "@nixpkgs": "nixpkgs" }
+    repositories = { "nixpkgs": "@nixpkgs//:default.nix" }
 )
 ```
 
