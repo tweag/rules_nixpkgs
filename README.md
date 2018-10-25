@@ -166,8 +166,8 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
     <tr>
       <td><code>repositories</code></td>
       <td>
-        <p><code>Label-keyed String dict; optional</code></p>
-        <p>A dictionary mapping repositoriy labels to `NIX_PATH` entries.</p>
+        <p><code>String-keyed label dict; optional</code></p>
+        <p>A dictionary mapping `NIX_PATH` entries to repository labels.</p>
         <p>Setting it to
            <pre><code>repositories = { "myrepo" : "//:myrepo" }</code></pre>
            for example would replace all instances
