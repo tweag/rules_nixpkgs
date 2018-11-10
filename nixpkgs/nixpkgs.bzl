@@ -112,7 +112,9 @@ def _nixpkgs_package_impl(repository_ctx):
   output_path = exec_result.stdout.splitlines()[-1]
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
-  _symlink_children(repository_ctx, output_path)
+  for target in _find_children(repository_ctx, output_path):
+    basename = target.rpartition("/")[-1]
+    repository_ctx.symlink(target, basename)
 
 
 _nixpkgs_package = repository_rule(
@@ -130,6 +132,7 @@ _nixpkgs_package = repository_rule(
   local = True,
 )
 
+
 def nixpkgs_package(*args, **kwargs):
   # Because of https://github.com/bazelbuild/bazel/issues/5356 we can't
   # directly pass a dict from strings to labels to the rule (which we'd like
@@ -146,6 +149,70 @@ def nixpkgs_package(*args, **kwargs):
     )
   else:
     _nixpkgs_package(*args, **kwargs)
+
+
+def _nixpkgs_cc_autoconf_impl(repository_ctx):
+  # Calling repository_ctx.path() on anything but a regular file
+  # fails. So the roundabout way to do the same thing is to find
+  # a regular file we know is in the workspace (i.e. the WORKSPACE
+  # file itself) and then use dirname to get the path of the workspace
+  # root.
+  workspace_file_path = repository_ctx.path(
+    Label("@nixpkgs_cc_toolchain//:WORKSPACE")
+  )
+  workspace_root = _execute_or_fail(
+    repository_ctx,
+    ["dirname", workspace_file_path],
+  ).stdout.rstrip()
+
+  # Make a list of all available tools in the Nix derivation. Override
+  # the Bazel autoconfiguration with the tools we found.
+  bin_contents = _find_children(repository_ctx, workspace_root + "/bin")
+  overriden_tools = {
+    tool: repository_ctx.path(Label("@nixpkgs_cc_toolchain//:bin/" + tool))
+    for entry in bin_contents
+    for tool in [entry.rpartition("/")[-1]] # Compute basename
+  }
+  cc_autoconf_impl(repository_ctx, overriden_tools = overriden_tools)
+
+_nixpkgs_cc_autoconf = repository_rule(
+  implementation = _nixpkgs_cc_autoconf_impl
+)
+
+
+def nixpkgs_cc_configure(
+    repository = None,
+    repositories = None,
+    nix_file_content = """
+      with import <nixpkgs> {}; buildEnv {
+        name = "bazel-cc-toolchain";
+        paths = [ gcc binutils ];
+      }
+    """):
+  """Use a CC toolchain from Nixpkgs.
+  
+  By default, Bazel auto-configures a CC toolchain from commands (e.g.
+  `gcc`) available in the environment. To make builds more hermetic, use
+  this rule to specific explicitly which commands the toolchain should
+  use.
+  """
+  if repository and repositories or not repository and not repositories:
+    fail("Specify one of repository or repositories (but not both).")
+  elif repository:
+    repositories = {"nixpkgs": repository}
+
+  nixpkgs_package(
+    name = "nixpkgs_cc_toolchain",
+    repositories = repositories,
+    nix_file_content = nix_file_content,
+    build_file_content = """exports_files(glob(["bin/*"]))""",
+  )
+  # Following lines should match
+  # https://github.com/bazelbuild/bazel/blob/master/tools/cpp/cc_configure.bzl#L93.
+  _nixpkgs_cc_autoconf(name = "local_config_cc")
+  native.bind(name = "cc_toolchain", actual = "@local_config_cc//:toolchain")
+  native.register_toolchains("@local_config_cc//:all")
+
 
 def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
   """Call repository_ctx.execute() and fail if non-zero return code."""
@@ -167,11 +234,10 @@ Error output:
   return result
 
 
-def _symlink_children(repository_ctx, target_dir):
-  """Create a symlink to all children of `target_dir` in the current
-  build directory."""
+def _find_children(repository_ctx, target_dir):
   find_args = [
     _executable_path(repository_ctx, "find"),
+    "-L",
     target_dir,
     "-maxdepth", "1",
     # otherwise the directory is printed as well
@@ -180,10 +246,8 @@ def _symlink_children(repository_ctx, target_dir):
     "-print0",
   ]
   exec_result = _execute_or_fail(repository_ctx, find_args)
-  for target in exec_result.stdout.rstrip("\0").split("\0"):
-    basename = target.rpartition("/")[-1]
-    repository_ctx.symlink(target, basename)
-
+  return exec_result.stdout.rstrip("\0").split("\0")
+  
 
 def _executable_path(repository_ctx, exe_name, extra_msg=""):
   """Try to find the executable, fail with an error."""
@@ -192,70 +256,3 @@ def _executable_path(repository_ctx, exe_name, extra_msg=""):
     fail("Could not find the `{}` executable in PATH.{}\n"
           .format(exe_name, " " + extra_msg if extra_msg else ""))
   return path
-
-
-def _cc_configure_custom(ctx):
-  overriden_tools = {
-    "gcc": ctx.path(ctx.attr.gcc),
-    "ld": ctx.path(ctx.attr.ld),
-  }
-  return cc_autoconf_impl(ctx, overriden_tools)
-
-
-cc_configure_custom = repository_rule(
-  implementation = _cc_configure_custom,
-  attrs = {
-    "gcc": attr.label(
-      executable=True,
-      cfg="host",
-      allow_single_file=True,
-      doc="`gcc` to use in cc toolchain",
-    ),
-    "ld": attr.label(
-      executable=True,
-      cfg="host",
-      allow_single_file=True,
-      doc="`ld` to use in cc toolchain",
-    ),
-  },
-  local = True,
-  environ = [
-        "ABI_LIBC_VERSION",
-        "ABI_VERSION",
-        "BAZEL_COMPILER",
-        "BAZEL_HOST_SYSTEM",
-        "BAZEL_LINKOPTS",
-        "BAZEL_PYTHON",
-        "BAZEL_SH",
-        "BAZEL_TARGET_CPU",
-        "BAZEL_TARGET_LIBC",
-        "BAZEL_TARGET_SYSTEM",
-        "BAZEL_USE_CPP_ONLY_TOOLCHAIN",
-        "BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN",
-        "BAZEL_USE_LLVM_NATIVE_COVERAGE",
-        "BAZEL_VC",
-        "BAZEL_VS",
-        "CC",
-        "CC_CONFIGURE_DEBUG",
-        "CC_TOOLCHAIN_NAME",
-        "CPLUS_INCLUDE_PATH",
-        "CUDA_COMPUTE_CAPABILITIES",
-        "CUDA_PATH",
-        "GCOV",
-        "HOMEBREW_RUBY_PATH",
-        "NO_WHOLE_ARCHIVE_OPTION",
-        "SYSTEMROOT",
-        "USE_DYNAMIC_CRT",
-        "USE_MSVC_WRAPPER",
-        "VS90COMNTOOLS",
-        "VS100COMNTOOLS",
-        "VS110COMNTOOLS",
-        "VS120COMNTOOLS",
-        "VS140COMNTOOLS",
-    ],
-)
-"""Overwrite cc toolchain by supplying custom `gcc` and `ld` (e.g. from
-Nix). This allows to fix mismatch of `gcc` versions between what is used by
-packages that come from Nix (e.g. `ghc`) and what Bazel detects
-automatically (i.e. system-level `gcc`).
-"""

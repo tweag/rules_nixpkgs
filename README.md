@@ -226,6 +226,61 @@ filegroup(
   </tbody>
 </table>
 
+### nixpkgs_cc_configure
+
+Tells Bazel to use compilers and linkers from Nixpkgs for the CC
+toolchain. By default, Bazel autodetects a toolchain on the current
+`PATH`. Overriding this autodetection makes builds more hermetic and
+is considered a best practice.
+
+Example:
+
+```bzl
+nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
+```
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>nix_file_content</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>An expression for a Nix environment derivation.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repository</code></td>
+      <td>
+        <p><code>Label; optional</code></p>
+        <p>A repository label identifying which Nixpkgs to use.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repositories</code></td>
+      <td>
+        <p><code>String-keyed label dict; optional</code></p>
+        <p>A dictionary mapping `NIX_PATH` entries to repository labels.</p>
+        <p>Setting it to
+           <pre><code>repositories = { "myrepo" : "//:myrepo" }</code></pre>
+           for example would replace all instances
+           of <code>&lt;myrepo&gt;</code> in the called nix code by the
+           path to the target <code>"//:myrepo"</code>. See the
+           <a href="https://nixos.org/nix/manual/#env-NIX_PATH">relevant
+           section in the nix manual</a> for more information.</p>
+        <p>Specify one of `path` or `repositories`.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Migration
 
