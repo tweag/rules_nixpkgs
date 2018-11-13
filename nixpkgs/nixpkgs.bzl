@@ -97,14 +97,17 @@ def _nixpkgs_package_impl(repository_ctx):
   # as we can do.
   timeout = 1073741824
 
-  res = repository_ctx.execute(nix_build, quiet = False, timeout = timeout,
-                    environment=dict(NIX_PATH=nix_path))
-  if res.return_code == 0:
-    output_path = res.stdout.splitlines()[-1]
-  else:
-    _execute_error(res, "Cannot build Nix attribute `{}`"
-                          .format(repository_ctx.attr.attribute_path))
-
+  exec_result = _execute_or_fail(
+    repository_ctx,
+    nix_build,
+    failure_message = "Cannot build Nix attribute '{}'.".format(
+      repository_ctx.attr.attribute_path
+    ),
+    quiet = False,
+    timeout = timeout,
+    environment=dict(NIX_PATH=nix_path),
+  )
+  output_path = exec_result.stdout.splitlines()[-1]
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
   _symlink_children(repository_ctx, output_path)
@@ -142,6 +145,26 @@ def nixpkgs_package(*args, **kwargs):
   else:
     _nixpkgs_package(*args, **kwargs)
 
+def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
+  """Call repository_ctx.execute() and fail if non-zero return code."""
+  result = repository_ctx.execute(arguments, *args, **kwargs)
+  if result.return_code:
+    outputs = dict(
+      failure_message = failure_message,
+      arguments = arguments,
+      return_code = result.return_code,
+      stderr = result.stderr,
+    )
+    fail("""
+{failure_message}
+Command: {arguments}
+Return code: {return_code}
+Error output:
+{stderr}
+""").format(**outputs)
+  return result
+
+
 def _symlink_children(repository_ctx, target_dir):
   """Create a symlink to all children of `target_dir` in the current
   build directory."""
@@ -154,13 +177,10 @@ def _symlink_children(repository_ctx, target_dir):
     # filenames can contain \n
     "-print0",
   ]
-  find_res = repository_ctx.execute(find_args)
-  if find_res.return_code == 0:
-      for target in find_res.stdout.rstrip("\0").split("\0"):
-        basename = target.rpartition("/")[-1]
-        repository_ctx.symlink(target, basename)
-  else:
-    _execute_error(find_res)
+  exec_result = _execute_or_fail(repository_ctx, find_args)
+  for target in exec_result.stdout.rstrip("\0").split("\0"):
+    basename = target.rpartition("/")[-1]
+    repository_ctx.symlink(target, basename)
 
 
 def _executable_path(repository_ctx, exe_name, extra_msg=""):
@@ -170,19 +190,3 @@ def _executable_path(repository_ctx, exe_name, extra_msg=""):
     fail("Could not find the `{}` executable in PATH.{}\n"
           .format(exe_name, " " + extra_msg if extra_msg else ""))
   return path
-
-
-def _execute_error(exec_result, msg):
-  """Print a nice error message for a failed `execute`."""
-  fail("""
-execute() error: {msg}
-status code: {code}
-stdout:
-{stdout}
-stderr:
-{stderr}
-""".format(
-  msg=msg,
-  code=exec_result.return_code,
-  stdout=exec_result.stdout,
-  stderr=exec_result.stderr))
