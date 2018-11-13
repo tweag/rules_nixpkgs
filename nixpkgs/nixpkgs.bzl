@@ -4,8 +4,9 @@ load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 
 def _nixpkgs_git_repository_impl(repository_ctx):
   repository_ctx.file('BUILD')
-  # XXX Hack because repository_ctx.path below bails out if resolved path not a regular file.
-  repository_ctx.file(repository_ctx.name)
+  # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
+  # label for default.nix.
+  repository_ctx.symlink("default.nix", repository_ctx.name)
   repository_ctx.download_and_extract(
     url = "%s/archive/%s.tar.gz" % (repository_ctx.attr.remote, repository_ctx.attr.revision),
     stripPrefix = "nixpkgs-" + repository_ctx.attr.revision,
