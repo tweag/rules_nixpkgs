@@ -86,7 +86,8 @@ def _nixpkgs_package_impl(repository_ctx):
     fail(strFailureImplicitNixpkgs)
 
   nix_build_path = _executable_path(
-    "nix-build", repository_ctx,
+    repository_ctx,
+    "nix-build",
     extra_msg = "See: https://nixos.org/nix/"
   )
   nix_build = [nix_build_path] + expr_args
@@ -106,7 +107,7 @@ def _nixpkgs_package_impl(repository_ctx):
 
   # Build a forest of symlinks (like new_local_package() does) to the
   # Nix store.
-  _symlink_children(output_path, repository_ctx)
+  _symlink_children(repository_ctx, output_path)
 
 
 _nixpkgs_package = repository_rule(
@@ -141,11 +142,11 @@ def nixpkgs_package(*args, **kwargs):
   else:
     _nixpkgs_package(*args, **kwargs)
 
-def _symlink_children(target_dir, repository_ctx):
+def _symlink_children(repository_ctx, target_dir):
   """Create a symlink to all children of `target_dir` in the current
   build directory."""
   find_args = [
-    _executable_path("find", repository_ctx),
+    _executable_path(repository_ctx, "find"),
     target_dir,
     "-maxdepth", "1",
     # otherwise the directory is printed as well
@@ -162,7 +163,7 @@ def _symlink_children(target_dir, repository_ctx):
     _execute_error(find_res)
 
 
-def _executable_path(exe_name, repository_ctx, extra_msg=""):
+def _executable_path(repository_ctx, exe_name, extra_msg=""):
   """Try to find the executable, fail with an error."""
   path = repository_ctx.which(exe_name)
   if path == None:
