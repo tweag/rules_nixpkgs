@@ -1,6 +1,11 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
-load("//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
+load(
+    "//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_cc_configure",
+    "nixpkgs_git_repository",
+    "nixpkgs_package"
+)
 
 # For tests
 
@@ -74,3 +79,5 @@ filegroup(
 )
 """,
 )
+
+nixpkgs_cc_configure(repository = "@remote_nixpkgs//:default.nix")

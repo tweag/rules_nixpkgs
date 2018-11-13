@@ -47,3 +47,9 @@ package(default_testonly = 1)
         timeout = "short",
     )
 ]
+
+# Test nixpkgs_cc_configure() by building some CC code.
+cc_binary(
+    name = "cc-test",
+    srcs = ["cc-test.cc"],
+)
