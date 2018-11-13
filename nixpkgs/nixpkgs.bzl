@@ -230,7 +230,7 @@ Command: {arguments}
 Return code: {return_code}
 Error output:
 {stderr}
-""").format(**outputs)
+""".format(**outputs))
   return result
 
 
