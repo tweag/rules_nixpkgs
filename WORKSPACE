@@ -18,7 +18,7 @@ nixpkgs_git_repository(
 
 nixpkgs_package(
     name = "nixpkgs-git-repository-test",
-    repositories = { "nixpkgs": "@remote_nixpkgs//:default.nix" },
+    repositories = { "nixpkgs": "@remote_nixpkgs" },
     attribute_path = "hello",
 )
 
@@ -80,4 +80,4 @@ filegroup(
 """,
 )
 
-nixpkgs_cc_configure(repository = "@remote_nixpkgs//:default.nix")
+nixpkgs_cc_configure(repository = "@remote_nixpkgs")
