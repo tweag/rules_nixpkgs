@@ -23,14 +23,13 @@ nixpkgs_git_repository = repository_rule(
 )
 
 def _nixpkgs_package_impl(repository_ctx):
-  repositories = None
-  if repository_ctx.attr.repositories:
-    repositories = repository_ctx.attr.repositories
+  repository = repository_ctx.attr.repository
+  repositories = repository_ctx.attr.repositories
 
-  if repository_ctx.attr.repository:
-    print("The 'repository' attribute is deprecated, use 'repositories' instead")
-    repositories = { repository_ctx.attr.repository: "nixpkgs" } + \
-        (repositories if repositories else {})
+  if repository and repositories or not repository and not repositories:
+    fail("Specify one of 'repository' or 'repositories' (but not both).")
+  elif repository:
+    repositories = { repository_ctx.attr.repository: "nixpkgs" }
 
   if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
     fail("Specify one of 'build_file' or 'build_file_content', but not both.")
@@ -182,7 +181,7 @@ _nixpkgs_cc_autoconf = repository_rule(
 
 def nixpkgs_cc_configure(
     repository = None,
-    repositories = None,
+    repositories = {},
     nix_file_content = """
       with import <nixpkgs> {}; buildEnv {
         name = "bazel-cc-toolchain";
@@ -196,13 +195,9 @@ def nixpkgs_cc_configure(
   this rule to specific explicitly which commands the toolchain should
   use.
   """
-  if repository and repositories or not repository and not repositories:
-    fail("Specify one of repository or repositories (but not both).")
-  elif repository:
-    repositories = {"nixpkgs": repository}
-
   nixpkgs_package(
     name = "nixpkgs_cc_toolchain",
+    repository = repository,
     repositories = repositories,
     nix_file_content = nix_file_content,
     build_file_content = """exports_files(glob(["bin/*"]))""",

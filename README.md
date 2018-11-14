@@ -101,7 +101,7 @@ Make the content of a Nixpkgs package available in the Bazel workspace.
 ```bzl
 nixpkgs_package(
     name, attribute_path, nix_file, nix_file_deps, nix_file_content,
-    repositories, build_file, build_file_content,
+    repository, repositories, build_file, build_file_content,
 )
 ```
 
@@ -160,7 +160,8 @@ nixpkgs clone in `nix_file` or `nix_file_content`.
       <td><code>repository</code></td>
       <td>
         <p><code>Label; optional</code></p>
-        <p>Deprecated, use `repositories` instead.</p>
+        <p>A repository label identifying which Nixpkgs to use.
+           Equivalent to `repositories = { "nixpkgs": ...}`</p>
       </td>
     </tr>
     <tr>
@@ -261,7 +262,8 @@ nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
       <td><code>repository</code></td>
       <td>
         <p><code>Label; optional</code></p>
-        <p>A repository label identifying which Nixpkgs to use.</p>
+        <p>A repository label identifying which Nixpkgs to use.
+           Equivalent to `repositories = { "nixpkgs": ...}`</p>
       </td>
     </tr>
     <tr>
