@@ -1,6 +1,8 @@
+"""Rules for importing Nixpkgs packages."""
+
+
 load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 
-"""Rules for importing Nixpkgs packages."""
 
 def _nixpkgs_git_repository_impl(repository_ctx):
   repository_ctx.file('BUILD')
@@ -13,6 +15,7 @@ def _nixpkgs_git_repository_impl(repository_ctx):
     sha256 = repository_ctx.attr.sha256,
   )
 
+
 nixpkgs_git_repository = repository_rule(
   implementation = _nixpkgs_git_repository_impl,
   attrs = {
@@ -22,6 +25,40 @@ nixpkgs_git_repository = repository_rule(
   },
   local = False,
 )
+
+
+def _nixpkgs_local_repository_impl(repository_ctx):
+  repository_ctx.file('BUILD')
+  if not \
+     bool(repository_ctx.attr.nix_file) != \
+     bool(repository_ctx.attr.nix_file_content):
+    fail("Specify one of 'nix_file' or 'nix_file_content' (but not both).")
+  if repository_ctx.attr.nix_file_content:
+    repository_ctx.file(
+      path = "default.nix",
+      content = repository_ctx.attr.nix_file_content,
+      executable = False,
+    )
+    target = repository_ctx.path("default.nix")
+  else:
+    target = repository_ctx.path(repository_ctx.attr.nix_file)
+    repository_ctx.symlink(target, target.basename)
+  # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
+  # label for the target Nix file.
+  repository_ctx.symlink(target.basename, repository_ctx.name)
+  _symlink_nix_file_deps(repository_ctx, repository_ctx.attr.nix_file_deps)
+
+
+nixpkgs_local_repository = repository_rule(
+  implementation = _nixpkgs_local_repository_impl,
+  attrs = {
+    "nix_file": attr.label(allow_single_file = [".nix"]),
+    "nix_file_deps": attr.label_list(),
+    "nix_file_content": attr.string(),
+  },
+  local = True,
+)
+
 
 def _nixpkgs_package_impl(repository_ctx):
   repository = repository_ctx.attr.repository
@@ -57,12 +94,7 @@ def _nixpkgs_package_impl(repository_ctx):
   else:
     expr_args = ["-E", "import <nixpkgs> {}"]
 
-  # Introduce an artificial dependency with a bogus name on each of
-  # the nix_file_deps.
-  for dep in repository_ctx.attr.nix_file_deps:
-    components = [c for c in [dep.workspace_root, dep.package, dep.name] if c]
-    link = '/'.join(components).replace('_', '_U').replace('/', '_S')
-    repository_ctx.symlink(dep, link)
+  _symlink_nix_file_deps(repository_ctx, repository_ctx.attr.nix_file_deps)
 
   expr_args.extend([
     "-A", repository_ctx.attr.attribute_path
@@ -252,3 +284,10 @@ def _executable_path(repository_ctx, exe_name, extra_msg=""):
     fail("Could not find the `{}` executable in PATH.{}\n"
           .format(exe_name, " " + extra_msg if extra_msg else ""))
   return path
+
+def _symlink_nix_file_deps(repository_ctx, deps):
+  """Introduce an artificial dependency with a bogus name on each input."""
+  for dep in deps:
+    components = [c for c in [dep.workspace_root, dep.package, dep.name] if c]
+    link = '/'.join(components).replace('_', '_U').replace('/', '_S')
+    repository_ctx.symlink(dep, link)
