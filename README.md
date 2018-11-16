@@ -94,6 +94,58 @@ nixpkgs_git_repository(name, revision, sha256)
   </tbody>
 </table>
 
+### nixpkgs_local_repository
+
+Create an external repository representing the content of Nixpkgs,
+based on a Nix expression stored locally or provided inline. One of
+`nix_file` or `nix_file_content` must be provided.
+
+```bzl
+nixpkgs_local_repository(name, nix_file, nix_file_deps, nix_file_content)
+```
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name; required</code></p>
+        <p>A unique name for this repository.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>A file containing an expression for a Nix derivation.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file_deps</code></td>
+      <td>
+        <p><code>List of labels; optional</code></p>
+        <p>Dependencies of `nix_file` if any.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file_content</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>An expression for a Nix derivation.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 ### nixpkgs_package
 
 Make the content of a Nixpkgs package available in the Bazel workspace.
