@@ -1,16 +1,16 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-  name = "bin",
-  srcs = glob(["bin/*"]),
+    name = "bin",
+    srcs = glob(["bin/*"]),
 )
 
 filegroup(
-  name = "lib",
-  srcs = glob(["lib/**/*.so*", "lib/**/*.a"]),
+    name = "lib",
+    srcs = glob(["lib/**/*.so*", "lib/**/*.a"]),
 )
 
 filegroup(
-  name = "include",
-  srcs = glob(["include/**/*.h"]),
+    name = "include",
+    srcs = glob(["include/**/*.h"]),
 )
