@@ -304,6 +304,23 @@ nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
   </thead>
   <tbody>
     <tr>
+      <td><code>nix_file</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>An expression for a Nix environment derivation. The
+           environment should expose all the commands that make up
+           a CC toolchain (`cc`, `ld` etc). Exposes all commands in
+           `stdenv.cc` and `binutils` by default.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file_deps</code></td>
+      <td>
+        <p><code>List of labels; optional</code></p>
+        <p>Dependencies of `nix_file` if any.</p>
+      </td>
+    </tr>
+    <tr>
       <td><code>nix_file_content</code></td>
       <td>
         <p><code>String; optional</code></p>
