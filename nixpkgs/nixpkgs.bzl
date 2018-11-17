@@ -213,12 +213,9 @@ _nixpkgs_cc_autoconf = repository_rule(
 def nixpkgs_cc_configure(
         repository = None,
         repositories = {},
-        nix_file_content = """
-      with import <nixpkgs> {}; buildEnv {
-        name = "bazel-cc-toolchain";
-        paths = [ gcc binutils ];
-      }
-    """):
+        nix_file = None,
+        nix_file_deps = None,
+        nix_file_content = None):
     """Use a CC toolchain from Nixpkgs.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -226,10 +223,19 @@ def nixpkgs_cc_configure(
     this rule to specific explicitly which commands the toolchain should
     use.
     """
+    if not nix_file and not nix_file_content:
+        nix_file_content = """
+          with import <nixpkgs> {}; buildEnv {
+            name = "bazel-cc-toolchain";
+            paths = [ stdenv.cc binutils ];
+          }
+        """
     nixpkgs_package(
         name = "nixpkgs_cc_toolchain",
         repository = repository,
         repositories = repositories,
+        nix_file = nix_file,
+        nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
         build_file_content = """exports_files(glob(["bin/*"]))""",
     )
