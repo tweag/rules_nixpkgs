@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.1] - 2018-11-17
+
+### Added
+
+* `nixpkgs_cc_configure` rule to tell Bazel to configure a toolchain
+  from tools found in the given Nixpkgs repository, instead of from
+  tools found in the ambient environment.
+* `nixpkgs_local_repository` rule. Works like `nixpkgs_git_repository`
+  but takes a checked-in Nix file or Nix expression as input.
+
+### Changed
+
+* The `repository` attribute is no longer deprecated. Most rules
+  support both `repository` and `repositories` as attributes.
+
+### Fixed
+
+* Short repository labels work again. That is, you can say `repository
+  = "@nixpkgs"` as a short form for `repository =
+  "@nixpkgs//:default.nix"`.
+
 ## [0.3.1] - 2018-10-24
 
 ### Fixed
