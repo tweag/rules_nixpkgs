@@ -182,7 +182,7 @@ def nixpkgs_package(*args, **kwargs):
     else:
         _nixpkgs_package(*args, **kwargs)
 
-def _nixpkgs_cc_autoconf_impl(repository_ctx):
+def nixpkgs_cc_autoconf_impl(repository_ctx):
     # Calling repository_ctx.path() on anything but a regular file
     # fails. So the roundabout way to do the same thing is to find
     # a regular file we know is in the workspace (i.e. the WORKSPACE
@@ -206,8 +206,8 @@ def _nixpkgs_cc_autoconf_impl(repository_ctx):
     }
     cc_autoconf_impl(repository_ctx, overriden_tools = overriden_tools)
 
-_nixpkgs_cc_autoconf = repository_rule(
-    implementation = _nixpkgs_cc_autoconf_impl,
+nixpkgs_cc_autoconf = repository_rule(
+    implementation = nixpkgs_cc_autoconf_impl,
 )
 
 def nixpkgs_cc_configure(
@@ -242,7 +242,7 @@ def nixpkgs_cc_configure(
 
     # Following lines should match
     # https://github.com/bazelbuild/bazel/blob/master/tools/cpp/cc_configure.bzl#L93.
-    _nixpkgs_cc_autoconf(name = "local_config_cc")
+    nixpkgs_cc_autoconf(name = "local_config_cc")
     native.bind(name = "cc_toolchain", actual = "@local_config_cc//:toolchain")
     native.register_toolchains("@local_config_cc//:all")
 
