@@ -214,6 +214,40 @@ def nixpkgs_cc_autoconf_impl(repository_ctx):
 
 nixpkgs_cc_autoconf = repository_rule(
     implementation = nixpkgs_cc_autoconf_impl,
+    # Copied from
+    # https://github.com/bazelbuild/bazel/blob/master/tools/cpp/cc_configure.bzl.
+    # Keep in sync.
+    environ = [
+        "ABI_LIBC_VERSION",
+        "ABI_VERSION",
+        "BAZEL_COMPILER",
+        "BAZEL_HOST_SYSTEM",
+        "BAZEL_LINKOPTS",
+        "BAZEL_PYTHON",
+        "BAZEL_SH",
+        "BAZEL_TARGET_CPU",
+        "BAZEL_TARGET_LIBC",
+        "BAZEL_TARGET_SYSTEM",
+        "BAZEL_USE_CPP_ONLY_TOOLCHAIN",
+        "BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE",
+        "BAZEL_VC",
+        "BAZEL_VS",
+        "BAZEL_LLVM",
+        "USE_CLANG_CL",
+        "CC",
+        "CC_CONFIGURE_DEBUG",
+        "CC_TOOLCHAIN_NAME",
+        "CPLUS_INCLUDE_PATH",
+        "GCOV",
+        "HOMEBREW_RUBY_PATH",
+        "SYSTEMROOT",
+        "VS90COMNTOOLS",
+        "VS100COMNTOOLS",
+        "VS110COMNTOOLS",
+        "VS120COMNTOOLS",
+        "VS140COMNTOOLS",
+    ],
 )
 
 def nixpkgs_cc_configure(
