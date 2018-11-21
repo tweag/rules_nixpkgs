@@ -1,6 +1,7 @@
 """Rules for importing Nixpkgs packages."""
 
 load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
+load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 
 def _nixpkgs_git_repository_impl(repository_ctx):
     repository_ctx.file("BUILD")
@@ -183,6 +184,11 @@ def nixpkgs_package(*args, **kwargs):
         _nixpkgs_package(*args, **kwargs)
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
+    cpu_value = get_cpu_value(repository_ctx)
+    if cpu_value != "k8" or cpu_value != "darwin":
+        cc_autoconf_impl(repository_ctx)
+        return
+
     # Calling repository_ctx.path() on anything but a regular file
     # fails. So the roundabout way to do the same thing is to find
     # a regular file we know is in the workspace (i.e. the WORKSPACE
@@ -208,6 +214,40 @@ def nixpkgs_cc_autoconf_impl(repository_ctx):
 
 nixpkgs_cc_autoconf = repository_rule(
     implementation = nixpkgs_cc_autoconf_impl,
+    # Copied from
+    # https://github.com/bazelbuild/bazel/blob/master/tools/cpp/cc_configure.bzl.
+    # Keep in sync.
+    environ = [
+        "ABI_LIBC_VERSION",
+        "ABI_VERSION",
+        "BAZEL_COMPILER",
+        "BAZEL_HOST_SYSTEM",
+        "BAZEL_LINKOPTS",
+        "BAZEL_PYTHON",
+        "BAZEL_SH",
+        "BAZEL_TARGET_CPU",
+        "BAZEL_TARGET_LIBC",
+        "BAZEL_TARGET_SYSTEM",
+        "BAZEL_USE_CPP_ONLY_TOOLCHAIN",
+        "BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE",
+        "BAZEL_VC",
+        "BAZEL_VS",
+        "BAZEL_LLVM",
+        "USE_CLANG_CL",
+        "CC",
+        "CC_CONFIGURE_DEBUG",
+        "CC_TOOLCHAIN_NAME",
+        "CPLUS_INCLUDE_PATH",
+        "GCOV",
+        "HOMEBREW_RUBY_PATH",
+        "SYSTEMROOT",
+        "VS90COMNTOOLS",
+        "VS100COMNTOOLS",
+        "VS110COMNTOOLS",
+        "VS120COMNTOOLS",
+        "VS140COMNTOOLS",
+    ],
 )
 
 def nixpkgs_cc_configure(
@@ -216,7 +256,7 @@ def nixpkgs_cc_configure(
         nix_file = None,
         nix_file_deps = None,
         nix_file_content = None):
-    """Use a CC toolchain from Nixpkgs.
+    """Use a CC toolchain from Nixpkgs. No-op if not on Linux or Darwin.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
     `gcc`) available in the environment. To make builds more hermetic, use
