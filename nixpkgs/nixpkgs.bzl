@@ -185,7 +185,7 @@ def nixpkgs_package(*args, **kwargs):
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
-    if cpu_value != "k8" or cpu_value != "darwin":
+    if not (cpu_value == "k8" or cpu_value == "piii" or cpu_value == "darwin"):
         cc_autoconf_impl(repository_ctx)
         return
 
