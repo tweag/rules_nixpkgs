@@ -80,7 +80,7 @@ nixpkgs_package(
 { packagePath }: (import <nixpkgs> {}).${packagePath}
     """,
     repository = "@nixpkgs",
-    nix_build_extra_args = ["--argstr", "packagePath", "hello"],
+    nixopts = ["--argstr", "packagePath", "hello"],
 )
 
 nixpkgs_package(
