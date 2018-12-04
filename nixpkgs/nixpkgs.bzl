@@ -167,6 +167,9 @@ _nixpkgs_package = repository_rule(
 )
 
 def nixpkgs_package(*args, **kwargs):
+    invert_repositories(_nixpkgs_package, *args, **kwargs)
+
+def invert_repositories(f, *args, **kwargs):
     # Because of https://github.com/bazelbuild/bazel/issues/5356 we can't
     # directly pass a dict from strings to labels to the rule (which we'd like
     # for the `repositories` arguments), but we can pass a dict from labels to
@@ -175,13 +178,168 @@ def nixpkgs_package(*args, **kwargs):
     if "repositories" in kwargs:
         inversed_repositories = {value: key for (key, value) in kwargs["repositories"].items()}
         kwargs.pop("repositories")
-        _nixpkgs_package(
+        f(
             repositories = inversed_repositories,
             *args,
             **kwargs
         )
     else:
         _nixpkgs_package(*args, **kwargs)
+
+def _nixpkgs_packages_instantiate_impl(repository_ctx):
+    repository_ctx.file("BUILD", "exports_files([\"nix_attrs.nix\"])")
+
+    nix_instantiate_path = _executable_path(
+        repository_ctx,
+        "nix-instantiate",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+
+    packages_record_inside = ";".join(
+        [
+            "\"{name}\" = nixpkgs.{attrPath}".format(name = name, attrPath = attrPath)
+            for (name, attrPath) in repository_ctx.attr.packages.items()
+        ]
+    )
+    packages_record = "nixpkgs: { " + packages_record_inside + "; }"
+
+    repository_ctx.file("packages_attributes_mappings.nix", packages_record)
+
+    nix_set_builder = repository_ctx.template("drv_set_builder.nix", Label("@io_tweag_rules_nixpkgs//nixpkgs:drv_set_builder.nix"))
+    nix_instantiate_args = [
+        "--eval",
+        "--strict",
+        "--read-write-mode",
+        "--json",
+        "drv_set_builder.nix",
+        "--arg", "packages", "import ./packages_attributes_mappings.nix",
+        ]
+
+    nix_instantiate = [nix_instantiate_path] + nix_instantiate_args
+
+    # Large enough integer that Bazel can still parse. We don't have
+    # access to MAX_INT and 0 is not a valid timeout so this is as good
+    # as we can do.
+    timeout = 1073741824
+
+    nix_path = ":".join(
+        [
+            (path_name + "=" + str(repository_ctx.path(target)))
+            for (target, path_name) in repository_ctx.attr.repositories.items()
+        ],
+    )
+
+    exec_result = _execute_or_fail(
+        repository_ctx,
+        nix_instantiate,
+        timeout = timeout,
+        environment = dict(NIX_PATH = nix_path),
+    )
+    repository_ctx.file("nix_attrs.nix", content = exec_result.stdout)
+
+nixpkgs_packages_instantiate_swapped = repository_rule(
+    implementation = _nixpkgs_packages_instantiate_impl,
+    attrs = {
+        "packages": attr.string_dict(
+            mandatory = True,
+            doc = "A map between the name of the packages to instantiate and their attribute path in the nix expression",
+        ),
+        "repositories": attr.label_keyed_string_dict(),
+    },
+    local = True,
+)
+
+def nixpkgs_packages_instantiate(**kwargs):
+    invert_repositories(nixpkgs_packages_instantiate_swapped, **kwargs)
+
+def _nixpkgs_package_realize_impl(repository_ctx):
+    if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
+        fail("Specify one of 'build_file' or 'build_file_content', but not both.")
+    elif repository_ctx.attr.build_file:
+        repository_ctx.symlink(repository_ctx.attr.build_file, "BUILD")
+    elif repository_ctx.attr.build_file_content:
+        repository_ctx.file("BUILD", content = repository_ctx.attr.build_file_content)
+    else:
+        repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
+
+    nix_store_path = _executable_path(
+        repository_ctx,
+        "nix-store",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+    nix_instantiate_path = _executable_path(
+        repository_ctx,
+        "nix-instantiate",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+
+    attribute_path = repository_ctx.attr.name
+    if repository_ctx.attr.attribute_name:
+      attribute_path = repository_ctx.attr.attribute_name
+
+    nix_instantiate_args = [
+        "--eval",
+        "-E", "(builtins.fromJSON (builtins.readFile {drv_set_file})).{attribute_path}".format(
+            drv_set_file = repository_ctx.path(repository_ctx.attr.drv_set_file),
+            attribute_path = attribute_path,
+          )
+        ]
+
+    drv_path = _execute_or_fail(
+        repository_ctx,
+        [nix_instantiate_path] + nix_instantiate_args,
+        quiet = True,
+    ).stdout.strip("\"\n")
+
+    nix_store_args = [
+        "--realize",
+        "--no-build-output",
+        drv_path
+        ]
+    exec_result = _execute_or_fail(
+        repository_ctx,
+        [nix_store_path] + nix_store_args,
+        quiet = False,
+    )
+    output_path = exec_result.stdout.splitlines()[0]
+
+    # Build a forest of symlinks (like new_local_package() does) to the
+    # Nix store.
+    for target in _find_children(repository_ctx, output_path):
+        basename = target.rpartition("/")[-1]
+        repository_ctx.symlink(target, basename)
+
+
+nixpkgs_package_realize = repository_rule(
+    implementation = _nixpkgs_package_realize_impl,
+    attrs = {
+        "drv_set_file": attr.label(
+            allow_single_file = [".nix"],
+            doc = "A nix file containing a map from package names to their drv path",
+        ),
+        "attribute_name": attr.string(),
+        "build_file": attr.label(),
+        "build_file_content": attr.string(),
+    },
+)
+
+def nixpkgs_packages(
+    name,
+    repositories,
+    packages,
+    ):
+    nixpkgs_packages_instantiate(
+        name = name,
+        repositories = repositories,
+        packages = packages,
+    )
+
+    for (package_name, package_path) in packages.items():
+        nixpkgs_package_realize(
+            name = package_name,
+            attribute_name = package_name,
+            drv_set_file = "@" + name + "//:nix_attrs.nix",
+        )
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
