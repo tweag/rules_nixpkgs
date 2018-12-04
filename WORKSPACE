@@ -6,6 +6,9 @@ load(
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
+    "nixpkgs_package_realize",
+    "nixpkgs_packages_instantiate",
+    "nixpkgs_packages",
 )
 
 # For tests
@@ -87,4 +90,16 @@ filegroup(
     repository = "@nixpkgs",
 )
 
-nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+
+nixpkgs_packages(
+    name = "foobarbaz",
+    repositories = {"nixpkgs": "@nixpkgs"},
+    packages = {
+        "gcc": "gcc",
+        "glibc": "glibc",
+        "firefox": "firefox", # Won't be built until we explicitly ask for it
+        "ghc": "ghc",
+        },
+)
+
+# nixpkgs_cc_configure(repository = "@remote_nixpkgs")
