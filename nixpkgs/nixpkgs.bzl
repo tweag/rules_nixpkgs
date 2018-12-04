@@ -23,7 +23,6 @@ nixpkgs_git_repository = repository_rule(
         "remote": attr.string(default = "https://github.com/NixOS/nixpkgs"),
         "sha256": attr.string(),
     },
-    local = False,
 )
 
 def _nixpkgs_local_repository_impl(repository_ctx):
@@ -55,7 +54,6 @@ nixpkgs_local_repository = repository_rule(
         "nix_file_deps": attr.label_list(),
         "nix_file_content": attr.string(),
     },
-    local = True,
 )
 
 def _nixpkgs_package_impl(repository_ctx):
@@ -163,7 +161,6 @@ _nixpkgs_package = repository_rule(
         "build_file": attr.label(),
         "build_file_content": attr.string(),
     },
-    local = True,
 )
 
 def nixpkgs_package(*args, **kwargs):
