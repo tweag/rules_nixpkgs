@@ -328,6 +328,7 @@ def nixpkgs_packages(
     name,
     repositories,
     packages,
+    build_file_content = None,
     ):
     nixpkgs_packages_instantiate(
         name = name,
@@ -340,6 +341,7 @@ def nixpkgs_packages(
             name = package_name,
             attribute_name = package_name,
             drv_set_file = "@" + name + "//:nix_attrs.nix",
+            build_file_content = build_file_content,
         )
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
