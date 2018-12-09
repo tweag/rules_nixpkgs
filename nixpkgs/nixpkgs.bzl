@@ -203,7 +203,7 @@ def nixpkgs_cc_autoconf_impl(repository_ctx):
     # the Bazel autoconfiguration with the tools we found.
     bin_contents = _find_children(repository_ctx, workspace_root + "/bin")
     overriden_tools = {
-        tool: repository_ctx.path(Label("@nixpkgs_cc_toolchain//:bin/" + tool))
+        tool: entry
         for entry in bin_contents
         for tool in [entry.rpartition("/")[-1]]  # Compute basename
     }
