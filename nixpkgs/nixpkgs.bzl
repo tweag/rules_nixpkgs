@@ -294,12 +294,13 @@ def _nixpkgs_package_realize_impl(repository_ctx):
     nix_store_args = [
         "--realize",
         "--no-build-output",
+        "--add-root", "nix-root", "--indirect",
         drv_path
         ]
     exec_result = _execute_or_fail(
         repository_ctx,
         [nix_store_path] + nix_store_args,
-        quiet = False,
+        quiet = True,
     )
     output_path = exec_result.stdout.splitlines()[0]
 
