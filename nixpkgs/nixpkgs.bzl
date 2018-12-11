@@ -106,6 +106,8 @@ def _nixpkgs_package_impl(repository_ctx):
         "bazel-support/nix-out-link",
     ])
 
+    expr_args.extend(repository_ctx.attr.nixopts)
+
     # If repositories is not set, leave empty so nix will fail
     # unless a pinned nixpkgs is set in the `nix_file` attribute.
     nix_path = ""
@@ -160,6 +162,7 @@ _nixpkgs_package = repository_rule(
         "repository": attr.label(),
         "build_file": attr.label(),
         "build_file_content": attr.string(),
+        "nixopts": attr.string_list(),
     },
 )
 

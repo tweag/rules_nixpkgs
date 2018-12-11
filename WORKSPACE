@@ -75,6 +75,15 @@ nixpkgs_package(
 )
 
 nixpkgs_package(
+    name = "extra-args-test",
+    nix_file_content = """
+{ packagePath }: (import <nixpkgs> {}).${packagePath}
+    """,
+    repository = "@nixpkgs",
+    nixopts = ["--argstr", "packagePath", "hello"],
+)
+
+nixpkgs_package(
     name = "output-filegroup-manual-test",
     build_file_content = """
 package(default_visibility = [ "//visibility:public" ])
