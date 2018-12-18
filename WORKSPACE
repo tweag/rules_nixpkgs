@@ -95,11 +95,20 @@ nixpkgs_packages(
     name = "foobarbaz",
     repositories = {"nixpkgs": "@nixpkgs"},
     packages = {
+        "nixpkgs-packages-hello": "hello",
         "gcc": "gcc",
         "glibc": "glibc",
         "firefox": "firefox", # Won't be built until we explicitly ask for it
         "ghc": "ghc",
         },
+)
+nixpkgs_packages(
+    name = "foobarbaz-using-repository-attr",
+    packages = {
+        "nixpkgs-packages-hello-repository": "hello",
+        "firefox-from-repository": "firefox", # Won't be built until we explicitly ask for it
+        },
+    repository = "@nixpkgs",
 )
 
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
