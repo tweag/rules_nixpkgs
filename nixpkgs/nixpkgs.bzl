@@ -59,13 +59,7 @@ nixpkgs_local_repository = repository_rule(
 )
 
 def _nixpkgs_package_impl(repository_ctx):
-    repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
-
-    if repository and repositories or not repository and not repositories:
-        fail("Specify one of 'repository' or 'repositories' (but not both).")
-    elif repository:
-        repositories = {repository_ctx.attr.repository: "nixpkgs"}
 
     if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
         fail("Specify one of 'build_file' or 'build_file_content', but not both.")
@@ -175,16 +169,17 @@ def invert_repositories(f, *args, **kwargs):
     # for the `repositories` arguments), but we can pass a dict from labels to
     # strings. So we swap the keys and the values (assuming they all are
     # distinct).
-    if "repositories" in kwargs:
+    hasRepository = "repository" in kwargs and kwargs["repository"] != None
+    hasRepositories = "repositories" in kwargs and kwargs["repositories"] != None
+    if hasRepository and hasRepositories:
+        fail("Specify one of 'repository' or 'repositories' (but not both).")
+    if hasRepositories:
         inversed_repositories = {value: key for (key, value) in kwargs["repositories"].items()}
-        kwargs.pop("repositories")
-        f(
-            repositories = inversed_repositories,
-            *args,
-            **kwargs
-        )
-    else:
-        _nixpkgs_package(*args, **kwargs)
+        kwargs["repositories"] = inversed_repositories
+    if hasRepository:
+        repository = kwargs.pop("repository")
+        kwargs["repositories"] = { repository: "nixpkgs" }
+    f(*args, **kwargs)
 
 def _nixpkgs_packages_instantiate_impl(repository_ctx):
     repository_ctx.file("BUILD", "exports_files([\"nix_attrs.nix\"])")
@@ -326,13 +321,15 @@ nixpkgs_package_realize = repository_rule(
 
 def nixpkgs_packages(
     name,
-    repositories,
     packages,
     build_file_content = None,
+    repositories = None,
+    repository = None,
     ):
     nixpkgs_packages_instantiate(
         name = name,
         repositories = repositories,
+        repository = repository,
         packages = packages,
     )
 
@@ -413,7 +410,7 @@ nixpkgs_cc_autoconf = repository_rule(
 
 def nixpkgs_cc_configure(
         repository = None,
-        repositories = {},
+        repositories = None,
         nix_file = None,
         nix_file_deps = None,
         nix_file_content = None):
