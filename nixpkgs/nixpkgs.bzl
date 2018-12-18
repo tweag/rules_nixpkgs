@@ -444,12 +444,13 @@ def nixpkgs_cc_configure(
     native.bind(name = "cc_toolchain", actual = "@local_config_cc//:toolchain")
     native.register_toolchains("@local_config_cc//:all")
 
-def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
+def _execute_or_fail(repository_ctx, arguments, environment = {}, failure_message = "", *args, **kwargs):
     """Call repository_ctx.execute() and fail if non-zero return code."""
-    result = repository_ctx.execute(arguments, *args, **kwargs)
+    result = repository_ctx.execute(arguments, environment = environment, *args, **kwargs)
     if result.return_code:
         outputs = dict(
             failure_message = failure_message,
+            environment = environment,
             arguments = arguments,
             return_code = result.return_code,
             stderr = result.stderr,
@@ -457,6 +458,7 @@ def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **k
         fail("""
 {failure_message}
 Command: {arguments}
+Environment: {environment}
 Return code: {return_code}
 Error output:
 {stderr}
