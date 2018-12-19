@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.1] - 2018-12-18
+
+### Changed
+
+- `nixpkgs_package` now has a new optional argument `nixopts`
+  allowing to pass extra arguments to the `nix-build` calls
+
+### Fixed
+
+- The various `nix_*` rules are now only triggered when one of their dependency
+  has changed and not each time the `WORKSPACE` is modified
+- The `nixpkgs_cc_configure` macro is now much faster
+- `nixpkgs_cc_configure` is now a no-op on non nixpkgs-supported platforms
+  instead of throwing an error
+- The `lib` filegroup provided in the default `BUILD` file for
+  `nixpkgs_package` now also works on MacOS
+
 ## [0.4.1] - 2018-11-17
 
 ### Added
