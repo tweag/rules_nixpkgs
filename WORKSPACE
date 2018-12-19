@@ -2,6 +2,7 @@ workspace(name = "io_tweag_rules_nixpkgs")
 
 load(
     "//nixpkgs:nixpkgs.bzl",
+    "nix_register_toolchains",
     "nixpkgs_cc_configure",
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
@@ -9,6 +10,8 @@ load(
 )
 
 # For tests
+
+nix_register_toolchains(version = "2.1.3")
 
 nixpkgs_git_repository(
     name = "remote_nixpkgs",
