@@ -1,0 +1,19 @@
+package(default_visibility = [ "//visibility:public" ])
+
+genrule(
+    name = "gen-nix-build",
+    srcs = [":.nix-build-wrapped", ":nix-user-chroot"],
+    outs = ["nix-build.sh"],
+    cmd = """
+cat <<EOF > "$@"
+#!/bin/sh
+
+exec $(location :nix-user-chroot) NIX_STORE_PATH $(location :.nix-build-wrapped) "\$$@"
+EOF
+    """,
+)
+sh_binary(
+    name = "nix-build",
+    srcs = [":nix-build.sh"],
+    data = [":.nix-build-wrapped", ":nix-user-chroot"],
+)

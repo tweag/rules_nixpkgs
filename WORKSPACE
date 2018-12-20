@@ -1,17 +1,51 @@
 workspace(name = "io_tweag_rules_nixpkgs")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 load(
     "//nixpkgs:nixpkgs.bzl",
-    "nix_register_toolchains",
     "nixpkgs_cc_configure",
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
 )
 
+load(
+    "//nixpkgs:toolchain.bzl",
+    "nix_register_toolchains",
+    "nix_download_toolchain",
+)
+
 # For tests
 
-nix_register_toolchains(version = "2.1.3")
+new_http_archive(
+    name = "nix_user_chroot",
+    urls = ["https://github.com/lethalman/nix-user-chroot/archive/809dda7f0a370e069b6bb9d818abebb059806675.tar.gz"],
+    strip_prefix = "nix-user-chroot-809dda7f0a370e069b6bb9d818abebb059806675",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+cc_binary(
+    name = "nix_user_chroot",
+    srcs = ["main.c"],
+)
+    """
+)
+
+new_http_archive(
+    name = "nix_source",
+    urls = ["https://nixos.org/releases/nix/nix-2.1.3/nix-2.1.3-x86_64-linux.tar.bz2"],
+    strip_prefix = "nix-2.1.3-x86_64-linux",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+"""
+)
+
+nix_download_toolchain(
+    name = "nix",
+    nix_installer = "@nix_source//:install",
+    nix_user_chroot_src = "@nix_user_chroot//:main.c",
+    nix_store_path = "/tmp/nix",
+)
 
 nixpkgs_git_repository(
     name = "remote_nixpkgs",
@@ -99,4 +133,4 @@ filegroup(
     repository = "@nixpkgs",
 )
 
-nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+# nixpkgs_cc_configure(repository = "@remote_nixpkgs")
