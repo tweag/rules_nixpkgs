@@ -19,7 +19,6 @@ def _nix_download_toolchain_impl(repository_ctx):
          repository_ctx.path(repository_ctx.attr.nix_installer),
          nix_store_path,
         ],
-        quiet = False, # XXX: Remove when debugging is over
     )
 
 nix_download_toolchain = repository_rule(

@@ -1,19 +1,27 @@
 package(default_visibility = [ "//visibility:public" ])
 
-genrule(
-    name = "gen-nix-build",
-    srcs = [":.nix-build-wrapped", ":nix-user-chroot"],
-    outs = ["nix-build.sh"],
-    cmd = """
-cat <<EOF > "$@"
+all_nix_exes = [ "nix", "nix-build", "nix-shell", "nix-instantiate", "nix-store" ]
+
+[
+  genrule(
+      name = "wrap-" + exe_name,
+      srcs = [":.{}-wrapped".format(exe_name), ":nix-user-chroot"],
+      outs = [exe_name + ".sh"],
+      cmd = """
+  cat <<EOF > "$@"
 #!/bin/sh
 
-exec $(location :nix-user-chroot) NIX_STORE_PATH $(location :.nix-build-wrapped) "\$$@"
+  exec $(location :nix-user-chroot) NIX_STORE_PATH $(location :.{}-wrapped) "\$$@"
 EOF
-    """,
-)
-sh_binary(
-    name = "nix-build",
-    srcs = [":nix-build.sh"],
-    data = [":.nix-build-wrapped", ":nix-user-chroot"],
-)
+      """.format(exe_name),
+  )
+  for exe_name in all_nix_exes
+]
+[
+  sh_binary(
+      name = exe_name,
+      srcs = [":{}.sh".format(exe_name)],
+      data = [":.{}-wrapped".format(exe_name), ":nix-user-chroot"],
+  )
+  for exe_name in all_nix_exes
+]
