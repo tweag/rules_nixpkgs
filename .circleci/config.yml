@@ -19,6 +19,7 @@ jobs:
     machine:
       enabled: true
     steps:
+      - checkout
       - run:
           name: Global setup
           command: |
