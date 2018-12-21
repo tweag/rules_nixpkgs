@@ -120,11 +120,7 @@ def _nixpkgs_package_impl(repository_ctx):
     elif not (repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content):
         fail(strFailureImplicitNixpkgs)
 
-    nix_build_path = _executable_path(
-        repository_ctx,
-        "nix-build",
-        extra_msg = "See: https://nixos.org/nix/",
-    )
+    nix_build_path = repository_ctx.path(repository_ctx.attr._nix_build)
     nix_build = [nix_build_path] + expr_args
 
     # Large enough integer that Bazel can still parse. We don't have
@@ -146,7 +142,13 @@ def _nixpkgs_package_impl(repository_ctx):
 
     # Build a forest of symlinks (like new_local_package() does) to the
     # Nix store.
-    for target in _find_children(repository_ctx, output_path):
+    store_path_root = execute_or_fail(
+        repository_ctx,
+        [
+          _executable_path(repository_ctx, "cat"),
+          repository_ctx.path(Label("@nix//:nix-store-path")),
+        ]).stdout
+    for target in _find_children(repository_ctx, store_path_root + output_path):
         basename = target.rpartition("/")[-1]
         repository_ctx.symlink(target, basename)
 
@@ -162,6 +164,10 @@ _nixpkgs_package = repository_rule(
         "build_file": attr.label(),
         "build_file_content": attr.string(),
         "nixopts": attr.string_list(),
+        "_nix_build": attr.label(
+            default = Label("@nix//:nix-build"),
+            allow_single_file = True,
+        ),
     },
 )
 
@@ -303,15 +309,6 @@ Error output:
 {stderr}
 """.format(**outputs))
     return result
-
-def _run_in_chroot(repository_ctx, arguments, store_path, failure_message = "", *args, **kwargs):
-    execute_or_fail(
-        repository_ctx,
-        [Label("@nix_user_chroot//:nix_user_chroot"), store_path] + arguments,
-        failure_message = failure_message,
-        *args,
-        **kwargs
-    )
 
 def _find_children(repository_ctx, target_dir):
     find_args = [

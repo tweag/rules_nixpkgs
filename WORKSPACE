@@ -18,7 +18,8 @@ load(
 # For tests
 
 nix_register_toolchains(
-    version = "2.1.3",
+    # version = "2.1.3",
+    version = "host",
 )
 
 nixpkgs_git_repository(

@@ -4,15 +4,15 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 DEFAULT_VERSION = "2.1.3"
 
+all_nix_exes = [ "nix", "nix-build", "nix-shell", "nix-instantiate", "nix-store" ]
+
 def _nix_install_downloaded_impl(repository_ctx):
+    repository_ctx.file("BUILD", content = """
+package(default_visibility = ["//visibility:public"])
+
+exports_files({all_nix_exes} + ["nix-user-chroot", "nix-store-path"])
+                        """.format(all_nix_exes = all_nix_exes))
     nix_store_path = repository_ctx.attr.nix_store_path
-    repository_ctx.template(
-        "BUILD",
-        Label("@io_tweag_rules_nixpkgs//nixpkgs:prebuild_BUILD.pkg"),
-        substitutions = {
-            "NIX_STORE_PATH": nix_store_path,
-            }
-        )
     execute_or_fail(
         repository_ctx,
         [repository_ctx.path(Label("@io_tweag_rules_nixpkgs//nixpkgs:setup_nix.sh")),
@@ -33,10 +33,6 @@ nix_install_downloaded = repository_rule(
             allow_single_file = True,
             ),
         "nix_store_path": attr.string(mandatory = True),
-        # "version": attr.string(mandatory = True),
-        # "urls": attr.string_list(
-        #     default = ["https://nixos.org/releases/nix/nix-{version}/{filename}"]
-        # ),
     },
 )
 
@@ -92,7 +88,6 @@ def nix_download_toolchain(
     )
 
 def _nix_host_toolchain_impl(repository_ctx):
-    all_nix_exes = [ "nix", "nix-build", "nix-shell", "nix-instantiate", "nix-store" ]
     repository_ctx.file("BUILD", content = """
 package(default_visibility = ["//visibility:public"])
 
