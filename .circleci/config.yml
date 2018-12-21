@@ -15,3 +15,17 @@ jobs:
           name: Run tests
           command: |
             nix-shell --pure --run 'bazel test --test_output errors //...'
+  prebuilt_toolchain:
+    machine:
+      image: insready/bazel
+    environment:
+      USER: bazel
+    working_directory: /rules_nixpkgs
+    steps:
+      - checkout
+      - run:
+          name: Run tests
+          command: |
+            useradd -m bazel
+            chown -R bazel .
+            su bazel -c "bazel test --test_output errors //... --sandbox_add_mount_pair \$HOME/.cache/nix-store/:/nix --run_under '//:nix_user_chroot \$HOME/.cache/nix-store/nix/'"
