@@ -1,9 +1,10 @@
 load(":toolchains.bzl", "NIX_TOOLCHAINS")
 load(":nixpkgs.bzl", "execute_or_fail")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 DEFAULT_VERSION = "2.1.3"
 
-def _nix_download_toolchain_impl(repository_ctx):
+def _nix_install_downloaded_impl(repository_ctx):
     nix_store_path = repository_ctx.attr.nix_store_path
     repository_ctx.template(
         "BUILD",
@@ -21,8 +22,8 @@ def _nix_download_toolchain_impl(repository_ctx):
         ],
     )
 
-nix_download_toolchain = repository_rule(
-    implementation = _nix_download_toolchain_impl,
+nix_install_downloaded = repository_rule(
+    implementation = _nix_install_downloaded_impl,
     attrs = {
         "toolchains": attr.string_list_dict(),
         "nix_installer": attr.label(
@@ -32,13 +33,63 @@ nix_download_toolchain = repository_rule(
             allow_single_file = True,
             ),
         "nix_store_path": attr.string(mandatory = True),
-        # "strip_prefix": attr.string(),
         # "version": attr.string(mandatory = True),
         # "urls": attr.string_list(
         #     default = ["https://nixos.org/releases/nix/nix-{version}/{filename}"]
         # ),
     },
 )
+
+def _download_nix_impl(repository_ctx):
+    repository_ctx.file("BUILD")
+    host = _host_platform(repository_ctx)
+    (filename, prefix, sha256) = repository_ctx.attr.toolchains[host]
+    repository_ctx.download_and_extract(
+        url = [
+            url.format(filename = filename, version = repository_ctx.attr.version)
+            for url in repository_ctx.attr.urls
+        ],
+        sha256 = sha256,
+    )
+    repository_ctx.symlink(prefix, "nix")
+
+_download_nix = repository_rule(
+    _download_nix_impl,
+    attrs = {
+        "toolchains": attr.string_list_dict(),
+        "version": attr.string(mandatory = True),
+        "urls": attr.string_list(),
+    },
+)
+
+def nix_download_toolchain(
+    name,
+    version,
+    toolchains,
+    urls = ["https://nixos.org/releases/nix/nix-{version}/{filename}"],
+    **kwargs
+    ):
+    _download_nix(
+        name = name + "-src",
+        version = version,
+        toolchains = toolchains,
+        urls = urls,
+    )
+    http_archive(
+        name = name + "_nix_user_chroot",
+        urls = ["https://github.com/lethalman/nix-user-chroot/archive/809dda7f0a370e069b6bb9d818abebb059806675.tar.gz"],
+        strip_prefix = "nix-user-chroot-809dda7f0a370e069b6bb9d818abebb059806675",
+        build_file_content = """
+    package(default_visibility = ["//visibility:public"])
+"""
+    )
+
+    nix_install_downloaded(
+        name = name,
+        nix_installer = "@" + name + "-src" + "//:nix/install",
+        nix_user_chroot_src = "@" + name + "_nix_user_chroot" + "//:main.c",
+        **kwargs
+    )
 
 def _nix_host_toolchain_impl(repository_ctx):
     pass
@@ -56,13 +107,14 @@ nix_host_toolchain = repository_rule(
     implementation = _nix_host_toolchain_impl,
 )
 
-def nix_register_toolchains(version = None):
+def nix_register_toolchains(version = None, nix_store_path = "~/.cache/nix-store"):
     if "nix" not in native.existing_rules():
         if version in NIX_TOOLCHAINS:
             nix_download_toolchain(
                 name = "nix",
                 version = version,
                 toolchains = NIX_TOOLCHAINS[version],
+                nix_store_path = nix_store_path,
             )
         elif version == "host":
             nix_host_toolchain(

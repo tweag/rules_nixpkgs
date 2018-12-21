@@ -5,13 +5,13 @@ all_nix_exes = [ "nix", "nix-build", "nix-shell", "nix-instantiate", "nix-store"
 [
   genrule(
       name = "wrap-" + exe_name,
-      srcs = [":.{}-wrapped".format(exe_name), ":nix-user-chroot"],
+      srcs = [":.{}-wrapped".format(exe_name), ":nix-user-chroot", ":nix-store-path"],
       outs = [exe_name + ".sh"],
       cmd = """
   cat <<EOF > "$@"
 #!/bin/sh
 
-  exec $(location :nix-user-chroot) NIX_STORE_PATH $(location :.{}-wrapped) "\$$@"
+  exec $(location :nix-user-chroot) $$(cat $(location :nix-store-path)) $(location :.{}-wrapped) "\$$@"
 EOF
       """.format(exe_name),
   )
