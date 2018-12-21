@@ -92,16 +92,18 @@ def nix_download_toolchain(
     )
 
 def _nix_host_toolchain_impl(repository_ctx):
-    pass
-    # toolchain_info = platform_common.ToolchainInfo(
-    #     nix_info = NixInfo(
-    #       store_path = None,
-    #       nix_build_path = repository_ctx.which("nix-build"),
-    #     ),
-    # )
-    # return [toolchain_info]
-    # repository_ctx.file("BUILD")
-    # repository_ctx.symlink(repository_ctx.which("nix-build"), "nix-build")
+    all_nix_exes = [ "nix", "nix-build", "nix-shell", "nix-instantiate", "nix-store" ]
+    repository_ctx.file("BUILD", content = """
+package(default_visibility = ["//visibility:public"])
+
+exports_files({all_nix_exes})
+                        """.format(all_nix_exes = all_nix_exes))
+    for exe_name in all_nix_exes:
+        exe_fullpath = repository_ctx.which(exe_name)
+        if exe_fullpath == None:
+            fail("Could not find the `{}` executable in PATH. See: https://nixos.org/nix/".format(exe_name))
+        else:
+            repository_ctx.symlink(repository_ctx.which(exe_name), exe_name)
 
 nix_host_toolchain = repository_rule(
     implementation = _nix_host_toolchain_impl,
