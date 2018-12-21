@@ -31,3 +31,10 @@ jobs:
             useradd -m bazel
             chown -R bazel .
             su bazel -c "bazel test --test_output errors //... --sandbox_add_mount_pair \$HOME/.cache/nix-store/:/nix --run_under '//:nix_user_chroot \$HOME/.cache/nix-store/nix/'"
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - prebuilt_toolchain
