@@ -26,6 +26,8 @@ jobs:
       - run:
           name: Run tests
           command: |
+            # Hopefully just temporary
+            mkdir /nix
             useradd -m bazel
             chown -R bazel .
             su bazel -c "bazel test --test_output errors //... --sandbox_add_mount_pair \$HOME/.cache/nix-store/:/nix --run_under '//:nix_user_chroot \$HOME/.cache/nix-store/nix/'"
