@@ -17,20 +17,25 @@ jobs:
             nix-shell --pure --run 'bazel test --test_output errors //...'
   prebuilt_toolchain:
     machine:
-      image: insready/bazel
-    environment:
-      USER: bazel
-    working_directory: /rules_nixpkgs
+      enabled: true
     steps:
-      - checkout
+      - run:
+          name: Global setup
+          command: |
+            # Hopefully just temporary
+            sudo mkdir /nix
+            sudo chown circleci /nix
+      - run:
+          name: Install bazel
+          command: |
+            sudo apt install pkg-config zip g++ zlib1g-dev unzip python
+            curl -o bazel-install.sh -L https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh
+            chmod +x bazel-install.sh
+            ./bazel-install.sh --user
       - run:
           name: Run tests
           command: |
-            # Hopefully just temporary
-            mkdir /nix
-            useradd -m bazel
-            chown -R bazel .
-            su bazel -c "bazel test --test_output errors //... --sandbox_add_mount_pair \$HOME/.cache/nix-store/:/nix --run_under '//:nix_user_chroot \$HOME/.cache/nix-store/nix/'"
+            bazel test --test_output errors //... --sandbox_add_mount_pair $HOME/.cache/nix-store/:/nix --run_under "//:nix_user_chroot $HOME/.cache/nix-store/nix/"
 
 workflows:
   version: 2
