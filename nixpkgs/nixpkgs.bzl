@@ -304,6 +304,79 @@ nixpkgs_packages_instantiate_swapped = repository_rule(
 def nixpkgs_packages_instantiate(**kwargs):
     invert_repositories(nixpkgs_packages_instantiate_swapped, **kwargs)
 
+def _nixpkgs_package_realize_impl(repository_ctx):
+    if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
+        fail("Specify one of 'build_file' or 'build_file_content', but not both.")
+    elif repository_ctx.attr.build_file:
+        repository_ctx.symlink(repository_ctx.attr.build_file, "BUILD")
+    elif repository_ctx.attr.build_file_content:
+        repository_ctx.file("BUILD", content = repository_ctx.attr.build_file_content)
+    else:
+        repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
+
+    nix_store_path = _executable_path(
+        repository_ctx,
+        "nix-store",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+    nix_instantiate_path = _executable_path(
+        repository_ctx,
+        "nix-instantiate",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+
+    attribute_path = repository_ctx.attr.name
+    if repository_ctx.attr.attribute_name:
+      attribute_path = repository_ctx.attr.attribute_name
+
+    nix_instantiate_args = [
+        "--eval",
+        "-E", "(builtins.fromJSON (builtins.readFile {drv_set_file})).{attribute_path}".format(
+            drv_set_file = repository_ctx.path(repository_ctx.attr.drv_set_file),
+            attribute_path = attribute_path,
+          )
+        ]
+
+    drv_path = _execute_or_fail(
+        repository_ctx,
+        [nix_instantiate_path] + nix_instantiate_args,
+        quiet = True,
+    ).stdout.strip("\"\n")
+
+    nix_store_args = [
+        "--realize",
+        "--no-build-output",
+        "--add-root", "nix-root", "--indirect",
+        drv_path
+        ] + repository_ctx.attr.nixopts
+    exec_result = _execute_or_fail(
+        repository_ctx,
+        [nix_store_path] + nix_store_args,
+        quiet = True,
+    )
+    output_path = exec_result.stdout.splitlines()[0]
+
+    # Build a forest of symlinks (like new_local_package() does) to the
+    # Nix store.
+    for target in _find_children(repository_ctx, output_path):
+        basename = target.rpartition("/")[-1]
+        repository_ctx.symlink(target, basename)
+
+
+nixpkgs_package_realize = repository_rule(
+    implementation = _nixpkgs_package_realize_impl,
+    attrs = {
+        "drv_set_file": attr.label(
+            allow_single_file = [".nix"],
+            doc = "A nix file containing a map from package names to their drv path",
+        ),
+        "attribute_name": attr.string(),
+        "build_file": attr.label(),
+        "build_file_content": attr.string(),
+        "nixopts": attr.string_list(),
+    },
+)
+
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
     if not _is_supported_platform(repository_ctx):
