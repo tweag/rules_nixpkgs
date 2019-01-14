@@ -377,6 +377,64 @@ nixpkgs_package_realize = repository_rule(
     },
 )
 
+def nixpkgs_packages(
+    name,
+    packages,
+    repositories = None,
+    repository = None,
+    nixopts = [],
+    ):
+
+    # We allow defining a package as a string, which is a shortcut for just
+    # defining its ``attribute_path`` field.
+    # To remove this particular case, we first desugar it
+    desugared_packages = {}
+    for (packageName, value) in packages.items():
+        if type(value) == type(""):
+            desugared_packages[packageName] = { "nix_attribute_path": value }
+        else:
+            desugared_packages[packageName] = value
+
+    # Bazel doesn't allow us to pass anything more complex than a
+    # ``Dict[string, string]`` for the arguments of a rule, but our package set
+    # is a ``Dict[string, Dict[…]]``, so we first transform it into several
+    # ``Dict[string, string]`` (according to how the package is defined) to
+    # pass them to the ``nixpkgs_packages_instantiate`` rule
+    packagesFromAttr = {}
+    packagesFromFile = {}
+    packagesFromExpr = {}
+    for (packageName, value) in desugared_packages.items():
+        if type(value) == type({}) and "nix_attribute_path" in value:
+          packagesFromAttr[packageName] = value["nix_attribute_path"]
+        elif type(value) == type({}) and "nix_file" in value:
+          packagesFromFile[packageName] = value["nix_file"]
+        elif type(value) == type({}) and "nix_file_content" in value:
+          packagesFromExpr[packageName] = value["nix_file_content"]
+
+    # Instantiate the package set (*i.e* evaluate the nix expressions, but
+    # without building anything)
+    nixpkgs_packages_instantiate(
+        name = name,
+        repositories = repositories,
+        repository = repository,
+        packagesFromAttr = packagesFromAttr,
+        packagesFromFile = packagesFromFile,
+        packagesFromExpr = packagesFromExpr,
+        nixopts = nixopts,
+    )
+
+    # Define a new repository for each package containing a link to the
+    # realized package
+    for (package_name, package_value) in desugared_packages.items():
+        nixpkgs_package_realize(
+            name = package_name,
+            attribute_name = package_name,
+            drv_set_file = "@" + name + "//:nix_attrs.nix",
+            build_file_content = package_value.get("build_file_content"),
+            build_file = package_value.get("build_file"),
+            nixopts = nixopts,
+        )
+
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
     if not _is_supported_platform(repository_ctx):
