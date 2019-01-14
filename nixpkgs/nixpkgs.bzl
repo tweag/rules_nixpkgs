@@ -60,18 +60,12 @@ def _is_supported_platform(repository_ctx):
     return repository_ctx.which("nix-build") != None
 
 def _nixpkgs_package_impl(repository_ctx):
-    repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
 
     # Is nix supported on this platform?
     not_supported = not _is_supported_platform(repository_ctx)
     # Should we fail if Nix is not supported?
     fail_not_supported = repository_ctx.attr.fail_not_supported
-
-    if repository and repositories or not repository and not repositories:
-        fail("Specify one of 'repository' or 'repositories' (but not both).")
-    elif repository:
-        repositories = {repository_ctx.attr.repository: "nixpkgs"}
 
     if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
         fail("Specify one of 'build_file' or 'build_file_content', but not both.")
@@ -183,21 +177,31 @@ _nixpkgs_package = repository_rule(
 )
 
 def nixpkgs_package(*args, **kwargs):
+    invert_repositories(_nixpkgs_package, *args, **kwargs)
+
+def invert_dict(dict):
+    """Swap the keys and values of a dict − assuming that all values are
+    distinct
+    """
+    return {value: key for (key, value) in dict.items()}
+
+def invert_repositories(f, *args, **kwargs):
     # Because of https://github.com/bazelbuild/bazel/issues/5356 we can't
     # directly pass a dict from strings to labels to the rule (which we'd like
     # for the `repositories` arguments), but we can pass a dict from labels to
     # strings. So we swap the keys and the values (assuming they all are
     # distinct).
-    if "repositories" in kwargs:
-        inversed_repositories = {value: key for (key, value) in kwargs["repositories"].items()}
-        kwargs.pop("repositories")
-        _nixpkgs_package(
-            repositories = inversed_repositories,
-            *args,
-            **kwargs
-        )
-    else:
-        _nixpkgs_package(*args, **kwargs)
+    hasRepository = "repository" in kwargs and kwargs["repository"] != None
+    hasRepositories = "repositories" in kwargs and kwargs["repositories"] != None
+    if hasRepository and hasRepositories:
+        fail("Specify one of 'repository' or 'repositories' (but not both).")
+    if hasRepositories:
+        inversed_repositories = invert_dict(kwargs["repositories"])
+        kwargs["repositories"] = inversed_repositories
+    if hasRepository:
+        repository = kwargs.pop("repository")
+        kwargs["repositories"] = { repository: "nixpkgs" }
+    f(*args, **kwargs)
 
 def _readlink(repository_ctx, path):
     return repository_ctx.path(path).realpath
@@ -271,7 +275,7 @@ nixpkgs_cc_autoconf = repository_rule(
 
 def nixpkgs_cc_configure(
         repository = None,
-        repositories = {},
+        repositories = None,
         nix_file = None,
         nix_file_deps = None,
         nix_file_content = None,
