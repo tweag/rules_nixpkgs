@@ -6,6 +6,9 @@ load(
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
+    "nixpkgs_package_realize",
+    "nixpkgs_packages_instantiate",
+    "nixpkgs_packages",
 )
 
 # For tests
@@ -83,16 +86,35 @@ nixpkgs_package(
     nixopts = ["--argstr", "packagePath", "hello"],
 )
 
-nixpkgs_package(
-    name = "output-filegroup-manual-test",
-    build_file_content = """
+nixpkgs_packages(
+    name = "foobarbaz",
+    repositories = {"nixpkgs": "@nixpkgs"},
+    packages = {
+        "nixpkgs-packages-hello": "hello",
+        "gcc": "gcc",
+        "glibc": "glibc",
+        "firefox": "firefox", # Won't be built until we explicitly ask for it
+        "ghc": "ghc",
+        "nixpkgs-packages-hello-from-file": { "nix_file": "//tests:hello.nix" },
+        "nixpkgs-packages-hello-from-expr": { "nix_file_content": "let pkgs = import <nixpkgs> {}; in pkgs.hello" },
+        "output-filegroup-manual-test": {
+            "build_file_content": """
 package(default_visibility = [ "//visibility:public" ])
 filegroup(
     name = "manual-filegroup",
     srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
 )
-""",
-    nix_file = "//tests:output.nix",
+            """,
+            "nix_file": "//tests:output.nix",
+            },
+        },
+)
+nixpkgs_packages(
+    name = "foobarbaz-using-repository-attr",
+    packages = {
+        "nixpkgs-packages-hello-repository": "hello",
+        "firefox-from-repository": "firefox", # Won't be built until we explicitly ask for it
+        },
     repository = "@nixpkgs",
 )
 
