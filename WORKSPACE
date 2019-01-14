@@ -53,14 +53,14 @@ nixpkgs_package(
 nixpkgs_package(
     name = "expr-attribute-test",
     attribute_path = "hello",
-    nix_file_content = "import <nixpkgs> {}",
+    # nix_file_content = "import <nixpkgs> {}",
     repository = "@nixpkgs",
 )
 
 nixpkgs_package(
     name = "nix-file-test",
     attribute_path = "hello",
-    nix_file = "//tests:nixpkgs.nix",
+    # nix_file = "//tests:nixpkgs.nix",
     repository = "@nixpkgs",
 )
 
