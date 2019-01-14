@@ -206,6 +206,104 @@ def invert_repositories(f, *args, **kwargs):
 def _readlink(repository_ctx, path):
     return repository_ctx.path(path).realpath
 
+def _nixpkgs_packages_instantiate_impl(repository_ctx):
+    repository_ctx.file("BUILD", "exports_files([\"nix_attrs.nix\"])")
+
+    nix_instantiate_path = _executable_path(
+        repository_ctx,
+        "nix-instantiate",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+
+    packages_from_attr = \
+        [
+            "\"{name}\" = nixpkgs.{attrPath}".format(name = name, attrPath = attrPath)
+            for (name, attrPath) in repository_ctx.attr.packagesFromAttr.items()
+        ]
+
+    generatedPackageFiles = {}
+    for (name, expr) in repository_ctx.attr.packagesFromExpr.items():
+        nix_definition_file = "__internal_" + name + "_definition.nix"
+        repository_ctx.file(
+            nix_definition_file,
+            content = expr
+            )
+        # generatedPackageFiles[nix_definition_file] = name
+        generatedPackageFiles[name] = nix_definition_file
+    packagesFromFileLabels = \
+      { name: Label(filePath)
+        for (name, filePath) in repository_ctx.attr.packagesFromFile.items()
+      }
+    packagesFromFile = packagesFromFileLabels + generatedPackageFiles
+
+    packages_from_file = \
+        [
+            "\"{name}\" = import {filePath}".format(name = name, filePath = repository_ctx.path(filePath))
+            for (name, filePath) in packagesFromFile.items()
+        ]
+
+    packages_record_inside = ";".join(packages_from_attr + packages_from_file)
+    packages_record = "nixpkgs: { " + packages_record_inside + "; }"
+
+    repository_ctx.file("packages_attributes_mappings.nix", packages_record)
+
+    nix_set_builder = repository_ctx.template("drv_set_builder.nix", Label("@io_tweag_rules_nixpkgs//nixpkgs:drv_set_builder.nix"))
+    nix_instantiate_args = [
+        "--eval",
+        "--strict",
+        "--read-write-mode",
+        "--json",
+        "drv_set_builder.nix",
+        "--arg", "packages", "import ./packages_attributes_mappings.nix",
+        ]
+
+    nix_instantiate = [nix_instantiate_path] + \
+        nix_instantiate_args + \
+        repository_ctx.attr.nixopts
+
+    # Large enough integer that Bazel can still parse. We don't have
+    # access to MAX_INT and 0 is not a valid timeout so this is as good
+    # as we can do.
+    timeout = 1073741824
+
+    nix_path = ":".join(
+        [
+            (path_name + "=" + str(repository_ctx.path(target)))
+            for (target, path_name) in repository_ctx.attr.repositories.items()
+        ],
+    )
+
+    exec_result = _execute_or_fail(
+        repository_ctx,
+        nix_instantiate,
+        timeout = timeout,
+        environment = dict(NIX_PATH = nix_path),
+    )
+    repository_ctx.file("nix_attrs.nix", content = exec_result.stdout)
+
+nixpkgs_packages_instantiate_swapped = repository_rule(
+    implementation = _nixpkgs_packages_instantiate_impl,
+    attrs = {
+        "packagesFromAttr": attr.string_dict(
+            mandatory = False,
+            doc = "A map between the name of the packages to instantiate and their attribute path in the nix expression",
+        ),
+        "packagesFromFile": attr.string_dict(
+            mandatory = False,
+            doc = "A map between the name of the packages to instantiate and a nix file defining them",
+        ),
+        "packagesFromExpr": attr.string_dict(
+            mandatory = False,
+            doc = "A map between the name of the packages to instantiate and their nix expression",
+        ),
+        "repositories": attr.label_keyed_string_dict(),
+        "nixopts": attr.string_list(),
+    },
+)
+
+def nixpkgs_packages_instantiate(**kwargs):
+    invert_repositories(nixpkgs_packages_instantiate_swapped, **kwargs)
+
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
     if not _is_supported_platform(repository_ctx):
