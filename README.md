@@ -154,6 +154,7 @@ Make the content of a Nixpkgs package available in the Bazel workspace.
 nixpkgs_package(
     name, attribute_path, nix_file, nix_file_deps, nix_file_content,
     repository, repositories, build_file, build_file_content,
+    fail_not_supported,
 )
 ```
 
@@ -274,6 +275,18 @@ filegroup(
         <p><code>String; optional</code></p>
         <p>Like <code>build_file</code>, but a string of the contents
           instead of a file name.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>fail_not_supported</code></td>
+      <td>
+        <p><code>Boolean; optional; default = True</code></p>
+        <p>
+            If set to <code>True</code> (default) this rule will fail on
+            platforms which do not support Nix (e.g. Windows). If set to
+            <code>False</code> calling this rule will succeed but no output
+            will be generated.
+        </p>
       </td>
     </tr>
   </tbody>

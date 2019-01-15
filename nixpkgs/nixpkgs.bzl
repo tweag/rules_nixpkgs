@@ -174,7 +174,7 @@ _nixpkgs_package = repository_rule(
         "build_file_content": attr.string(),
         "nixopts": attr.string_list(),
         "fail_not_supported": attr.bool(default = True, doc = """
-            If set to True (default) this rule will failed on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
+            If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
                                         """),
     },
 )
