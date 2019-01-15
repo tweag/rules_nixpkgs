@@ -60,6 +60,11 @@ def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
 
+    # Is nix supported on this platform?
+    not_supported = repository_ctx.os.name.startswith("windows")
+    # Should we fail if Nix is not supported?
+    fail_not_supported = repository_ctx.attr.fail_not_supported
+
     if repository and repositories or not repository and not repositories:
         fail("Specify one of 'repository' or 'repositories' (but not both).")
     elif repository:
@@ -121,35 +126,40 @@ def _nixpkgs_package_impl(repository_ctx):
     elif not (repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content):
         fail(strFailureImplicitNixpkgs)
 
-    nix_build_path = _executable_path(
-        repository_ctx,
-        "nix-build",
-        extra_msg = "See: https://nixos.org/nix/",
-    )
-    nix_build = [nix_build_path] + expr_args
 
-    # Large enough integer that Bazel can still parse. We don't have
-    # access to MAX_INT and 0 is not a valid timeout so this is as good
-    # as we can do.
-    timeout = 1073741824
+    if not_supported and fail_not_supported:
+        fail("Platform is not supported (see 'fail_not_supported')")
+    elif not_supported:
+        return
+    else:
+        nix_build_path = _executable_path(
+            repository_ctx,
+            "nix-build",
+            extra_msg = "See: https://nixos.org/nix/",
+        )
+        nix_build = [nix_build_path] + expr_args
 
-    exec_result = _execute_or_fail(
-        repository_ctx,
-        nix_build,
-        failure_message = "Cannot build Nix attribute '{}'.".format(
-            repository_ctx.attr.attribute_path,
-        ),
-        quiet = False,
-        timeout = timeout,
-        environment = dict(NIX_PATH = nix_path),
-    )
-    output_path = exec_result.stdout.splitlines()[-1]
+        # Large enough integer that Bazel can still parse. We don't have
+        # access to MAX_INT and 0 is not a valid timeout so this is as good
+        # as we can do.
+        timeout = 1073741824
+        exec_result = _execute_or_fail(
+            repository_ctx,
+            nix_build,
+            failure_message = "Cannot build Nix attribute '{}'.".format(
+                repository_ctx.attr.attribute_path,
+            ),
+            quiet = False,
+            timeout = timeout,
+            environment = dict(NIX_PATH = nix_path),
+        )
+        output_path = exec_result.stdout.splitlines()[-1]
 
-    # Build a forest of symlinks (like new_local_package() does) to the
-    # Nix store.
-    for target in _find_children(repository_ctx, output_path):
-        basename = target.rpartition("/")[-1]
-        repository_ctx.symlink(target, basename)
+        # Build a forest of symlinks (like new_local_package() does) to the
+        # Nix store.
+        for target in _find_children(repository_ctx, output_path):
+            basename = target.rpartition("/")[-1]
+            repository_ctx.symlink(target, basename)
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
@@ -163,6 +173,9 @@ _nixpkgs_package = repository_rule(
         "build_file": attr.label(),
         "build_file_content": attr.string(),
         "nixopts": attr.string_list(),
+        "fail_not_supported": attr.bool(default = True, doc = """
+            If set to True (default) this rule will failed on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
+                                        """),
     },
 )
 
