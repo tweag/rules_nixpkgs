@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+### Added
+- `nixpkgs_package` now has a new optional argument `fail_not_supported`
+  allowing the rule to _not_ fail on Windows (when set to `False`)
+
 ## [0.5.1] - 2018-12-18
 
 ### Changed
