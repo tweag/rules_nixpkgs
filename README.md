@@ -153,7 +153,7 @@ Make the content of a Nixpkgs package available in the Bazel workspace.
 ```bzl
 nixpkgs_package(
     name, attribute_path, nix_file, nix_file_deps, nix_file_content,
-    repository, repositories, build_file, build_file_content,
+    repository, repositories, build_file, build_file_content, nixopts,
     fail_not_supported,
 )
 ```
@@ -275,6 +275,13 @@ filegroup(
         <p><code>String; optional</code></p>
         <p>Like <code>build_file</code>, but a string of the contents
           instead of a file name.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nixopts</code></td>
+      <td>
+        <p><code>String list; optional</code></p>
+        <p>Extra flags to pass when calling Nix.</p>
       </td>
     </tr>
     <tr>
