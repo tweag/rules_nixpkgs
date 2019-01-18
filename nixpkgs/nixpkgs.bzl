@@ -268,7 +268,8 @@ def nixpkgs_cc_configure(
         repositories = {},
         nix_file = None,
         nix_file_deps = None,
-        nix_file_content = None):
+        nix_file_content = None,
+        nixopts = []):
     """Use a CC toolchain from Nixpkgs. No-op if not on Linux or Darwin.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -291,6 +292,7 @@ def nixpkgs_cc_configure(
         nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
         build_file_content = """exports_files(glob(["bin/*"]))""",
+        nixopts = nixopts,
     )
 
     # Following lines should match
