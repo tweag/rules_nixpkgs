@@ -97,3 +97,13 @@ filegroup(
 )
 
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+
+nixpkgs_package(
+    name = "zlib",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_package(
+    name = "zlib.dev",
+    repository = "@nixpkgs",
+)

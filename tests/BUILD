@@ -56,3 +56,50 @@ cc_binary(
     name = "cc-test",
     srcs = ["cc-test.cc"],
 )
+
+# Test cc_import interaction with rules_nixpkgs.
+cc_import(
+    name = "z-lib",
+    shared_library = "@zlib//:lib/libz.so",
+)
+
+cc_library(
+    name = "z",
+    hdrs = ["@zlib.dev//:include"],
+    # Work around lack of strip_include_prefix in cc_import as described here:
+    # https://github.com/bazelbuild/bazel/issues/4748#issuecomment-370707938
+    strip_include_prefix = "/external/zlib.dev/include",
+    deps = [":z-lib"],
+)
+
+# This test case will fail on Linux with the following error:
+# libz.so.1: cannot open shared object file: No such file or directory
+# The reason is that cc_test will create a binary with a reference to
+# libz.so.1, but the _solib directory in RUNPATH will only contain libz.so.
+# The issue originates in cc_import. cc_import only accepts a file ending on
+# .so, therefore we cannot point cc_import itself to libz.so.1, but only to the
+# symbolic link libz.so. The linker will reference the library under its soname
+# libz.so.1, which will be missing in the _solib directory.
+cc_test(
+    name = "cc-import-test",
+    srcs = ["cc-import-test.cc"],
+    deps = [":z"],
+)
+
+# Test workaround for cc_import soname issue.
+cc_library(
+    name = "z-workaround",
+    hdrs = ["@zlib.dev//:include"],
+    strip_include_prefix = "/external/zlib.dev/include",
+    srcs = ["@zlib//:lib"],
+)
+
+# This demonstrates a work-around for the above cc_import issue. Instead of
+# using cc_import to import the libz.so library, we pass it to the srcs
+# attribute of a regular cc_library rule. This allows to include all the
+# names of libz in _solib: libz.so, libz.so.1, libz.so.1.2.11.
+cc_test(
+    name = "cc-import-workaround",
+    srcs = ["cc-import-test.cc"],
+    deps = [":z-workaround"],
+)
