@@ -56,12 +56,21 @@ nixpkgs_local_repository = repository_rule(
     },
 )
 
+def _is_supported_platform(repository_ctx):
+    if repository_ctx.execute(["nix-build","--version"]).return_code == 0:
+      nix_in_path = True
+    else:
+      nix_in_path = False
+    is_windows = repository_ctx.os.name.startswith("windows")
+    return (not is_windows) and nix_in_path
+
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
 
     # Is nix supported on this platform?
-    not_supported = repository_ctx.os.name.startswith("windows")
+    not_supported = not _is_supported_platform(repository_ctx)
     # Should we fail if Nix is not supported?
     fail_not_supported = repository_ctx.attr.fail_not_supported
 
