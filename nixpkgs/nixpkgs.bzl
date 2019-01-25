@@ -57,13 +57,7 @@ nixpkgs_local_repository = repository_rule(
 )
 
 def _is_supported_platform(repository_ctx):
-    if repository_ctx.execute(["nix-build","--version"]).return_code == 0:
-      nix_in_path = True
-    else:
-      nix_in_path = False
-    is_windows = repository_ctx.os.name.startswith("windows")
-    return (not is_windows) and nix_in_path
-
+    return repository_ctx.execute(["nix-build","--version"]).return_code == 0
 
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
@@ -207,7 +201,7 @@ def nixpkgs_package(*args, **kwargs):
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
-    if not (cpu_value == "k8" or cpu_value == "piii" or cpu_value == "darwin"):
+    if not _is_supported_platform(repository_ctx):
         cc_autoconf_impl(repository_ctx)
         return
 
@@ -279,7 +273,7 @@ def nixpkgs_cc_configure(
         nix_file_deps = None,
         nix_file_content = None,
         nixopts = []):
-    """Use a CC toolchain from Nixpkgs. No-op if not on Linux or Darwin.
+    """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
     `gcc`) available in the environment. To make builds more hermetic, use
