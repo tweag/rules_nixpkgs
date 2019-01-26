@@ -45,7 +45,11 @@ let
     ${unSymLink "/etc/passwd"}
     ${unSymLink "/etc/shadow"}
 
-    exec ${nixpkgs.shadow}/bin/useradd "\$@"
+    ${nixpkgs.shadow}/bin/useradd "\$@"
+
+    # XXX Big hack: Give the right access to the bazel user
+    chmod 755 /nix /nix/store
+
     EOF
     chmod +x $out/bin/useradd
   '';
@@ -58,7 +62,7 @@ let
       contents = [buildEnv nixpkgs.bash nixpkgs.coreutils shadowEnv];
       # We just need to leave a few extra layers (out of the 128 available) for
       # the small dockerfile used by bazel rbe
-      maxLayers = 120;
+      # maxLayers = 120;
       config = {
         Entrypoint = "${buildEnv}/bin/entrypoint";
         Cwd = buildEnv;
@@ -113,6 +117,7 @@ let
       nobuildPhase = ''
         mkdir -p $out/bin
         cp ${./entrypoint.py} $out/bin/entrypoint
+        sed -i "s#env.json#$out/env.json#" $out/bin/entrypoint
         python ${./dump_env.py} > $out/env.json
         patchShebangs $out
       '';

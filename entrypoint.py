@@ -15,4 +15,5 @@ def load_env_file(env_file):
 
 if __name__ == '__main__':
     load_env_file("env.json")
+    print(sys.argv)
     subprocess.check_call(sys.argv[1:])

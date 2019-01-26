@@ -126,4 +126,4 @@ filegroup(
     repository = "@nixpkgs",
 )
 
-nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+# nixpkgs_cc_configure(repository = "@remote_nixpkgs")
