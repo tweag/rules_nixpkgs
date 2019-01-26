@@ -1,5 +1,34 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Download the rules_docker repository at release v0.7.0
+# http_archive(
+#     name = "io_bazel_rules_docker",
+#     sha256 = "aed1c249d4ec8f703edddf35cbe9dfaca0b5f5ea6e4cd9e83e99f3b0d1136c3d",
+#     strip_prefix = "rules_docker-0.7.0",
+#     urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.7.0.tar.gz"],
+# )
+rules_docker_commit = "27df735ce2215690a0ef4602b18cf36946bbd700"
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "57769dde81d786ad74b6e30a5a43c7f9b2a9f7b6ae9a424e49f6d5c227b3f056",
+    strip_prefix = "rules_docker-{}".format(rules_docker_commit),
+    # This is v0.7.0 + a custom patch to use the right python
+    urls = ["https://github.com/regnat/rules_docker/archive/{}.tar.gz".format(rules_docker_commit)],
+)
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+container_repositories()
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_load",
+)
+
 load(
     "//nixpkgs:nixpkgs.bzl",
     "nixpkgs_cc_configure",
@@ -28,11 +57,12 @@ nixpkgs_package(
     repositories = {"nixpkgs": "@remote_nixpkgs"},
 )
 
-nixpkgs_package(
-    name = "hello",
-    # Deliberately not repository, to test whether repositories works.
-    repositories = {"nixpkgs": "@nixpkgs"},
-)
+load("//:nix-repositories.bzl", "nix_packages")
+nix_packages()
+# container_load(
+#     name = "rbe_image",
+#     file = "@rbeDockerImage//:image.tar.gz",
+# )
 
 nixpkgs_package(
     name = "expr-test",
