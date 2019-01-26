@@ -106,7 +106,7 @@ let
       def nix_packages():
         ${generatedRepos}
     '';
-  bazelShell = { bazelRepositories ? {}, shellHook ? "", ... }@args:
+  bazelShell = { bazelRepositories ? {}, shellHook ? "", buildImage ? false, ... }@args:
   let
     allArgs = args // {
       bazelRepositories = builtins.toJSON bazelRepositories;
@@ -119,7 +119,7 @@ let
     };
     depsShell = nixpkgs.mkShell allArgs;
     repositoriesWDocker = bazelRepositories //
-      { rbeDockerImage = buildRbeImage depsShell; };
+      (if buildImage then { rbeDockerImage = buildRbeImage depsShell; } else {});
     shellWithDocker = nixpkgs.mkShell (allArgs // {
       shellHook = ''
             ln -fs ${nix2bzl repositoriesWDocker} ./nix-repositories.bzl
