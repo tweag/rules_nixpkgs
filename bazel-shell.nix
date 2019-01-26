@@ -56,7 +56,9 @@ let
       name = "rbe-image";
       tag = "0.0";
       contents = [buildEnv nixpkgs.bash nixpkgs.coreutils shadowEnv];
-      # maxLayers = 3;
+      # We just need to leave a few extra layers (out of the 128 available) for
+      # the small dockerfile used by bazel rbe
+      maxLayers = 120;
       config = {
         Entrypoint = "${buildEnv}/bin/entrypoint";
         Cwd = buildEnv;
