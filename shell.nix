@@ -8,7 +8,6 @@ bazelShell {
   buildInputs = [
     bazel
     gcc
-    nix
     python2
   ];
 
