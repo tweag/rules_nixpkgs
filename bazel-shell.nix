@@ -1,5 +1,7 @@
 nixpkgs:
 
+let inherit (nixpkgs) lib; in
+
 let
   # Make the given path a concrete file instead of symlink so that we can
   # overwrite it if needed
@@ -31,34 +33,25 @@ let
     mkdir -p $out/bin
     cat <<EOF > $out/bin/groupadd
     #!/bin/sh
-
     ${unSymLink "/etc/group"}
     ${unSymLink "/etc/gshadow"}
-
     exec ${nixpkgs.shadow}/bin/groupadd "\$@"
     EOF
     chmod +x $out/bin/groupadd
 
     cat <<EOF > $out/bin/useradd
     #!/bin/sh
-
     ${unSymLink "/etc/passwd"}
     ${unSymLink "/etc/shadow"}
-
     ${nixpkgs.shadow}/bin/useradd "\$@"
-
     # XXX Big hack: Give the right access to the bazel user
     chmod 755 /nix /nix/store
-
     EOF
     chmod +x $out/bin/useradd
   '';
   buildRbeImage = buildEnv:
-  let
-    dockerImage =
-      nixpkgs.dockerTools.buildLayeredImage {
+    nixpkgs.dockerTools.buildLayeredImage {
       name = "rbe-image";
-      tag = "0.0";
       contents = [buildEnv nixpkgs.bash nixpkgs.coreutils shadowEnv];
       # We just need to leave a few extra layers (out of the 128 available) for
       # the small dockerfile used by bazel rbe
@@ -68,17 +61,6 @@ let
         Cwd = buildEnv;
       };
     };
-    imageInSubfolder = nixpkgs.runCommand "rbe-image-folder" {} ''
-      mkdir -p $out
-      ln -s ${dockerImage} $out/image.tar.gz
-    '';
-  in
-  {
-    path = imageInSubfolder;
-    build_file_content = ''
-      exports_files(["image.tar.gz"])
-    '';
-  };
   optionalBazelValue = maybeNull:
     if maybeNull == null then "None" else ''"""${maybeNull}"""'';
   nix2bzl = { ... }@packageConfigs:
@@ -121,14 +103,16 @@ let
         python ${./dump_env.py} > $out/env.json
         patchShebangs $out
       '';
+      shellHook = ''
+            ln -fs ${nix2bzl bazelRepositories} ./nix-repositories.bzl
+      '' + shellHook;
     };
     depsShell = nixpkgs.mkShell allArgs;
-    repositoriesWDocker = bazelRepositories //
-      (if buildImage then { rbeDockerImage = buildRbeImage depsShell; } else {});
+    rbeDockerImage = buildRbeImage depsShell;
+    rbeDockerTag = lib.head (lib.splitString "-" (lib.last (lib.splitString "/" rbeDockerImage)));
     shellWithDocker = nixpkgs.mkShell (allArgs // {
-      shellHook = ''
-            ln -fs ${nix2bzl repositoriesWDocker} ./nix-repositories.bzl
-      '' + shellHook;
+      RBE_DOCKER_IMAGE = rbeDockerImage;
+      RBE_DOCKER_TAG = rbeDockerTag;
     });
     in
     shellWithDocker;
