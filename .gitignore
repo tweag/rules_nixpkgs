@@ -3,3 +3,4 @@
 /bazel-out
 /bazel-rules_nixpkgs
 /bazel-testlogs
+/nix-repositories.bzl
