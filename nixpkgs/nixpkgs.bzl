@@ -57,7 +57,7 @@ nixpkgs_local_repository = repository_rule(
 )
 
 def _is_supported_platform(repository_ctx):
-    return repository_ctx.execute(["nix-build","--version"]).return_code == 0
+    return repository_ctx.which("nix-build") != None
 
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
