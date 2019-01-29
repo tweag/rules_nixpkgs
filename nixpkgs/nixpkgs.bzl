@@ -199,6 +199,11 @@ def nixpkgs_package(*args, **kwargs):
     else:
         _nixpkgs_package(*args, **kwargs)
 
+def _readlink(repository_ctx, path):
+    return _execute_or_fail(
+        repository_ctx, ["readlink", path],
+    ).stdout.rstrip()
+
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
     if not _is_supported_platform(repository_ctx):
@@ -222,7 +227,7 @@ def nixpkgs_cc_autoconf_impl(repository_ctx):
     # the Bazel autoconfiguration with the tools we found.
     bin_contents = _find_children(repository_ctx, workspace_root + "/bin")
     overriden_tools = {
-        tool: entry
+        tool: _readlink(repository_ctx, entry)
         for entry in bin_contents
         for tool in [entry.rpartition("/")[-1]]  # Compute basename
     }
