@@ -200,9 +200,7 @@ def nixpkgs_package(*args, **kwargs):
         _nixpkgs_package(*args, **kwargs)
 
 def _readlink(repository_ctx, path):
-    return _execute_or_fail(
-        repository_ctx, ["readlink", path],
-    ).stdout.rstrip()
+    return repository_ctx.path(path).realpath
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
