@@ -97,6 +97,7 @@ nixpkgs_packages(
         "ghc": "ghc",
         "nixpkgs-packages-hello-from-file": { "nix_file": "//tests:hello.nix" },
         "nixpkgs-packages-hello-from-expr": { "nix_file_content": "let pkgs = import <nixpkgs> {}; in pkgs.hello" },
+        "not-evaluating": "lib",
         "output-filegroup-manual-test": {
             "build_file_content": """
 package(default_visibility = [ "//visibility:public" ])
