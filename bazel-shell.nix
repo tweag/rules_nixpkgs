@@ -95,24 +95,18 @@ let
   bazelShell = { bazelRepositories ? {}, shellHook ? "", buildImage ? false, ... }@args:
   let
     allArgs = args // {
+      name = "bazel-shell";
       bazelRepositories = builtins.toJSON bazelRepositories;
-      nobuildPhase = ''
-        mkdir -p $out/bin
-        cp ${./entrypoint.py} $out/bin/entrypoint
-        sed -i "s#env.json#$out/env.json#" $out/bin/entrypoint
-        python ${./dump_env.py} > $out/env.json
-        patchShebangs $out
-      '';
-      shellHook = ''
-            ln -fs ${nix2bzl bazelRepositories} ./nix-repositories.bzl
-      '' + shellHook;
     };
-    depsShell = nixpkgs.mkShell allArgs;
-    rbeDockerImage = buildRbeImage depsShell;
+    depsShell = nixpkgs.stdenv.mkDerivation allArgs;
+    rbeDockerImage = import ./nix/docker-image.nix nixpkgs depsShell;
     rbeDockerTag = lib.head (lib.splitString "-" (lib.last (lib.splitString "/" rbeDockerImage)));
     shellWithDocker = nixpkgs.mkShell (allArgs // {
       RBE_DOCKER_IMAGE = rbeDockerImage;
       RBE_DOCKER_TAG = rbeDockerTag;
+      shellHook = ''
+            ln -fs ${nix2bzl bazelRepositories} ./nix-repositories.bzl
+      '' + shellHook;
     });
     in
     shellWithDocker;
