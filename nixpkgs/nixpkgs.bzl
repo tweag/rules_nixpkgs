@@ -228,7 +228,9 @@ nixpkgs_packages_instantiate_swapped = repository_rule(
             doc = "A map between the name of the packages to instantiate and their nix expression",
         ),
         "repositories": attr.label_keyed_string_dict(),
-        "nixopts": attr.string_list(),
+        "nixopts": attr.string_list(doc = """
+            Extra options to pass to "nix-instantiate"
+            """),
         "fail_not_supported": attr.bool(default = True, doc = """
             If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
         """),
@@ -306,7 +308,9 @@ nixpkgs_package_realize = repository_rule(
         "attribute_name": attr.string(),
         "build_file": attr.label(),
         "build_file_content": attr.string(),
-        "nixopts": attr.string_list(),
+        "nixopts": attr.string_list(doc = """
+            Extra options to pass to "nix-store"
+        """),
         "fail_not_supported": attr.bool(default = True, doc = """
             If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
         """),
