@@ -3,6 +3,18 @@
 load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 
+def python(repository_ctx):
+    if "BAZEL_PYTHON" in repository_ctx.os.environ:
+        return repository_ctx.os.environ.get("BAZEL_PYTHON")
+
+    python_path = repository_ctx.which("python2")
+    if not python_path:
+        python_path = repository_ctx.which("python")
+    if not python_path:
+        python_path = repository_ctx.which("python.exe")
+    if python_path:
+        return python_path
+
 def _nixpkgs_git_repository_impl(repository_ctx):
     repository_ctx.file("BUILD")
 
@@ -112,7 +124,7 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
     # Should we fail if Nix is not supported?
     fail_not_supported = repository_ctx.attr.fail_not_supported
 
-    repository_ctx.file("BUILD", "exports_files([\"nix_attrs.nix\"])")
+    repository_ctx.file("BUILD", "exports_files(glob([\"*\"]))")
 
     if not_supported and fail_not_supported:
         fail("Platform is not supported (see 'fail_not_supported')")
@@ -191,6 +203,15 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
     )
     repository_ctx.file("nix_attrs.nix", content = exec_result.stdout)
 
+    _execute_or_fail(
+        repository_ctx,
+        [ python(repository_ctx)
+        , repository_ctx.path(repository_ctx.attr._json_to_files)
+        , "."
+        , "nix_attrs.nix"
+        ]
+    )
+
 nixpkgs_packages_instantiate_swapped = repository_rule(
     implementation = _nixpkgs_packages_instantiate_impl,
     attrs = {
@@ -211,6 +232,12 @@ nixpkgs_packages_instantiate_swapped = repository_rule(
         "fail_not_supported": attr.bool(default = True, doc = """
             If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
         """),
+        "_json_to_files": attr.label(
+            executable = True,
+            allow_single_file = True,
+            cfg = "host",
+            default = Label("@io_tweag_rules_nixpkgs//nixpkgs:json_to_files.py"),
+        ),
     },
 )
 
@@ -242,26 +269,10 @@ def _nixpkgs_package_realize_impl(repository_ctx):
         "nix-store",
         extra_msg = "See: https://nixos.org/nix/",
     )
-    nix_instantiate_path = _executable_path(
-        repository_ctx,
-        "nix-instantiate",
-        extra_msg = "See: https://nixos.org/nix/",
-    )
-
-    if repository_ctx.attr.attribute_name:
-        attribute_path = repository_ctx.attr.attribute_name
-
-    nix_instantiate_args = [
-        "--eval",
-        "-E", "(builtins.fromJSON (builtins.readFile {drv_set_file})).{attribute_path}".format(
-            drv_set_file = repository_ctx.path(repository_ctx.attr.drv_set_file),
-            attribute_path = attribute_path,
-        )
-        ]
 
     drv_path = _execute_or_fail(
         repository_ctx,
-        [nix_instantiate_path] + nix_instantiate_args,
+        ["cat", repository_ctx.path(repository_ctx.attr.drv_pointer)],
         quiet = True,
     ).stdout.strip("\"\n")
 
@@ -288,9 +299,9 @@ def _nixpkgs_package_realize_impl(repository_ctx):
 nixpkgs_package_realize = repository_rule(
     implementation = _nixpkgs_package_realize_impl,
     attrs = {
-        "drv_set_file": attr.label(
-            allow_single_file = [".nix"],
-            doc = "A nix file containing a map from package names to their drv path",
+        "drv_pointer": attr.label(
+            allow_single_file = True,
+            doc = "A file containing the path to the drv file",
         ),
         "attribute_name": attr.string(),
         "build_file": attr.label(),
@@ -367,7 +378,7 @@ def nixpkgs_packages(
         nixpkgs_package_realize(
             name = package_name,
             attribute_name = package_name,
-            drv_set_file = "@" + name + "//:nix_attrs.nix",
+            drv_pointer = "@" + name + "//:" + package_name,
             build_file_content = package_value.get("build_file_content"),
             build_file = package_value.get("build_file"),
             nixopts = nixopts,
