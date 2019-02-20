@@ -124,7 +124,7 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
     # Should we fail if Nix is not supported?
     fail_not_supported = repository_ctx.attr.fail_not_supported
 
-    repository_ctx.file("BUILD", "exports_files(glob([\"*\"]))")
+    repository_ctx.file("BUILD", """exports_files(glob(["*"]))""")
 
     if not_supported and fail_not_supported:
         fail("Platform is not supported (see 'fail_not_supported')")
@@ -137,9 +137,11 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
         extra_msg = "See: https://nixos.org/nix/",
     )
 
+    # Assumes `{name}` does not contain any `"` and `{attrPath}` uses a valid
+    # attribute path syntax
     packages_from_attr = \
         [
-            "\"{name}\" = nixpkgs.{attrPath}".format(name = name, attrPath = attrPath)
+            "\"{name}\" = nixpkgs.''{attrPath}'';".format(name = name, attrPath = attrPath)
             for (name, attrPath) in repository_ctx.attr.packagesFromAttr.items()
         ]
 
@@ -150,7 +152,6 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
             nix_definition_file,
             content = expr
             )
-        # generatedPackageFiles[nix_definition_file] = name
         generatedPackageFiles[name] = nix_definition_file
     packagesFromFileLabels = \
       { name: Label(filePath)
@@ -160,20 +161,20 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
 
     packages_from_file = \
         [
-            "\"{name}\" = import {filePath}".format(name = name, filePath = repository_ctx.path(filePath))
+            "\"{name}\" = import ''{filePath}'';".format(name = name, filePath = repository_ctx.path(filePath))
             for (name, filePath) in packagesFromFile.items()
         ]
 
-    packages_record_inside = ";".join(packages_from_attr + packages_from_file)
-    packages_record = "nixpkgs: { " + packages_record_inside + "; }"
+    packages_record_inside = " ".join(packages_from_attr + packages_from_file)
+    packages_record = "nixpkgs: { " + packages_record_inside + " }"
 
     repository_ctx.file("packages_attributes_mappings.nix", packages_record)
 
     nix_set_builder = repository_ctx.template("drv_set_builder.nix", Label("@io_tweag_rules_nixpkgs//nixpkgs:drv_set_builder.nix"))
     nix_instantiate_args = [
         "--eval",
-        "--strict",
-        "--read-write-mode",
+        "--strict", # Ensure that everything is instantiated
+        "--read-write-mode", # Allow writing the drv files to the store
         "--json",
         "drv_set_builder.nix",
         "--arg", "packages", "import ./packages_attributes_mappings.nix",
@@ -281,6 +282,9 @@ def _nixpkgs_package_realize_impl(repository_ctx):
     nix_store_args = [
         "--realize",
         "--no-build-output",
+        # Add a root to avoid this being garbage-collected.
+        # This root will have the same lifetime as the bazel cache for this
+        # target, so if we `bazel clean` it will be deleted
         "--add-root", "nix-root", "--indirect",
         drv_path
         ] + repository_ctx.attr.nixopts
