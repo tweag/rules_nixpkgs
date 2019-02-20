@@ -337,6 +337,27 @@ def nixpkgs_packages(
     repository = None,
     nixopts = [],
     ):
+    """
+    Defines a set of targets pointing to nixpkgs packages at once.
+
+    For each `(name, package)` pair in `packages`, this macro will define a
+    `@package` external repository pointing to the nix package `package`
+
+    Keyword arguments:
+    name: The base name for the generated repository containing the nix
+      definitions packages: A dict associating each package name to its
+      definition, which itself is a dict which can contain
+      - `nix_file`: Path to a nix file defining the package
+      - `nix_file_content`: Nix expression defining the package
+      - `attribute_path`: Path to the package in `<nixpkgs>`.
+      - `build_file`: Path to a `BUILD` file used when importing the package
+        into bazel
+      - `build_file_content`: Similar to `build_file`, but directly specify the
+        content of the file
+
+      As a shortcut, the definition can also be a raw string `s`, which is
+      equivalent to `{"attribute_path": s}`
+    """
 
     # We allow defining a package as a string, which is a shortcut for just
     # defining its ``attribute_path`` field.
