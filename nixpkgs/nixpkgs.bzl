@@ -141,7 +141,7 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
     # attribute path syntax
     packages_from_attr = \
         [
-            "\"{name}\" = nixpkgs.''{attrPath}'';".format(name = name, attrPath = attrPath)
+            "\"{name}\" = nixpkgs.{attrPath};".format(name = name, attrPath = attrPath)
             for (name, attrPath) in repository_ctx.attr.packagesFromAttr.items()
         ]
 
@@ -357,12 +357,11 @@ def nixpkgs_packages(
     packagesFromFile = {}
     packagesFromExpr = {}
     for (packageName, value) in desugared_packages.items():
-        # if type(value) == type({}) and "nix_file" in value:
         if hasAttr(value, "nix_file"):
           packagesFromFile[packageName] = value["nix_file"]
-        elif type(value) == type({}) and "nix_file_content" in value:
+        elif hasAttr(value, "nix_file_content"):
           packagesFromExpr[packageName] = value["nix_file_content"]
-        elif type(value) == type({}) and "attribute_path" in value:
+        elif hasAttr(value, "attribute_path"):
           packagesFromAttr[packageName] = value["attribute_path"]
         elif type(value) == type({}):
           # Default case: ``attribute_path`` is implicitely equal to ``packageName``
