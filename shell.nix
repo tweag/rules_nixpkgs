@@ -7,5 +7,6 @@ mkShell {
     bazel
     gcc
     nix
+    python2
   ];
 }

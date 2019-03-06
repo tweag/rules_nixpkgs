@@ -15,6 +15,28 @@ def python(repository_ctx):
     if python_path:
         return python_path
 
+def _implode_packages_defs(def_files, attribute_paths):
+    """Merge the two dics passed as arguments into a dict of dicts"""
+    combined_packageset = {}
+    for package in def_files.keys() + attribute_paths.keys():
+        combined_packageset[package] = {}
+        if package in def_files:
+            combined_packageset[package]["file"] = def_files[package]
+        if package in attribute_paths:
+            combined_packageset[package]["attribute_path"] = attribute_paths[package]
+    return combined_packageset
+
+def buildNixExpr(file = None, attribute_path = None):
+    if file == None:
+        defining_expr = "nixpkgs"
+    else:
+        defining_expr = "(import {})".format(file)
+    if attribute_path == None:
+        raw_access_path = ""
+    else:
+        raw_access_path = ".{}".format(attribute_path)
+    return (defining_expr + raw_access_path)
+
 def _nixpkgs_git_repository_impl(repository_ctx):
     repository_ctx.file("BUILD")
 
@@ -152,20 +174,29 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
             nix_definition_file,
             content = expr
             )
-        generatedPackageFiles[name] = nix_definition_file
+        generatedPackageFiles[name] = "./" + nix_definition_file
     packagesFromFileLabels = \
-      { name: Label(filePath)
+      { name: repository_ctx.path(Label(filePath))
         for (name, filePath) in repository_ctx.attr.packagesFromFile.items()
       }
     packagesFromFile = packagesFromFileLabels + generatedPackageFiles
 
-    packages_from_file = \
+    all_packages = _implode_packages_defs(
+        packagesFromFile,
+        repository_ctx.attr.packagesFromAttr,
+    )
+
+    nix_package_defs = \
         [
-            "\"{name}\" = import ''{filePath}'';".format(name = name, filePath = repository_ctx.path(filePath))
-            for (name, filePath) in packagesFromFile.items()
+            # "\"{name}\" = import ''{filePath}'';".format(name = name, filePath = repository_ctx.path(filePath))
+            "\"{name}\" = {definingExpr};".format(
+                name = name,
+                definingExpr = buildNixExpr(**package_def)
+                )
+            for (name, package_def) in all_packages.items()
         ]
 
-    packages_record_inside = " ".join(packages_from_attr + packages_from_file)
+    packages_record_inside = " ".join(nix_package_defs)
     packages_record = "nixpkgs: { " + packages_record_inside + " }"
 
     repository_ctx.file("packages_attributes_mappings.nix", packages_record)
@@ -380,13 +411,10 @@ def nixpkgs_packages(
     for (packageName, value) in desugared_packages.items():
         if hasAttr(value, "nix_file"):
           packagesFromFile[packageName] = value["nix_file"]
-        elif hasAttr(value, "nix_file_content"):
+        if hasAttr(value, "nix_file_content"):
           packagesFromExpr[packageName] = value["nix_file_content"]
-        elif hasAttr(value, "attribute_path"):
+        if hasAttr(value, "attribute_path"):
           packagesFromAttr[packageName] = value["attribute_path"]
-        elif type(value) == type({}):
-          # Default case: ``attribute_path`` is implicitely equal to ``packageName``
-          packagesFromAttr[packageName] = packageName
 
     # Instantiate the package set (*i.e* evaluate the nix expressions, but
     # without building anything)
