@@ -1,6 +1,6 @@
 let
-  nixpkgsRev = "75942f96b3f7136cdc9cc7d9704824f17fabec02";
-  nixpkgsSha256 = "0ay4v4n856xl79ilym4w6vbp6pxzmn8l31j1ch98wa1lj7l71lgi";
+  nixpkgsRev = "a5aca72f93715ea7a44e47028ed1404ec1efb525";
+  nixpkgsSha256 = "1k0ggn431z2aj4snq815w788qz4cw3ajs2wgnbhl0idqzqq6gm36";
   nixpkgs = fetchTarball {
     url = "https://github.com/nixos/nixpkgs/archive/${nixpkgsRev}.tar.gz";
     sha256 = nixpkgsSha256;
