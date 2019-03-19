@@ -15,22 +15,68 @@ def python(repository_ctx):
     if python_path:
         return python_path
 
-def _implode_packages_defs(def_files, attribute_paths):
-    """Merge the two dics passed as arguments into a dict of dicts"""
+def _explode_package_definitions(packages):
+    """ Explode the given dict of dicts defining a set of packages into
+    three flat dicts because we can't pass nested dicts to bazel rules
+    """
+    # Bazel doesn't allow us to pass anything more complex than a
+    # ``Dict[string, string]`` for the arguments of a rule, but our package set
+    # is a ``Dict[string, Dict[…]]``, so we first transform it into several
+    # ``Dict[string, string]`` (according to how the package is defined) to
+    # pass them to the ``nixpkgs_packages_instantiate`` rule
+    packagesFromAttr = {}
+    packagesFromFile = {}
+    packagesFromExpr = {}
+    for (packageName, value) in packages.items():
+        is_defined = False
+        if hasAttr(value, "nix_file"):
+          packagesFromFile[packageName] = value["nix_file"]
+          is_defined = True
+        if hasAttr(value, "nix_file_content"):
+          packagesFromExpr[packageName] = value["nix_file_content"]
+          is_defined = True
+        if hasAttr(value, "attribute_path"):
+          packagesFromAttr[packageName] = value["attribute_path"]
+          is_defined = True
+        # If neither a nix file nor an attribute path is specified,
+        # assume that the attribute path is equal to the name
+        if not is_defined:
+          packagesFromAttr[packageName] = packageName
+    return {
+      "fromAttr": packagesFromAttr,
+      "fromFile": packagesFromFile,
+      "fromExpr": packagesFromExpr
+    }
+
+def _implode_packages_defs(fromFile, fromExpr, fromAttr):
+    """Inverse of _explode_package_definitions"""
     combined_packageset = {}
-    for package in def_files.keys() + attribute_paths.keys():
+    for package in fromFile.keys() + fromExpr.keys() + fromAttr.keys():
         combined_packageset[package] = {}
-        if package in def_files:
-            combined_packageset[package]["file"] = def_files[package]
-        if package in attribute_paths:
-            combined_packageset[package]["attribute_path"] = attribute_paths[package]
+        if package in fromFile:
+            combined_packageset[package]["nix_file"] = fromFile[package]
+        if package in fromAttr:
+            combined_packageset[package]["attribute_path"] = fromAttr[package]
+        if package in fromExpr:
+            combined_packageset[package]["nix_file_content"] = fromExpr[package]
     return combined_packageset
 
-def buildNixExpr(file = None, attribute_path = None):
-    if file == None:
-        defining_expr = "nixpkgs"
+
+def buildNixExpr(ctx, name, nix_file = None, nix_file_content = None, attribute_path = None):
+    """Build a nix expression defining the given package
+    """
+    if nix_file != None:
+        defining_expr = "(import \"{}\")".format(ctx.path(Label(nix_file)))
+    elif nix_file_content != None:
+        generated_nix_file = "__internal_" + name + "_definition.nix"
+        ctx.file(
+            generated_nix_file,
+            content = nix_file_content
+            )
+        defining_expr = "(import ./{})".format(generated_nix_file)
     else:
-        defining_expr = "(import {})".format(file)
+        defining_expr = "nixpkgs"
+
     if attribute_path == None:
         raw_access_path = ""
     else:
@@ -141,37 +187,24 @@ def _readlink(repository_ctx, path):
     return repository_ctx.path(path).realpath
 
 def _generate_mappings(repository_ctx, packagesFromExpr, packagesFromFile, packagesFromAttr):
-    generatedPackageFiles = {}
-    for (name, expr) in packagesFromExpr.items():
-        nix_definition_file = "__internal_" + name + "_definition.nix"
-        repository_ctx.file(
-            nix_definition_file,
-            content = expr
-            )
-        generatedPackageFiles[name] = "./" + nix_definition_file
-    packagesFromFileLabels = \
-      { name: repository_ctx.path(Label(filePath))
-        for (name, filePath) in packagesFromFile.items()
-      }
-    packagesFromFile = packagesFromFileLabels + generatedPackageFiles
 
     all_packages = _implode_packages_defs(
-        packagesFromFile,
-        packagesFromAttr,
+        fromFile = packagesFromFile,
+        fromExpr = packagesFromExpr,
+        fromAttr = packagesFromAttr,
     )
 
     nix_package_defs = \
         [
             "\"{name}\" = {definingExpr};".format(
                 name = name,
-                definingExpr = buildNixExpr(**package_def)
+                definingExpr = buildNixExpr(repository_ctx, name, **package_def)
                 )
             for (name, package_def) in all_packages.items()
         ]
 
     packages_record_inside = " ".join(nix_package_defs)
     packages_record = "nixpkgs: { " + packages_record_inside + " }"
-    print(repository_ctx.name, packages_record)
 
     file_name = "packages_attributes_mappings.nix"
     repository_ctx.file(file_name, packages_record)
@@ -402,29 +435,7 @@ def nixpkgs_packages(
         else:
             desugared_packages[packageName] = value
 
-    # Bazel doesn't allow us to pass anything more complex than a
-    # ``Dict[string, string]`` for the arguments of a rule, but our package set
-    # is a ``Dict[string, Dict[…]]``, so we first transform it into several
-    # ``Dict[string, string]`` (according to how the package is defined) to
-    # pass them to the ``nixpkgs_packages_instantiate`` rule
-    packagesFromAttr = {}
-    packagesFromFile = {}
-    packagesFromExpr = {}
-    for (packageName, value) in desugared_packages.items():
-        is_defined = False
-        if hasAttr(value, "nix_file"):
-          packagesFromFile[packageName] = value["nix_file"]
-          is_defined = True
-        if hasAttr(value, "nix_file_content"):
-          packagesFromExpr[packageName] = value["nix_file_content"]
-          is_defined = True
-        if hasAttr(value, "attribute_path"):
-          packagesFromAttr[packageName] = value["attribute_path"]
-          is_defined = True
-        # If neither a nix file nor an attribute path is specified,
-        # assume that the attribute path is equal to the name
-        if not is_defined:
-          packagesFromAttr[packageName] = packageName
+    exploded_packages = _explode_package_definitions(desugared_packages)
 
     # Instantiate the package set (*i.e* evaluate the nix expressions, but
     # without building anything)
@@ -432,9 +443,9 @@ def nixpkgs_packages(
         name = name,
         repositories = repositories,
         repository = repository,
-        packagesFromAttr = packagesFromAttr,
-        packagesFromFile = packagesFromFile,
-        packagesFromExpr = packagesFromExpr,
+        packagesFromAttr = exploded_packages["fromAttr"],
+        packagesFromFile = exploded_packages["fromFile"],
+        packagesFromExpr = exploded_packages["fromExpr"],
         nixopts = nixopts,
     )
 
