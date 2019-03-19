@@ -404,7 +404,7 @@ def nixpkgs_packages(
     nixopts = [],
     ):
     """
-    Defines a set of targets pointing to nixpkgs packages at once.
+    Defines a set of targets pointing to multiple nixpkgs packages at once.
 
     For each `(name, package)` pair in `packages`, this macro will define a
     `@package` external repository pointing to the nix package `package`
