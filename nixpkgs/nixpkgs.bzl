@@ -140,6 +140,43 @@ def invert_repositories(f, *args, **kwargs):
 def _readlink(repository_ctx, path):
     return repository_ctx.path(path).realpath
 
+def _generate_mappings(repository_ctx, packagesFromExpr, packagesFromFile, packagesFromAttr):
+    generatedPackageFiles = {}
+    for (name, expr) in packagesFromExpr.items():
+        nix_definition_file = "__internal_" + name + "_definition.nix"
+        repository_ctx.file(
+            nix_definition_file,
+            content = expr
+            )
+        generatedPackageFiles[name] = "./" + nix_definition_file
+    packagesFromFileLabels = \
+      { name: repository_ctx.path(Label(filePath))
+        for (name, filePath) in packagesFromFile.items()
+      }
+    packagesFromFile = packagesFromFileLabels + generatedPackageFiles
+
+    all_packages = _implode_packages_defs(
+        packagesFromFile,
+        packagesFromAttr,
+    )
+
+    nix_package_defs = \
+        [
+            "\"{name}\" = {definingExpr};".format(
+                name = name,
+                definingExpr = buildNixExpr(**package_def)
+                )
+            for (name, package_def) in all_packages.items()
+        ]
+
+    packages_record_inside = " ".join(nix_package_defs)
+    packages_record = "nixpkgs: { " + packages_record_inside + " }"
+    print(repository_ctx.name, packages_record)
+
+    file_name = "packages_attributes_mappings.nix"
+    repository_ctx.file(file_name, packages_record)
+    return file_name
+
 def _nixpkgs_packages_instantiate_impl(repository_ctx):
     # Is nix supported on this platform?
     not_supported = not _is_supported_platform(repository_ctx)
@@ -159,47 +196,12 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
         extra_msg = "See: https://nixos.org/nix/",
     )
 
-    # Assumes `{name}` does not contain any `"` and `{attrPath}` uses a valid
-    # attribute path syntax
-    packages_from_attr = \
-        [
-            "\"{name}\" = nixpkgs.{attrPath};".format(name = name, attrPath = attrPath)
-            for (name, attrPath) in repository_ctx.attr.packagesFromAttr.items()
-        ]
-
-    generatedPackageFiles = {}
-    for (name, expr) in repository_ctx.attr.packagesFromExpr.items():
-        nix_definition_file = "__internal_" + name + "_definition.nix"
-        repository_ctx.file(
-            nix_definition_file,
-            content = expr
-            )
-        generatedPackageFiles[name] = "./" + nix_definition_file
-    packagesFromFileLabels = \
-      { name: repository_ctx.path(Label(filePath))
-        for (name, filePath) in repository_ctx.attr.packagesFromFile.items()
-      }
-    packagesFromFile = packagesFromFileLabels + generatedPackageFiles
-
-    all_packages = _implode_packages_defs(
-        packagesFromFile,
-        repository_ctx.attr.packagesFromAttr,
+    packages_attributes_mappings = _generate_mappings(
+        repository_ctx,
+        repository_ctx.attr.packagesFromExpr,
+        repository_ctx.attr.packagesFromFile,
+        repository_ctx.attr.packagesFromAttr
     )
-
-    nix_package_defs = \
-        [
-            # "\"{name}\" = import ''{filePath}'';".format(name = name, filePath = repository_ctx.path(filePath))
-            "\"{name}\" = {definingExpr};".format(
-                name = name,
-                definingExpr = buildNixExpr(**package_def)
-                )
-            for (name, package_def) in all_packages.items()
-        ]
-
-    packages_record_inside = " ".join(nix_package_defs)
-    packages_record = "nixpkgs: { " + packages_record_inside + " }"
-
-    repository_ctx.file("packages_attributes_mappings.nix", packages_record)
 
     nix_set_builder = repository_ctx.template("drv_set_builder.nix", Label("@io_tweag_rules_nixpkgs//nixpkgs:drv_set_builder.nix"))
     nix_instantiate_args = [
@@ -208,7 +210,7 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
         "--read-write-mode", # Allow writing the drv files to the store
         "--json",
         "drv_set_builder.nix",
-        "--arg", "packages", "import ./packages_attributes_mappings.nix",
+        "--arg", "packages", "import ./{}".format(packages_attributes_mappings),
         ]
 
     nix_instantiate = [nix_instantiate_path] + \
