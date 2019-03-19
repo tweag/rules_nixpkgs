@@ -140,7 +140,9 @@ def _nixpkgs_package_impl(repository_ctx):
             "nix-build",
             extra_msg = "See: https://nixos.org/nix/",
         )
-        nix_build = [nix_build_path] + expr_args
+
+        # -vv will generate extra verbose output, used for dependencies detection
+        nix_build = [nix_build_path] + expr_args + ["-vv"]
 
         # Large enough integer that Bazel can still parse. We don't have
         # access to MAX_INT and 0 is not a valid timeout so this is as good
@@ -157,6 +159,87 @@ def _nixpkgs_package_impl(repository_ctx):
         )
         output_path = exec_result.stdout.splitlines()[-1]
 
+        # HERMETIC heuristic
+        # The following pieces of code tries to detect the
+        # dependencies needed by nix during the build of the package
+        # and will fail the bazel process if any implicit dependency
+        # is not correctly listed by the user
+
+        # A more robust solution may be a sandbox,
+        # see https://github.com/bazelbuild/bazel/issues/7764
+
+        # Contains the dependencies detected during nix evaluation
+        # Nix list them as realpath (with symbolic link resolved)
+        deps = []
+        for line in exec_result.stderr.splitlines():
+            line = line.split(sep=' ')
+
+            # Heuristic: a dependency is something which looks like:
+            # evaluating file FILE
+            # copied source FILE
+            if (line[0], line[1]) in [("evaluating", "file"), ("copied", "source")]:
+                # We ignore some files:
+                # - Anything in /nix/store, they are not explicit dependencies are are supposed to be immutable
+                # - Anything from .cache/bazel, only case I encountered was a local nixpkgs clone handled by bazel
+                # - .config/nixpkgs. user configuration should not impact the reproducibility of the build
+                if (
+                   not line[2].startswith("'/nix/store")
+                   and ".cache/bazel" not in line[2]
+                   and ".config/nixpkgs" not in line[2]
+                ):
+                    filename = line[2][1:-1] # trimming quotes
+
+                    # This filename can be either a file or a directory
+                    # this find command will list all the sub files of a potential directory
+                    find_result = _execute_or_fail(
+                        repository_ctx,
+                        [_executable_path(repository_ctx, "find"), filename, "-type", "f", "-print0"],
+                    )
+
+                    # filenames are separated by \0 to allow filenames with newlines
+                    for filename in find_result.stdout.rstrip("\0").split("\0"):
+                        deps.append(filename)
+
+        # declared deps contains all the implicit dependencies declared by the user
+        # starting by all the files in `nix_file_deps`
+        # realpath is used to match files listed by nix
+        # Note: we use a dict with all value to None to represent a set
+        declared_deps = {str(repository_ctx.path(f).realpath):None for f in repository_ctx.attr.nix_file_deps}
+
+        # extend declared deps with the list of all repositories files
+        if repository_ctx.attr.nix_file:
+            declared_deps[str(repository_ctx.path(repository_ctx.attr.nix_file))] = None
+        for rep in repositories.keys():
+            declared_deps[str(repository_ctx.path(rep).realpath)] = None
+
+        # Set substraction deps - declared_deps must be empty
+        # Note: we do not fail if some declared deps are not
+        # necessary, better safe than sorry, this won't affect
+        # reproducibility, and we are not sure that the current
+        # heuristic can find all the indirect dependencies
+
+        deps_minus_declared_deps = dict()
+        for dep in deps:
+            if dep not in declared_deps:
+                # Set behavior here
+                deps_minus_declared_deps[dep] = None
+
+        if deps_minus_declared_deps:
+            fail("""
+
+Non hermetic configuration for repository {repo_name}.
+
+The following dependencies are not declared in *nixpkgs_package* attributes.
+
+You need to update the repository rule *{repo_name}* and set/extend *nix_file_deps* with the following dependencies (adapted to your workspace):
+
+nix_file_deps = [
+    "{deps_listing}",
+]
+
+""".format(repo_name = repository_ctx.name,
+           deps_listing = '",\n    "'.join(deps_minus_declared_deps.keys())))
+                
         # Build a forest of symlinks (like new_local_package() does) to the
         # Nix store.
         for target in _find_children(repository_ctx, output_path):
