@@ -210,7 +210,7 @@ def _generate_mappings(repository_ctx, packagesFromExpr, packagesFromFile, packa
     repository_ctx.file(file_name, packages_record)
     return file_name
 
-def _nixpkgs_packages_instantiate_impl(repository_ctx):
+def _nixpkgs_packages_instantiate_swapped_impl(repository_ctx):
     # Is nix supported on this platform?
     not_supported = not _is_supported_platform(repository_ctx)
     # Should we fail if Nix is not supported?
@@ -280,7 +280,7 @@ def _nixpkgs_packages_instantiate_impl(repository_ctx):
     )
 
 nixpkgs_packages_instantiate_swapped = repository_rule(
-    implementation = _nixpkgs_packages_instantiate_impl,
+    implementation = _nixpkgs_packages_instantiate_swapped_impl,
     attrs = {
         "packagesFromAttr": attr.string_dict(
             mandatory = False,
