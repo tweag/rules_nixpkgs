@@ -411,12 +411,20 @@ def nixpkgs_packages(
     packagesFromFile = {}
     packagesFromExpr = {}
     for (packageName, value) in desugared_packages.items():
+        is_defined = False
         if hasAttr(value, "nix_file"):
           packagesFromFile[packageName] = value["nix_file"]
+          is_defined = True
         if hasAttr(value, "nix_file_content"):
           packagesFromExpr[packageName] = value["nix_file_content"]
+          is_defined = True
         if hasAttr(value, "attribute_path"):
           packagesFromAttr[packageName] = value["attribute_path"]
+          is_defined = True
+        # If neither a nix file nor an attribute path is specified,
+        # assume that the attribute path is equal to the name
+        if not is_defined:
+          packagesFromAttr[packageName] = packageName
 
     # Instantiate the package set (*i.e* evaluate the nix expressions, but
     # without building anything)
