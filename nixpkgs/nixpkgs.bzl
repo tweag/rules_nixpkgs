@@ -66,7 +66,7 @@ def buildNixExpr(ctx, name, nix_file = None, nix_file_content = None, attribute_
     """Build a nix expression defining the given package
     """
     if nix_file != None:
-        defining_expr = "(import \"{}\")".format(ctx.path(Label(nix_file)))
+        defining_expr = "(import \"{}\")".format(ctx.path(nix_file))
     elif nix_file_content != None:
         generated_nix_file = "__internal_" + name + "_definition.nix"
         ctx.file(
@@ -232,7 +232,7 @@ def _nixpkgs_packages_instantiate_swapped_impl(repository_ctx):
     packages_attributes_mappings = _generate_mappings(
         repository_ctx,
         repository_ctx.attr.packagesFromExpr,
-        repository_ctx.attr.packagesFromFile,
+        invert_dict(repository_ctx.attr.packagesFromFileSwapped),
         repository_ctx.attr.packagesFromAttr
     )
 
@@ -286,7 +286,7 @@ nixpkgs_packages_instantiate_swapped = repository_rule(
             mandatory = False,
             doc = "A map between the name of the packages to instantiate and their attribute path in the nix expression",
         ),
-        "packagesFromFile": attr.string_dict(
+        "packagesFromFileSwapped": attr.label_keyed_string_dict(
             mandatory = False,
             doc = "A map between the name of the packages to instantiate and a nix file defining them",
         ),
@@ -310,8 +310,14 @@ nixpkgs_packages_instantiate_swapped = repository_rule(
     },
 )
 
-def nixpkgs_packages_instantiate(**kwargs):
-    invert_repositories(nixpkgs_packages_instantiate_swapped, **kwargs)
+def nixpkgs_packages_instantiate(packagesFromFile = None, **kwargs):
+    packagesFromFileSwapped = invert_dict(packagesFromFile) \
+        if packagesFromFile != None else None
+    invert_repositories(
+        nixpkgs_packages_instantiate_swapped,
+        packagesFromFileSwapped = packagesFromFileSwapped,
+        **kwargs
+    )
 
 def _nixpkgs_package_realize_impl(repository_ctx):
     # Is nix supported on this platform?
