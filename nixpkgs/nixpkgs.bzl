@@ -407,7 +407,9 @@ def nixpkgs_packages(
     Defines a set of targets pointing to multiple nixpkgs packages at once.
 
     For each `(name, package)` pair in `packages`, this macro will define a
-    `@package` external repository pointing to the nix package `package`
+    `@package` external repository pointing to the nix package `package`.
+
+    This is equivalent (but faster) to calling several times nixpkgs_package.
 
     Keyword arguments:
     name: The base name for the generated repository containing the nix
