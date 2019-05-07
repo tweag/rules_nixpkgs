@@ -174,6 +174,10 @@ def _nixpkgs_package_impl(repository_ctx):
         for line in exec_result.stderr.splitlines():
             line = line.split(sep=' ')
 
+            # Interesting lines contains at least 3 words
+            if len(line) < 3:
+                continue
+
             # Heuristic: a dependency is something which looks like:
             # evaluating file FILE
             # copied source FILE
