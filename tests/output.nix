@@ -1,4 +1,4 @@
-with import <nixpkgs> {};
+with import <nixpkgs> { config = {}; };
 
 runCommand "some-output" {
   preferLocalBuild = true;

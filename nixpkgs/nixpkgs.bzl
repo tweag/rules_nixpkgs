@@ -97,7 +97,7 @@ def _nixpkgs_package_impl(repository_ctx):
     elif not repositories:
         fail(strFailureImplicitNixpkgs)
     else:
-        expr_args = ["-E", "import <nixpkgs> {}"]
+        expr_args = ["-E", "import <nixpkgs> { config = {}; }"]
 
     _symlink_nix_file_deps(repository_ctx, repository_ctx.attr.nix_file_deps)
 
@@ -185,11 +185,9 @@ def _nixpkgs_package_impl(repository_ctx):
                 # We ignore some files:
                 # - Anything in /nix/store, they are not explicit dependencies are are supposed to be immutable
                 # - Anything from .cache/bazel, only case I encountered was a local nixpkgs clone handled by bazel
-                # - .config/nixpkgs. user configuration should not impact the reproducibility of the build
                 if (
                    not line[2].startswith("'/nix/store")
                    and ".cache/bazel" not in line[2]
-                   and ".config/nixpkgs" not in line[2]
                 ):
                     filename = line[2][1:-1] # trimming quotes
 
@@ -241,6 +239,9 @@ nix_file_deps = [
     "{deps_listing}",
 ]
 
+Note: if it points to the nixpkgs global configuration file, such as ~/.config/nixpkgs/config.nix. You must force nixpkgs to not use the local configuration, by providing a `config` argument to your nixpkgs import, such as:
+
+import (nixpkgs_path) {{ config = {{}}; }};
 """.format(repo_name = repository_ctx.name,
            deps_listing = '",\n    "'.join(deps_minus_declared_deps.keys())))
                 
@@ -371,7 +372,7 @@ def nixpkgs_cc_configure(
     """
     if not nix_file and not nix_file_content:
         nix_file_content = """
-          with import <nixpkgs> {}; buildEnv {
+          with import <nixpkgs> { config = {}; }; buildEnv {
             name = "bazel-cc-toolchain";
             paths = [ stdenv.cc binutils ];
           }
