@@ -1,4 +1,4 @@
-{ pkgs ? import ./nixpkgs.nix { config = {}; } }:
+{ pkgs ? import ./nixpkgs.nix { config = {}; overlays = []; } }:
 
 with pkgs;
 

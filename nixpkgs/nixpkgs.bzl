@@ -97,7 +97,7 @@ def _nixpkgs_package_impl(repository_ctx):
     elif not repositories:
         fail(strFailureImplicitNixpkgs)
     else:
-        expr_args = ["-E", "import <nixpkgs> { config = {}; }"]
+        expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
 
     _symlink_nix_file_deps(repository_ctx, repository_ctx.attr.nix_file_deps)
 
@@ -239,9 +239,9 @@ nix_file_deps = [
     "{deps_listing}",
 ]
 
-Note: if it points to the nixpkgs global configuration file, such as ~/.config/nixpkgs/config.nix. You must force nixpkgs to not use the local configuration, by providing a `config` argument to your nixpkgs import, such as:
+Note: if it points to the nixpkgs global configuration file, such as ~/.config/nixpkgs/config.nix. You must force nixpkgs to not use the local configuration, by providing at least a `config` and `overlays` arguments to your nixpkgs import, such as:
 
-import (nixpkgs_path) {{ config = {{}}; }};
+import (nixpkgs_path) {{ config = {{}}; overlays = {{}}; }};
 """.format(repo_name = repository_ctx.name,
            deps_listing = '",\n    "'.join(deps_minus_declared_deps.keys())))
                 
@@ -372,7 +372,7 @@ def nixpkgs_cc_configure(
     """
     if not nix_file and not nix_file_content:
         nix_file_content = """
-          with import <nixpkgs> { config = {}; }; buildEnv {
+          with import <nixpkgs> { config = {}; overlays = []; }; buildEnv {
             name = "bazel-cc-toolchain";
             paths = [ stdenv.cc binutils ];
           }

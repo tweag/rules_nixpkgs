@@ -1,1 +1,1 @@
-import <nixpkgs> { config = {}; }
+import <nixpkgs> { config = {}; overlays = []; }
