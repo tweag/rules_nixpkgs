@@ -36,7 +36,7 @@ nixpkgs_package(
 
 nixpkgs_package(
     name = "expr-test",
-    nix_file_content = "let pkgs = import <nixpkgs> {}; in pkgs.hello",
+    nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
     # Deliberately not @nixpkgs, to test whether explict file works.
     repositories = {"nixpkgs": "//:nixpkgs.nix"},
 )
@@ -50,7 +50,7 @@ nixpkgs_package(
 nixpkgs_package(
     name = "expr-attribute-test",
     attribute_path = "hello",
-    nix_file_content = "import <nixpkgs> {}",
+    nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
     repository = "@nixpkgs",
 )
 
@@ -77,7 +77,7 @@ nixpkgs_package(
 nixpkgs_package(
     name = "extra-args-test",
     nix_file_content = """
-{ packagePath }: (import <nixpkgs> {}).${packagePath}
+{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}
     """,
     repository = "@nixpkgs",
     nixopts = ["--argstr", "packagePath", "hello"],

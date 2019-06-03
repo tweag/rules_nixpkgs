@@ -1,4 +1,4 @@
-with import <nixpkgs> {};
+with import <nixpkgs> { config = {}; overlays = []; };
 
 runCommand "some-output" {
   preferLocalBuild = true;

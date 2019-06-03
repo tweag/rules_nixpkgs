@@ -1,3 +1,3 @@
 with import ./pkgname.nix;
-let pkgs = import <nixpkgs> {}; in builtins.getAttr pkgname pkgs
+let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in builtins.getAttr pkgname pkgs
 
