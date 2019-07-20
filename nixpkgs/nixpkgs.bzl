@@ -39,13 +39,11 @@ def _nixpkgs_local_repository_impl(repository_ctx):
         target = repository_ctx.path("default.nix")
     else:
         target = repository_ctx.path(repository_ctx.attr.nix_file)
-        repository_ctx.symlink(target, target.basename)
+        _cp(repository_ctx, target, target.basename)
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for the target Nix file.
     repository_ctx.symlink(target.basename, repository_ctx.name)
-
-    _symlink_nix_file_deps(repository_ctx, repository_ctx.attr.nix_file_deps)
 
 nixpkgs_local_repository = repository_rule(
     implementation = _nixpkgs_local_repository_impl,
@@ -91,7 +89,7 @@ def _nixpkgs_package_impl(repository_ctx):
     if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
     elif repository_ctx.attr.nix_file:
-        repository_ctx.symlink(repository_ctx.attr.nix_file, "default.nix")
+        _cp(repository_ctx, repository_ctx.path(repository_ctx.attr.nix_file), "default.nix")
     elif repository_ctx.attr.nix_file_content:
         expr_args = ["-E", repository_ctx.attr.nix_file_content]
     elif not repositories:
@@ -99,7 +97,9 @@ def _nixpkgs_package_impl(repository_ctx):
     else:
         expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
 
-    _symlink_nix_file_deps(repository_ctx, repository_ctx.attr.nix_file_deps)
+    for dep in repository_ctx.attr.nix_file_deps:
+        path = repository_ctx.path(dep)
+        _cp(repository_ctx, path, path.basename)
 
     expr_args.extend([
         "-A",
@@ -349,9 +349,5 @@ def _executable_path(repository_ctx, exe_name, extra_msg = ""):
             .format(exe_name, " " + extra_msg if extra_msg else ""))
     return path
 
-def _symlink_nix_file_deps(repository_ctx, deps):
-    """Introduce an artificial dependency with a bogus name on each input."""
-    for dep in deps:
-        components = [c for c in [dep.workspace_root, dep.package, dep.name] if c]
-        link = "/".join(components).replace("_", "_U").replace("/", "_S")
-        repository_ctx.symlink(dep, link)
+def _cp(repository_ctx, src, dest):
+    repository_ctx.template(dest, src, executable = False)
