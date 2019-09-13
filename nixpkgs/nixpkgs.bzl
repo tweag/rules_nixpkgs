@@ -118,17 +118,17 @@ def _nixpkgs_package_impl(repository_ctx):
 
     # If repositories is not set, leave empty so nix will fail
     # unless a pinned nixpkgs is set in the `nix_file` attribute.
-    nix_path = ""
+    nix_paths = []
     if repositories:
-        nix_path = ":".join(
-            [
-                (path_name + "=" + str(repository_ctx.path(target)))
-                for (target, path_name) in repositories.items()
-            ],
-        )
+        nix_paths = [
+            (path_name + "=" + str(repository_ctx.path(target)))
+            for (target, path_name) in repositories.items()
+        ]
     elif not (repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content):
         fail(strFailureImplicitNixpkgs)
 
+    for nix_path in nix_paths:
+        expr_args.extend(["-I", nix_path])
 
     if not_supported and fail_not_supported:
         fail("Platform is not supported (see 'fail_not_supported')")
@@ -153,7 +153,6 @@ def _nixpkgs_package_impl(repository_ctx):
                 repository_ctx.attr.attribute_path,
             ),
             timeout = timeout,
-            environment = dict(NIX_PATH = nix_path),
         )
         output_path = exec_result.stdout.splitlines()[-1]
 
