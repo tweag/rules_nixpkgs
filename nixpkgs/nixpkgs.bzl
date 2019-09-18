@@ -181,7 +181,7 @@ _nixpkgs_package = repository_rule(
 )
 
 def nixpkgs_package(*args, **kwargs):
-    # Because of https://github.com/bazelbuild/bazel/issues/5356 we can't
+    # Because of https://github.com/bazelbuild/bazel/issues/7989 we can't
     # directly pass a dict from strings to labels to the rule (which we'd like
     # for the `repositories` arguments), but we can pass a dict from labels to
     # strings. So we swap the keys and the values (assuming they all are
