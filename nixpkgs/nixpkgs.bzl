@@ -89,7 +89,8 @@ def _nixpkgs_package_impl(repository_ctx):
     if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
     elif repository_ctx.attr.nix_file:
-        _cp(repository_ctx, repository_ctx.path(repository_ctx.attr.nix_file), "default.nix")
+        nix_file = _cp(repository_ctx, repository_ctx.attr.nix_file)
+        expr_args = [nix_file]
     elif repository_ctx.attr.nix_file_content:
         expr_args = ["-E", repository_ctx.attr.nix_file_content]
     elif not repositories:
@@ -98,8 +99,7 @@ def _nixpkgs_package_impl(repository_ctx):
         expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
 
     for dep in repository_ctx.attr.nix_file_deps:
-        path = repository_ctx.path(dep)
-        _cp(repository_ctx, path, path.basename)
+        _cp(repository_ctx, dep)
 
     expr_args.extend([
         "-A",
@@ -348,5 +348,25 @@ def _executable_path(repository_ctx, exe_name, extra_msg = ""):
             .format(exe_name, " " + extra_msg if extra_msg else ""))
     return path
 
-def _cp(repository_ctx, src, dest):
+def _cp(repository_ctx, src, dest = None):
+    """Copy the given file into the external repository root.
+
+    Args:
+      repository_ctx: The repository context of the current repository rule.
+      src: The source file. Must be a Label if dest is None.
+      dest: Optional, The target path within the current repository root.
+        By default the relative path to the repository root is preserved.
+
+    Returns:
+      The absolute target path.
+    """
+    if dest == None:
+        if type(src) != "Label":
+            fail("src must be a Label if dest is not specified explicitly.")
+        dest = "/".join([
+            component
+            for component in [src.workspace_root, src.package, src.name]
+            if component
+        ])
     repository_ctx.template(dest, src, executable = False)
+    return repository_ctx.path(dest)

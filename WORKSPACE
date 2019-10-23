@@ -96,4 +96,15 @@ filegroup(
     repository = "@nixpkgs",
 )
 
+nixpkgs_package(
+    name = "relative-imports",
+    attribute_path = "hello",
+    nix_file = "//tests:relative_imports.nix",
+    nix_file_deps = [
+        "//:nixpkgs.nix",
+        "//tests:relative_imports/nixpkgs.nix",
+    ],
+    repository = "@nixpkgs",
+)
+
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
