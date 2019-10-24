@@ -144,8 +144,9 @@ def _nixpkgs_package_impl(repository_ctx):
 
         # Large enough integer that Bazel can still parse. We don't have
         # access to MAX_INT and 0 is not a valid timeout so this is as good
-        # as we can do.
-        timeout = 1073741824
+        # as we can do. The value shouldn't be too large to avoid errors on
+        # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
+        timeout = 8640000
         exec_result = _execute_or_fail(
             repository_ctx,
             nix_build,
