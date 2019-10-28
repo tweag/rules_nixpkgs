@@ -20,6 +20,7 @@ nixpkgs_git_repository(
 nixpkgs_local_repository(
     name = "nixpkgs",
     nix_file = "//:nixpkgs.nix",
+    nix_file_deps = ["//:nixpkgs.json"],
 )
 
 nixpkgs_package(
@@ -39,6 +40,7 @@ nixpkgs_package(
     nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
     # Deliberately not @nixpkgs, to test whether explict file works.
     repositories = {"nixpkgs": "//:nixpkgs.nix"},
+    nix_file_deps = ["//:nixpkgs.json"],
 )
 
 nixpkgs_package(
@@ -101,6 +103,7 @@ nixpkgs_package(
     attribute_path = "hello",
     nix_file = "//tests:relative_imports.nix",
     nix_file_deps = [
+        "//:nixpkgs.json",
         "//:nixpkgs.nix",
         "//tests:relative_imports/nixpkgs.nix",
     ],

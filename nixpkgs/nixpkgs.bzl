@@ -38,12 +38,14 @@ def _nixpkgs_local_repository_impl(repository_ctx):
         )
         target = repository_ctx.path("default.nix")
     else:
-        target = repository_ctx.path(repository_ctx.attr.nix_file)
-        _cp(repository_ctx, target, target.basename)
+        target = _cp(repository_ctx, repository_ctx.attr.nix_file)
+
+    for dep in repository_ctx.attr.nix_file_deps:
+        _cp(repository_ctx, dep)
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for the target Nix file.
-    repository_ctx.symlink(target.basename, repository_ctx.name)
+    repository_ctx.symlink(target, repository_ctx.name)
 
 nixpkgs_local_repository = repository_rule(
     implementation = _nixpkgs_local_repository_impl,
