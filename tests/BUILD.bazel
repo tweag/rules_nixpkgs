@@ -65,3 +65,17 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
 )
+
+# Test nixpkgs_posix_configure() checking that Unix commands are in Nix store.
+sh_test(
+    name = "run-test-posix-toolchain",
+    timeout = "short",
+    srcs = ["test_posix_toolchain.sh"],
+    args = [
+        "$(POSIX_AWK)",
+        "$(POSIX_CAT)",
+        "$(POSIX_GREP)",
+        "$(POSIX_MAKE)",
+    ],
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
