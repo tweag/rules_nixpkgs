@@ -6,6 +6,7 @@ load(
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
+    "nixpkgs_python_configure",
 )
 
 # For tests
@@ -115,3 +116,5 @@ nixpkgs_package(
 )
 
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+
+nixpkgs_python_configure(repository = "@remote_nixpkgs")

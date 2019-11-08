@@ -309,6 +309,125 @@ def nixpkgs_cc_configure(
     native.bind(name = "cc_toolchain", actual = "@local_config_cc//:toolchain")
     native.register_toolchains("@local_config_cc//:all")
 
+def _nixpkgs_python_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    repository_ctx.file("BUILD.bazel", executable = False, content = """
+load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
+py_runtime_pair(
+    name = "py_runtime_pair",
+    py2_runtime = {python2_runtime},
+    py3_runtime = {python3_runtime},
+)
+toolchain(
+    name = "toolchain",
+    toolchain = ":py_runtime_pair",
+    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+    exec_compatible_with = [
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:{os}",
+        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
+    ],
+    target_compatible_with = [
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:{os}",
+    ],
+)
+""".format(
+        python2_runtime = _label_string(repository_ctx.attr.python2_runtime),
+        python3_runtime = _label_string(repository_ctx.attr.python3_runtime),
+        os = {"darwin": "osx"}.get(cpu, "linux"),
+    ))
+
+_nixpkgs_python_toolchain = repository_rule(
+    _nixpkgs_python_toolchain_impl,
+    attrs = {
+        "python2_runtime": attr.label(),
+        "python3_runtime": attr.label(),
+    },
+)
+
+_python_build_file_content = """
+py_runtime(
+    name = "runtime",
+    files = glob(["**"]),
+    interpreter = "{bin_path}",
+    python_version = "{version}",
+    visibility = ["//visibility:public"],
+)
+"""
+
+def nixpkgs_python_configure(
+        name = "nixpkgs_python_toolchain",
+        python2_attribute_path = None,
+        python2_bin_path = "bin/python",
+        python3_attribute_path = "python3",
+        python3_bin_path = "bin/python",
+        repository = None,
+        repositories = {},
+        nix_file = None,
+        nix_file_content = None,
+        nix_file_deps = None,
+        nixopts = [],
+        fail_not_supported = True):
+    """Define and register a Python toolchain provided by nixpkgs.
+
+    Creates `nixpkgs_package`s for Python 2 or 3 `py_runtime` instances and a
+    corresponding `py_runtime_pair` and `toolchain`. The toolchain is
+    automatically registered and uses the constraint:
+      "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs"
+
+    Attrs:
+      name: The name-prefix for the created external repositories.
+      python2_attribute_path: The nixpkgs attribute path for python2.
+      python2_bin_path: The path to the interpreter within the package.
+      python3_attribute_path: The nixpkgs attribute path for python3.
+      python3_bin_path: The path to the interpreter within the package.
+      ...: See `nixpkgs_package` for the remaining attributes.
+    """
+    python2_specified = python2_attribute_path and python2_bin_path
+    python3_specified = python3_attribute_path and python3_bin_path
+    if not python2_specified and not python3_specified:
+        fail("At least one of python2 or python3 has to be specified.")
+    kwargs = dict(
+        repository = repository,
+        repositories = repositories,
+        nix_file = nix_file,
+        nix_file_content = nix_file_content,
+        nix_file_deps = nix_file_deps,
+        nixopts = nixopts,
+        fail_not_supported = fail_not_supported,
+    )
+    python2_runtime = None
+    if python2_attribute_path:
+        python2_runtime = "@%s_python2//:runtime" % name
+        nixpkgs_package(
+            name = name + "_python2",
+            attribute_path = python2_attribute_path,
+            build_file_content = _python_build_file_content.format(
+                bin_path = python2_bin_path,
+                version = "PY2",
+            ),
+            **kwargs
+        )
+    python3_runtime = None
+    if python3_attribute_path:
+        python3_runtime = "@%s_python3//:runtime" % name
+        nixpkgs_package(
+            name = name + "_python3",
+            attribute_path = python3_attribute_path,
+            build_file_content = _python_build_file_content.format(
+                bin_path = python3_bin_path,
+                version = "PY3",
+            ),
+            **kwargs
+        )
+    _nixpkgs_python_toolchain(
+        name = name,
+        python2_runtime = python2_runtime,
+        python3_runtime = python3_runtime,
+    )
+    native.register_toolchains("@%s//:toolchain" % name)
+
 def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
     """Call repository_ctx.execute() and fail if non-zero return code."""
     result = repository_ctx.execute(arguments, *args, **kwargs)
@@ -374,3 +493,10 @@ def _cp(repository_ctx, src, dest = None):
         ])
     repository_ctx.template(dest, src, executable = False)
     return repository_ctx.path(dest)
+
+def _label_string(label):
+    """Convert the given (optional) Label to a string."""
+    if label == None:
+        return "None"
+    else:
+        return '"%s"' % label
