@@ -65,6 +65,7 @@ def _nixpkgs_package_impl(repository_ctx):
 
     # Is nix supported on this platform?
     not_supported = not _is_supported_platform(repository_ctx)
+
     # Should we fail if Nix is not supported?
     fail_not_supported = repository_ctx.attr.fail_not_supported
 
