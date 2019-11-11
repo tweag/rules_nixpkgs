@@ -341,8 +341,11 @@ toolchain(
 _nixpkgs_python_toolchain = repository_rule(
     _nixpkgs_python_toolchain_impl,
     attrs = {
-        "python2_runtime": attr.label(),
-        "python3_runtime": attr.label(),
+        # Using attr.string instead of attr.label, so that the repository rule
+        # does not explicitly depend on the nixpkgs_package instances. This is
+        # necessary, so that builds don't fail on platforms without nixpkgs.
+        "python2_runtime": attr.string(),
+        "python3_runtime": attr.string(),
     },
 )
 
@@ -496,7 +499,7 @@ def _cp(repository_ctx, src, dest = None):
 
 def _label_string(label):
     """Convert the given (optional) Label to a string."""
-    if label == None:
+    if not label:
         return "None"
     else:
         return '"%s"' % label
