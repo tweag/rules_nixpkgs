@@ -124,9 +124,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_sh",
-    sha256 = "ad72710293db59986e1400d70944b3a13a52a11ce411969634669fc545e06c2f",
-    strip_prefix = "rules_sh-5aaea6d44c1ff1ccefc9ec4a22acef301af8f90a",
-    urls = ["https://github.com/tweag/rules_sh/archive/5aaea6d44c1ff1ccefc9ec4a22acef301af8f90a.tar.gz"],
+    sha256 = "2613156e96b41fe0f91ac86a65edaea7da910b7130f2392ca02e8270f674a734",
+    strip_prefix = "rules_sh-0.1.0",
+    urls = ["https://github.com/tweag/rules_sh/archive/v0.1.0.tar.gz"],
 )
 
 load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
