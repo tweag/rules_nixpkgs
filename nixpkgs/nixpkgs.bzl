@@ -431,6 +431,130 @@ def nixpkgs_python_configure(
     )
     native.register_toolchains("@%s//:toolchain" % name)
 
+def nixpkgs_sh_posix_config(name, packages, **kwargs):
+    nixpkgs_package(
+        name = name,
+        nix_file_content = """
+with import <nixpkgs> {{ config = {{}}; overlays = []; }};
+
+let
+  # `packages` might include lists, e.g. `stdenv.initialPath` is a list itself,
+  # so we need to flatten `packages`.
+  flatten = builtins.concatMap (x: if builtins.isList x then x else [x]);
+  env = buildEnv {{
+    name = "posix-toolchain";
+    paths = flatten [ {} ];
+  }};
+  cmd_glob = "${{env}}/bin/*";
+  os = if stdenv.isDarwin then "osx" else "linux";
+in
+
+runCommand "bazel-nixpkgs-posix-toolchain"
+  {{ executable = false;
+    # Pointless to do this on a remote machine.
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+  }}
+  ''
+    n=$out/nixpkgs_sh_posix.bzl
+    mkdir -p "$(dirname "$n")"
+
+    cat >>$n <<EOF
+    load("@rules_sh//sh:posix.bzl", "posix", "sh_posix_toolchain")
+    discovered = {{
+    EOF
+    for cmd in ${{cmd_glob}}; do
+        if [[ -x $cmd ]]; then
+            echo "    '$(basename $cmd)': '$cmd'," >>$n
+        fi
+    done
+    cat >>$n <<EOF
+    }}
+    def create_posix_toolchain():
+        sh_posix_toolchain(
+            name = "nixpkgs_sh_posix",
+            **{{
+                cmd: discovered[cmd]
+                for cmd in posix.commands
+                if cmd in discovered
+            }}
+        )
+    EOF
+  ''
+""".format(" ".join(packages)),
+        build_file_content = """
+load("//:nixpkgs_sh_posix.bzl", "create_posix_toolchain")
+create_posix_toolchain()
+""",
+        **kwargs
+    )
+
+def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    repository_ctx.file("BUILD", executable = False, content = """
+toolchain(
+    name = "nixpkgs_sh_posix_toolchain",
+    toolchain = "@{workspace}//:nixpkgs_sh_posix",
+    toolchain_type = "@rules_sh//sh/posix:toolchain_type",
+    exec_compatible_with = [
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:{os}",
+        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
+    ],
+    target_compatible_with = [
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:{os}",
+    ],
+)
+    """.format(
+        workspace = repository_ctx.attr.workspace,
+        os = {"darwin": "osx"}.get(cpu, "linux"),
+    ))
+
+_nixpkgs_sh_posix_toolchain = repository_rule(
+    _nixpkgs_sh_posix_toolchain_impl,
+    attrs = {
+        "workspace": attr.string(),
+    },
+)
+
+def nixpkgs_sh_posix_configure(
+        name = "nixpkgs_sh_posix_config",
+        packages = ["stdenv.initialPath"],
+        **kwargs):
+    """Create a POSIX toolchain from nixpkgs.
+
+    Loads the given Nix packages, scans them for standard Unix tools, and
+    generates a corresponding `sh_posix_toolchain`.
+
+    Make sure to call `nixpkgs_sh_posix_configure` before `sh_posix_configure`,
+    if you use both. Otherwise, the local toolchain will always be chosen in
+    favor of the nixpkgs one.
+
+    Args:
+      name: Name prefix for the generated repositories.
+      packages: List of Nix attribute paths to draw Unix tools from.
+      nix_file_deps: See nixpkgs_package.
+      repositories: See nixpkgs_package.
+      repository: See nixpkgs_package.
+      nixopts: See nixpkgs_package.
+      fail_not_supported: See nixpkgs_package.
+    """
+    nixpkgs_sh_posix_config(
+        name = name,
+        packages = packages,
+        **kwargs
+    )
+
+    # The indirection is required to avoid errors when `nix-build` is not in `PATH`.
+    _nixpkgs_sh_posix_toolchain(
+        name = name + "_toolchain",
+        workspace = name,
+    )
+    native.register_toolchains(
+        "@{}//:nixpkgs_sh_posix_toolchain".format(name + "_toolchain"),
+    )
+
 def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
     """Call repository_ctx.execute() and fail if non-zero return code."""
     result = repository_ctx.execute(arguments, *args, **kwargs)

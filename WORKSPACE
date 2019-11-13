@@ -7,6 +7,7 @@ load(
     "nixpkgs_local_repository",
     "nixpkgs_package",
     "nixpkgs_python_configure",
+    "nixpkgs_sh_posix_configure",
 )
 
 # For tests
@@ -118,3 +119,22 @@ nixpkgs_package(
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
 
 nixpkgs_python_configure(repository = "@remote_nixpkgs")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_sh",
+    sha256 = "2613156e96b41fe0f91ac86a65edaea7da910b7130f2392ca02e8270f674a734",
+    strip_prefix = "rules_sh-0.1.0",
+    urls = ["https://github.com/tweag/rules_sh/archive/v0.1.0.tar.gz"],
+)
+
+load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
+
+rules_sh_dependencies()
+
+nixpkgs_sh_posix_configure(repository = "@nixpkgs")
+
+load("@rules_sh//sh:posix.bzl", "sh_posix_configure")
+
+sh_posix_configure()
