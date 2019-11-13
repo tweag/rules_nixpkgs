@@ -6,6 +6,7 @@ load(
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
+    "nixpkgs_python_configure",
 )
 
 # For tests
@@ -38,9 +39,9 @@ nixpkgs_package(
 nixpkgs_package(
     name = "expr-test",
     nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+    nix_file_deps = ["//:nixpkgs.json"],
     # Deliberately not @nixpkgs, to test whether explict file works.
     repositories = {"nixpkgs": "//:nixpkgs.nix"},
-    nix_file_deps = ["//:nixpkgs.json"],
 )
 
 nixpkgs_package(
@@ -81,8 +82,12 @@ nixpkgs_package(
     nix_file_content = """
 { packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}
     """,
+    nixopts = [
+        "--argstr",
+        "packagePath",
+        "hello",
+    ],
     repository = "@nixpkgs",
-    nixopts = ["--argstr", "packagePath", "hello"],
 )
 
 nixpkgs_package(
@@ -111,3 +116,5 @@ nixpkgs_package(
 )
 
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+
+nixpkgs_python_configure(repository = "@remote_nixpkgs")

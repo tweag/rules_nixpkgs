@@ -57,3 +57,11 @@ cc_binary(
     name = "cc-test",
     srcs = ["cc-test.cc"],
 )
+
+# Test nixpkgs_python_configure() by running some Python code.
+py_test(
+    name = "python-test",
+    srcs = ["python-test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
