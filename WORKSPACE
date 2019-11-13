@@ -6,8 +6,8 @@ load(
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
-    "nixpkgs_posix_configure",
     "nixpkgs_python_configure",
+    "nixpkgs_sh_posix_configure",
 )
 
 # For tests
@@ -133,7 +133,7 @@ load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
 
 rules_sh_dependencies()
 
-nixpkgs_posix_configure(repository = "@nixpkgs")
+nixpkgs_sh_posix_configure(repository = "@nixpkgs")
 
 load("@rules_sh//sh:posix.bzl", "sh_posix_configure")
 

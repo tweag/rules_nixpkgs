@@ -431,7 +431,7 @@ def nixpkgs_python_configure(
     )
     native.register_toolchains("@%s//:toolchain" % name)
 
-def nixpkgs_posix_config(name, packages, **kwargs):
+def nixpkgs_sh_posix_config(name, packages, **kwargs):
     nixpkgs_package(
         name = name,
         nix_file_content = """
@@ -456,7 +456,7 @@ runCommand "bazel-nixpkgs-posix-toolchain"
     allowSubstitutes = false;
   }}
   ''
-    n=$out/nixpkgs_posix.bzl
+    n=$out/nixpkgs_sh_posix.bzl
     mkdir -p "$(dirname "$n")"
 
     cat >>$n <<EOF
@@ -472,7 +472,7 @@ runCommand "bazel-nixpkgs-posix-toolchain"
     }}
     def create_posix_toolchain():
         sh_posix_toolchain(
-            name = "nixpkgs_posix",
+            name = "nixpkgs_sh_posix",
             **{{
                 cmd: discovered[cmd]
                 for cmd in posix.commands
@@ -483,18 +483,18 @@ runCommand "bazel-nixpkgs-posix-toolchain"
   ''
 """.format(" ".join(packages)),
         build_file_content = """
-load("//:nixpkgs_posix.bzl", "create_posix_toolchain")
+load("//:nixpkgs_sh_posix.bzl", "create_posix_toolchain")
 create_posix_toolchain()
 """,
         **kwargs
     )
 
-def _nixpkgs_posix_toolchain_impl(repository_ctx):
+def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
     repository_ctx.file("BUILD", executable = False, content = """
 toolchain(
-    name = "nixpkgs_posix_toolchain",
-    toolchain = "@{workspace}//:nixpkgs_posix",
+    name = "nixpkgs_sh_posix_toolchain",
+    toolchain = "@{workspace}//:nixpkgs_sh_posix",
     toolchain_type = "@rules_sh//sh/posix:toolchain_type",
     exec_compatible_with = [
         "@bazel_tools//platforms:x86_64",
@@ -511,15 +511,15 @@ toolchain(
         os = {"darwin": "osx"}.get(cpu, "linux"),
     ))
 
-_nixpkgs_posix_toolchain = repository_rule(
-    _nixpkgs_posix_toolchain_impl,
+_nixpkgs_sh_posix_toolchain = repository_rule(
+    _nixpkgs_sh_posix_toolchain_impl,
     attrs = {
         "workspace": attr.string(),
     },
 )
 
-def nixpkgs_posix_configure(
-        name = "nixpkgs_posix_config",
+def nixpkgs_sh_posix_configure(
+        name = "nixpkgs_sh_posix_config",
         packages = ["stdenv.initialPath"],
         **kwargs):
     """Create a POSIX toolchain from nixpkgs.
@@ -527,7 +527,7 @@ def nixpkgs_posix_configure(
     Loads the given Nix packages, scans them for standard Unix tools, and
     generates a corresponding `sh_posix_toolchain`.
 
-    Make sure to call `nixpkgs_posix_configure` before `sh_posix_configure`,
+    Make sure to call `nixpkgs_sh_posix_configure` before `sh_posix_configure`,
     if you use both. Otherwise, the local toolchain will always be chosen in
     favor of the nixpkgs one.
 
@@ -540,19 +540,19 @@ def nixpkgs_posix_configure(
       nixopts: See nixpkgs_package.
       fail_not_supported: See nixpkgs_package.
     """
-    nixpkgs_posix_config(
+    nixpkgs_sh_posix_config(
         name = name,
         packages = packages,
         **kwargs
     )
 
     # The indirection is required to avoid errors when `nix-build` is not in `PATH`.
-    _nixpkgs_posix_toolchain(
+    _nixpkgs_sh_posix_toolchain(
         name = name + "_toolchain",
         workspace = name,
     )
     native.register_toolchains(
-        "@{}//:nixpkgs_posix_toolchain".format(name + "_toolchain"),
+        "@{}//:nixpkgs_sh_posix_toolchain".format(name + "_toolchain"),
     )
 
 def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
