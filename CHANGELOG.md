@@ -4,7 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.5.2]
+## [Unreleased]
+
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.6.0...HEAD
+
+## [0.6.0] - 2019-11-14
+
+[0.6.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.5.2...0.6.0
+
+### Added
+
+- Check `nix_file_deps` and fail on undeclared dependencies (breaking change).
+  See [#76][#76] and [#86][#86].
+- Define a `nixpkgs` platform constraint. See [#97][#97].
+- Define `nixpkgs_python_configure`. See [#97][#97].
+- Define `nixpkgs_sh_posix_configure` to generate [`rules_sh`][rules_sh] POSIX
+  toolchain. See [#95].
+
+[#76]: https://github.com/tweag/rules_nixpkgs/pull/76
+[#86]: https://github.com/tweag/rules_nixpkgs/pull/86
+[#97]: https://github.com/tweag/rules_nixpkgs/pull/97
+[#95]: https://github.com/tweag/rules_nixpkgs/pull/95
+[rules_sh]: https://github.com/tweag/rules_sh
+
+### Changed
+
+- Hide Nix output, following Bazel best practices for a quiet build.
+- Disable implicit `nixpkgs` configuration loading (breaking change).
+  See [#83](https://github.com/tweag/rules_nixpkgs/pull/83).
+
+### Fixed
+
+- Improve distributed caching by not leaking user specific Bazel cache
+  directory, see [#67](https://github.com/tweag/rules_nixpkgs/pull/67).
+
+## [0.5.2] - 2019-01-28
 
 ### Added
 - `nixpkgs_package` now has a new optional argument `fail_not_supported`
