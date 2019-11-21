@@ -5,6 +5,7 @@ with pkgs;
 mkShell {
   buildInputs = [
     bazel
+    cacert
     gcc
     nix
   ];
