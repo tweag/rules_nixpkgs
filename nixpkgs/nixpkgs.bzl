@@ -163,7 +163,7 @@ def _nixpkgs_package_impl(repository_ctx):
         # ensure that the output is a directory
         test_path = repository_ctx.which("test")
         _execute_or_fail(repository_ctx, [test_path, "-d", output_path],
-                         failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rule_nixpkgs. Please only use directory.".format(
+                         failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
                              repository_ctx.name
                          ),
         )
