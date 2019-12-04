@@ -116,6 +116,20 @@ nixpkgs_package(
     repository = "@nixpkgs",
 )
 
+# This bazel build @output-derivation-is-a-file//... must fail
+# See https://github.com/tweag/rules_nixpkgs/issues/99 for details
+nixpkgs_package(
+    name = "output-derivation-is-a-file",
+    attribute_path = "",
+    nix_file_content = """let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.writeText "foo" "bar" """,
+    nix_file_deps = [
+        "//:nixpkgs.json",
+        "//:nixpkgs.nix",
+        "//tests:relative_imports/nixpkgs.nix",
+    ],
+    repository = "@nixpkgs",
+)
+
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
 
 nixpkgs_python_configure(repository = "@remote_nixpkgs")

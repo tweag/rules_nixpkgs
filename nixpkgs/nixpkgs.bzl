@@ -160,6 +160,14 @@ def _nixpkgs_package_impl(repository_ctx):
         )
         output_path = exec_result.stdout.splitlines()[-1]
 
+        # ensure that the output is a directory
+        test_path = repository_ctx.which("test")
+        _execute_or_fail(repository_ctx, [test_path, "-d", output_path],
+                         failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
+                             repository_ctx.name
+                         ),
+        )
+
         # Build a forest of symlinks (like new_local_package() does) to the
         # Nix store.
         for target in _find_children(repository_ctx, output_path):
