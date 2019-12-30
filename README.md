@@ -20,6 +20,9 @@ http_archive(
     urls = ["https://github.com/tweag/rules_nixpkgs/archive/$COMMIT.tar.gz"],
 )
 
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+rules_nixpkgs_dependencies()
+
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
 ```
 
