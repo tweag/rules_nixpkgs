@@ -1,5 +1,9 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
+rules_nixpkgs_dependencies()
+
 load(
     "//nixpkgs:nixpkgs.bzl",
     "nixpkgs_cc_configure",

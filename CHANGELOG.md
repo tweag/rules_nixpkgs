@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 [Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.6.0...HEAD
 
+### Added
+
+- Define `rules_nixpkgs_dependencies` in `//nixpkgs:repositories.bzl`.
+
 ## [0.6.0] - 2019-11-14
 
 [0.6.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.5.2...0.6.0
