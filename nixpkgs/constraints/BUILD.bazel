@@ -7,8 +7,8 @@ constraint_value(
 platform(
     name = "linux_x86_64_nixpkgs",
     constraint_values = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
         ":nixpkgs",
     ],
     visibility = ["//visibility:public"],
@@ -17,8 +17,8 @@ platform(
 platform(
     name = "darwin_x86_64_nixpkgs",
     constraint_values = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:osx",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:osx",
         ":nixpkgs",
     ],
     visibility = ["//visibility:public"],

@@ -331,13 +331,13 @@ toolchain(
     toolchain = ":py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:{os}",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:{os}",
         "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:{os}",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:{os}",
     ],
 )
 """.format(
@@ -505,13 +505,13 @@ toolchain(
     toolchain = "@{workspace}//:nixpkgs_sh_posix",
     toolchain_type = "@rules_sh//sh/posix:toolchain_type",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:{os}",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:{os}",
         "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:{os}",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:{os}",
     ],
 )
     """.format(
