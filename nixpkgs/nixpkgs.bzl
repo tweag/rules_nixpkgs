@@ -442,6 +442,7 @@ def nixpkgs_python_configure(
 def nixpkgs_sh_posix_config(name, packages, **kwargs):
     nixpkgs_package(
         name = name,
+        attribute_path = "toolchain",
         nix_file_content = """
 with import <nixpkgs> {{ config = {{}}; overlays = []; }};
 
@@ -456,39 +457,40 @@ let
   cmd_glob = "${{env}}/bin/*";
   os = if stdenv.isDarwin then "osx" else "linux";
 in
-
-runCommand "bazel-nixpkgs-posix-toolchain"
-  {{ executable = false;
-    # Pointless to do this on a remote machine.
-    preferLocalBuild = true;
-    allowSubstitutes = false;
-  }}
-  ''
-    n=$out/nixpkgs_sh_posix.bzl
-    mkdir -p "$(dirname "$n")"
-
-    cat >>$n <<EOF
-    load("@rules_sh//sh:posix.bzl", "posix", "sh_posix_toolchain")
-    discovered = {{
-    EOF
-    for cmd in ${{cmd_glob}}; do
-        if [[ -x $cmd ]]; then
-            echo "    '$(basename $cmd)': '$cmd'," >>$n
-        fi
-    done
-    cat >>$n <<EOF
+{{
+  toolchain = runCommand "bazel-nixpkgs-posix-toolchain"
+    {{ executable = false;
+      # Pointless to do this on a remote machine.
+      preferLocalBuild = true;
+      allowSubstitutes = false;
     }}
-    def create_posix_toolchain():
-        sh_posix_toolchain(
-            name = "nixpkgs_sh_posix",
-            **{{
-                cmd: discovered[cmd]
-                for cmd in posix.commands
-                if cmd in discovered
-            }}
-        )
-    EOF
-  ''
+    ''
+      n=$out/nixpkgs_sh_posix.bzl
+      mkdir -p "$(dirname "$n")"
+  
+      cat >>$n <<EOF
+      load("@rules_sh//sh:posix.bzl", "posix", "sh_posix_toolchain")
+      discovered = {{
+      EOF
+      for cmd in ${{cmd_glob}}; do
+          if [[ -x $cmd ]]; then
+              echo "    '$(basename $cmd)': '$cmd'," >>$n
+          fi
+      done
+      cat >>$n <<EOF
+      }}
+      def create_posix_toolchain():
+          sh_posix_toolchain(
+              name = "nixpkgs_sh_posix",
+              **{{
+                  cmd: discovered[cmd]
+                  for cmd in posix.commands
+                  if cmd in discovered
+              }}
+          )
+      EOF
+    '';
+}}
 """.format(" ".join(packages)),
         build_file_content = """
 load("//:nixpkgs_sh_posix.bzl", "create_posix_toolchain")
