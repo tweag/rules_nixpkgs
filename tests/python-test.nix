@@ -6,7 +6,16 @@ runCommand "test-nixpkgs-python-toolchain"
 
     cat >$out/BUILD.bazel <<'EOF_BUILD'
     py_test(
-        name = "python-test",
+        name = "python2-test",
+        main = "python-test.py",
+        srcs = ["python-test.py"],
+        python_version = "PY2",
+        srcs_version = "PY2",
+        visibility = ["//visibility:public"],
+    )
+    py_test(
+        name = "python3-test",
+        main = "python-test.py",
         srcs = ["python-test.py"],
         python_version = "PY3",
         srcs_version = "PY3",
@@ -25,12 +34,15 @@ runCommand "test-nixpkgs-python-toolchain"
     """
 
     if __name__ == "__main__":
-        python_bin = "${python3}/bin/python"
+        if sys.version_info.major == 2:
+            python_bin = "${python2}/bin/python"
+        else:
+            python_bin = "${python3}/bin/python"
         if not sys.executable == python_bin:
-            print(_failure_message.format(
+            sys.stderr.write(_failure_message.format(
                 expected = python_bin,
                 actual = sys.executable,
-            ), file=sys.stderr)
+            ))
             sys.exit(1)
     EOF_PYTHON
   ''

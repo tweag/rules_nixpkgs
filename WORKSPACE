@@ -136,7 +136,10 @@ nixpkgs_package(
 
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
 
-nixpkgs_python_configure(repository = "@remote_nixpkgs")
+nixpkgs_python_configure(
+    python2_attribute_path = "python2",
+    repository = "@remote_nixpkgs",
+)
 
 nixpkgs_package(
     name = "nixpkgs_python_configure_test",
