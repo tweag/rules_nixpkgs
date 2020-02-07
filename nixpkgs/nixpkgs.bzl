@@ -162,10 +162,12 @@ def _nixpkgs_package_impl(repository_ctx):
 
         # ensure that the output is a directory
         test_path = repository_ctx.which("test")
-        _execute_or_fail(repository_ctx, [test_path, "-d", output_path],
-                         failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
-                             repository_ctx.name
-                         ),
+        _execute_or_fail(
+            repository_ctx,
+            [test_path, "-d", output_path],
+            failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
+                repository_ctx.name,
+            ),
         )
 
         # Build a forest of symlinks (like new_local_package() does) to the
@@ -605,7 +607,7 @@ def _find_children(repository_ctx, target_dir):
         "-print0",
     ]
     exec_result = _execute_or_fail(repository_ctx, find_args)
-    return exec_result.stdout.rstrip("\0").split("\0")
+    return exec_result.stdout.rstrip("\000").split("\000")
 
 def _executable_path(repository_ctx, exe_name, extra_msg = ""):
     """Try to find the executable, fail with an error."""
