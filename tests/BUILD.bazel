@@ -59,11 +59,11 @@ cc_binary(
 )
 
 # Test nixpkgs_python_configure() by running some Python code.
-py_test(
+test_suite(
     name = "python-test",
-    srcs = ["python-test.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
+    tests = [
+        "@nixpkgs_python_configure_test//:python-test",
+    ],
 )
 
 # Test nixpkgs_sh_posix_configure() checking that Unix commands are in Nix store.
