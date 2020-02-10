@@ -162,10 +162,12 @@ def _nixpkgs_package_impl(repository_ctx):
 
         # ensure that the output is a directory
         test_path = repository_ctx.which("test")
-        _execute_or_fail(repository_ctx, [test_path, "-d", output_path],
-                         failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
-                             repository_ctx.name
-                         ),
+        _execute_or_fail(
+            repository_ctx,
+            [test_path, "-d", output_path],
+            failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
+                repository_ctx.name,
+            ),
         )
 
         # Build a forest of symlinks (like new_local_package() does) to the
@@ -357,14 +359,27 @@ _nixpkgs_python_toolchain = repository_rule(
     },
 )
 
-_python_build_file_content = """
-py_runtime(
-    name = "runtime",
-    files = glob(["**"]),
-    interpreter = "{bin_path}",
-    python_version = "{version}",
-    visibility = ["//visibility:public"],
-)
+_python_nix_file_content = """
+with import <nixpkgs> {{ config = {{}}; overlays = []; }};
+runCommand "bazel-nixpkgs-python-toolchain"
+  {{ executable = false;
+    # Pointless to do this on a remote machine.
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+  }}
+  ''
+    n=$out/BUILD.bazel
+    mkdir -p "$(dirname "$n")"
+
+    cat >>$n <<EOF
+    py_runtime(
+        name = "runtime",
+        interpreter_path = "${{{attribute_path}}}/{bin_path}",
+        python_version = "{version}",
+        visibility = ["//visibility:public"],
+    )
+    EOF
+  ''
 """
 
 def nixpkgs_python_configure(
@@ -375,8 +390,6 @@ def nixpkgs_python_configure(
         python3_bin_path = "bin/python",
         repository = None,
         repositories = {},
-        nix_file = None,
-        nix_file_content = None,
         nix_file_deps = None,
         nixopts = [],
         fail_not_supported = True):
@@ -402,8 +415,6 @@ def nixpkgs_python_configure(
     kwargs = dict(
         repository = repository,
         repositories = repositories,
-        nix_file = nix_file,
-        nix_file_content = nix_file_content,
         nix_file_deps = nix_file_deps,
         nixopts = nixopts,
         fail_not_supported = fail_not_supported,
@@ -413,8 +424,8 @@ def nixpkgs_python_configure(
         python2_runtime = "@%s_python2//:runtime" % name
         nixpkgs_package(
             name = name + "_python2",
-            attribute_path = python2_attribute_path,
-            build_file_content = _python_build_file_content.format(
+            nix_file_content = _python_nix_file_content.format(
+                attribute_path = python2_attribute_path,
                 bin_path = python2_bin_path,
                 version = "PY2",
             ),
@@ -425,8 +436,8 @@ def nixpkgs_python_configure(
         python3_runtime = "@%s_python3//:runtime" % name
         nixpkgs_package(
             name = name + "_python3",
-            attribute_path = python3_attribute_path,
-            build_file_content = _python_build_file_content.format(
+            nix_file_content = _python_nix_file_content.format(
+                attribute_path = python3_attribute_path,
                 bin_path = python3_bin_path,
                 version = "PY3",
             ),
@@ -596,7 +607,7 @@ def _find_children(repository_ctx, target_dir):
         "-print0",
     ]
     exec_result = _execute_or_fail(repository_ctx, find_args)
-    return exec_result.stdout.rstrip("\0").split("\0")
+    return exec_result.stdout.rstrip("\000").split("\000")
 
 def _executable_path(repository_ctx, exe_name, extra_msg = ""):
     """Try to find the executable, fail with an error."""

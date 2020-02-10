@@ -136,7 +136,16 @@ nixpkgs_package(
 
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
 
-nixpkgs_python_configure(repository = "@remote_nixpkgs")
+nixpkgs_python_configure(
+    python2_attribute_path = "python2",
+    repository = "@remote_nixpkgs",
+)
+
+nixpkgs_package(
+    name = "nixpkgs_python_configure_test",
+    nix_file = "//tests:python-test.nix",
+    repository = "@remote_nixpkgs",
+)
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
