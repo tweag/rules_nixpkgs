@@ -1,5 +1,39 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
     "nixpkgs.bzl",
 ])
+
+# @bazel_tools//tools does not define a bzl_library itself, instead we are
+# supposed to define our own using the @bazel_tools//tools:bzl_srcs filegroup.
+# See https://github.com/bazelbuild/skydoc/issues/166
+bzl_library(
+    name = "bazel_tools",
+    srcs = [
+        "@bazel_tools//tools:bzl_srcs",
+    ],
+)
+
+bzl_library(
+    name = "repositories",
+    srcs = [
+        "repositories.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":bazel_tools",
+    ],
+)
+
+bzl_library(
+    name = "nixpkgs",
+    srcs = [
+        "nixpkgs.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":bazel_tools",
+    ],
+)
