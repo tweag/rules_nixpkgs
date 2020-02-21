@@ -74,6 +74,10 @@ def _nixpkgs_package_impl(repository_ctx):
     elif repository:
         repositories = {repository_ctx.attr.repository: "nixpkgs"}
 
+    # If true, a BUILD file will be created from a template if it does not
+    # exits.
+    # However this will happen AFTER the nix-build command.
+    create_build_file_if_needed = False
     if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
         fail("Specify one of 'build_file' or 'build_file_content', but not both.")
     elif repository_ctx.attr.build_file:
@@ -81,7 +85,8 @@ def _nixpkgs_package_impl(repository_ctx):
     elif repository_ctx.attr.build_file_content:
         repository_ctx.file("BUILD", content = repository_ctx.attr.build_file_content)
     else:
-        repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
+        # No user supplied build file, we may create the default one.
+        create_build_file_if_needed = True
 
     strFailureImplicitNixpkgs = (
         "One of 'repositories', 'nix_file' or 'nix_file_content' must be provided. " +
@@ -175,6 +180,13 @@ def _nixpkgs_package_impl(repository_ctx):
         for target in _find_children(repository_ctx, output_path):
             basename = target.rpartition("/")[-1]
             repository_ctx.symlink(target, basename)
+
+        # Create a default BUILD file only if it does not exists and is not
+        # provided by `build_file` or `build_file_content`.
+        if create_build_file_if_needed:
+            p = repository_ctx.path("BUILD")
+            if not p.exists:
+               repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
