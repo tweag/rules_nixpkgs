@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 
 - Define `rules_nixpkgs_dependencies` in `//nixpkgs:repositories.bzl`.
+- Define `nixpkgs_go_configure` in `//nixpkgs:toolchains/go.bzl`
 
 ## [0.6.0] - 2019-11-14
 

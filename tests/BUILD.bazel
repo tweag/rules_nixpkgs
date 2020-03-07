@@ -1,5 +1,7 @@
 package(default_testonly = 1)
 
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+
 [
     # All of these tests use the "hello" binary to see
     # whether different invocations of `nixpkgs_package`
@@ -79,4 +81,10 @@ sh_test(
         "$(POSIX_MAKE)",
     ],
     toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
+
+# Test nixpkgs_go_configure()
+go_binary(
+    name = "go-test",
+    srcs = ["go-test.go"]
 )
