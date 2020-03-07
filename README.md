@@ -388,11 +388,11 @@ For this rule to work `rules_go` must be available for loading before loading of
 
 Tells bazel to use go sdk from nixpkgs.
 
-By default rules_go configures go toolchain to be downladed as binaries (which doesn't work on NixOS),
+By default rules_go configures go toolchain to be downloaded as binaries (which doesn't work on NixOS),
 there is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
 This command allows to setup hermetic go sdk from Nixpkgs, which should be considerate as best practice.
 
-Note that nix package must provide full go sdk at the root of pacakage istead of in $out/share/go
+Note that nix package must provide full go sdk at the root of the pacakage instead of in $out/share/go
 And also provide an empty normal file named PACKAGE_ROOT at the root of package
 
 Example:
