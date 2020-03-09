@@ -9,7 +9,7 @@ platform(
     constraint_values = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
-        ":nixpkgs",
+        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
     ],
     visibility = ["//visibility:public"],
 )
@@ -19,7 +19,7 @@ platform(
     constraint_values = [
         "@platforms//cpu:x86_64",
         "@platforms//os:osx",
-        ":nixpkgs",
+        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
     ],
     visibility = ["//visibility:public"],
 )
