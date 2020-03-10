@@ -382,23 +382,78 @@ nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
 
 ### nixpkgs_go_configure
 
-**NOTE: this rule resides in `@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl` to avoid uncessary dependencies on rules_go for those who don't need go toolchain**
+**NOTE: this rule resides in `@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl` to avoid unnecessary dependencies on rules_go for those who don't need go toolchain**
 
 For this rule to work `rules_go` must be available for loading before loading of `@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl`.
 
-Tells bazel to use go sdk from nixpkgs.
+Tells bazel to use go sdk from nixpkgs. This rule **will fail** if nix is not present - you can always wrap it in rule if 
+you need to optionally provide nix support.
 
 By default rules_go configures go toolchain to be downloaded as binaries (which doesn't work on NixOS),
 there is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
 This command allows to setup hermetic go sdk from Nixpkgs, which should be considerate as best practice.
 
-Note that nix package must provide full go sdk at the root of the pacakage instead of in $out/share/go
+Note that nix package must provide full go sdk at the root of the package instead of in $out/share/go
 And also provide an empty normal file named PACKAGE_ROOT at the root of package
 
 Example:
 
 ```bzl
 nixpkgs_go_configure(repository = "@nixpkgs//:default.nix")
+```
+
+Example (optional nix support when go is transitive dependency):
+
+```bzl
+# .bazel-lib/nixos-support.bzl
+def _has_nix(ctx):
+    return ctx.which("nix-build") != None
+
+def _gen_imports_impl(ctx):
+    ctx.file("BUILD", "")
+
+    imports_for_nix = """
+        load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_toolchain")
+
+        def fix_go():
+            nixpkgs_go_toolchain(repository = "@nixpkgs")
+    """
+    imports_for_non_nix = """
+        def fix_go():
+            # if go isn't transitive you'll need to add call to go_register_toolchains here
+            pass
+    """
+
+    if _has_nix(ctx):
+        ctx.file("imports.bzl", imports_for_nix)
+    else:
+        ctx.file("imports.bzl", imports_for_non_nix)
+
+_gen_imports = repository_rule(
+    implementation = _gen_imports_impl,
+    attrs = dict(),
+)
+
+def gen_imports():
+    _gen_imports(
+        name = "nixos_support",
+    )
+
+
+
+# WORKSPACE
+
+// ...
+http_archive(name = "io_tweag_rules_nixpkgs", ...)
+// ...
+local_repository(
+    name = "bazel_lib",
+    path = ".bazel-lib",
+)
+load("@bazel_lib//:nixos-support.bzl", "gen_imports")
+gen_imports()
+load("@nixos_support//:imports.bzl", "fix_go")
+fix_go()
 ```
 
 <table class="table table-condensed table-bordered table-params">

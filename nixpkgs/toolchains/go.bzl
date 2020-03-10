@@ -17,33 +17,28 @@ def nixpkgs_go_configure(
     nix_file_content = None,
     nixopts = []):
     """
-    Use go toolchain from Nixpkgs. Noop if not a nix-based platform.
+    Use go toolchain from Nixpkgs. Will fail if not a nix-based platform.
 
-    By default rules_go configures go toolchain to be downladed as binaries (which doesn't work on NixOS),
+    By default rules_go configures go toolchain to be downloaded as binaries (which doesn't work on NixOS),
     there is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
     This command allows to setup hermetic go sdk from Nixpkgs, which should be considerate as best practice.
 
-    Note that nix package must provide full go sdk at the root of pacakage istead of in $out/share/go
+    Note that nix package must provide full go sdk at the root of package instead of in $out/share/go
     And also provide an empty normal file named PACKAGE_ROOT at the root of package
     """
 
     if not nix_file and not nix_file_content:
-        # wrapping go package in buildEnv to avoid rebuilds 
         nix_file_content = """
-            with import <nixpkgs> { config = {}; overlays = []; }; lib.overrideDerivation (buildEnv {
-                name = "bazel-go-toolchain_built";
-                paths = [ go ];
-            }) (base: {
-                name = "bazel-go-toolchain";
-                buildCommand = (base.buildCommand or "") + ''
-
-                cd $out
-                rm -f bin
-                cp -R share/go/* ./
-                rm -f share
-                touch PACKAGE_ROOT
-                '';
-            })
+            with import <nixpkgs> { config = {}; overlays = []; }; buildEnv {
+              name = "bazel-go-toolchain";
+              paths = [
+                go
+              ];
+              postBuild = ''
+                touch $out/PACKAGE_ROOT
+                ln -s $out/share/go/{api,doc,lib,misc,pkg,src} $out/
+              '';
+            }
         """
 
 
@@ -57,10 +52,5 @@ def nixpkgs_go_configure(
         build_file_content = """exports_files(glob(["**/*"]))""",
         nixopts = nixopts,
     )
-    
-    if _is_supported_platform:
-        go_wrap_sdk(name = sdk_name, root_file = "@nixpkgs_go_toolchain//:PACKAGE_ROOT")
 
-
-def _is_supported_platform(repository_ctx):
-    return repository_ctx.which("nix-build") != None
+    go_wrap_sdk(name = sdk_name, root_file = "@nixpkgs_go_toolchain//:PACKAGE_ROOT")
