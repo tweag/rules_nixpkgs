@@ -8,5 +8,6 @@ mkShell {
     cacert
     gcc
     nix
+    git
   ];
 }
