@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: nixos/nix:2.3
+      - image: nixos/nix
     working_directory: ~/rules_nixpkgs
     steps:
       - checkout
