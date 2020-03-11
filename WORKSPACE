@@ -165,3 +165,26 @@ nixpkgs_sh_posix_configure(repository = "@nixpkgs")
 load("@rules_sh//sh:posix.bzl", "sh_posix_configure")
 
 sh_posix_configure()
+
+# go toolchain test
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "b27e55d2dcc9e6020e17614ae6e0374818a3e3ce6f2024036e688ada24110444",
+    urls = [
+        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.21.0/rules_go-v0.21.0.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.21.0/rules_go-v0.21.0.tar.gz",
+    ],
+)
+
+load(
+    "//nixpkgs:toolchains/go.bzl",
+    "nixpkgs_go_configure"
+)
+
+nixpkgs_go_configure(repository = "@nixpkgs")
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+
+go_rules_dependencies()
+
