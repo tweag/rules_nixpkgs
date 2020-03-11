@@ -10,7 +10,7 @@ jobs:
       - run:
           name: System dependencies
           command: |
-            apk update --no-progress && apk --no-progress add bash ca-certificates
+            apk update --no-progress && apk --no-progress add bash ca-certificates git
       - run:
           name: Run tests
           command: |
