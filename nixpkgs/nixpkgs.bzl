@@ -139,7 +139,7 @@ def _nixpkgs_package_impl(repository_ctx):
         expr_args.extend(["-I", nix_path])
 
     if not_supported and fail_not_supported:
-        fail("Platform is not supported (see 'fail_not_supported')")
+        fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
     elif not_supported:
         return
     else:
