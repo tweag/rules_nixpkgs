@@ -1,0 +1,28 @@
+pull_request_rules:
+  - name: automatic merge
+    conditions:
+      - "status-success~=buildkite/rules-nixpkgs(|/pr)"
+      - "#approved-reviews-by>=1"
+      - "label=merge-queue"
+      - "base=master"
+    actions:
+      merge:
+        method: merge
+        strict: smart
+        strict_method: rebase
+
+  - name: delete head branch after merge
+    conditions:
+      - merged
+      - closed
+    actions:
+      delete_head_branch: {}
+
+  - name: remove from merge-queue after merge
+    conditions:
+      - merged
+    actions:
+      label:
+        remove:
+          - "merge-queue"
+
