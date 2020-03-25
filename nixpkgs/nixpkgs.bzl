@@ -504,7 +504,7 @@ runCommand "bazel-nixpkgs-posix-toolchain"
     def create_posix_toolchain():
         sh_posix_toolchain(
             name = "nixpkgs_sh_posix",
-            **{{
+            cmds = {{
                 cmd: discovered[cmd]
                 for cmd in posix.commands
                 if cmd in discovered
