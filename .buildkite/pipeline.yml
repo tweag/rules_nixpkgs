@@ -1,0 +1,5 @@
+steps:
+  - label: "Run tests"
+    command: |
+      nix-shell --pure --run 'bazel test --test_output errors //...'
+    timeout: 100
