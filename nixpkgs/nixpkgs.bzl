@@ -155,6 +155,7 @@ def _nixpkgs_package_impl(repository_ctx):
         # as we can do. The value shouldn't be too large to avoid errors on
         # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
         timeout = 8640000
+        repository_ctx.report_progress("Building Nix derivation")
         exec_result = _execute_or_fail(
             repository_ctx,
             nix_build,
