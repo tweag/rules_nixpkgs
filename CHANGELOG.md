@@ -12,6 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - Define `rules_nixpkgs_dependencies` in `//nixpkgs:repositories.bzl`.
 - Define `nixpkgs_go_configure` in `//nixpkgs:toolchains/go.bzl`
+- `nixpkgs_package` now has a `quiet` attribute.
+
+### Changed
+
+- Show Nix output by default, like in releases prior to v0.6.
 
 ## [0.6.0] - 2019-11-14
 
