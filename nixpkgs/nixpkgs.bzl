@@ -162,6 +162,7 @@ def _nixpkgs_package_impl(repository_ctx):
             failure_message = "Cannot build Nix attribute '{}'.".format(
                 repository_ctx.attr.attribute_path,
             ),
+            quiet = False,
             timeout = timeout,
         )
         output_path = exec_result.stdout.splitlines()[-1]
