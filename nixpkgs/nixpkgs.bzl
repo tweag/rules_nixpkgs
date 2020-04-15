@@ -162,6 +162,7 @@ def _nixpkgs_package_impl(repository_ctx):
             failure_message = "Cannot build Nix attribute '{}'.".format(
                 repository_ctx.attr.attribute_path,
             ),
+            quiet = repository_ctx.attr.quiet,
             timeout = timeout,
         )
         output_path = exec_result.stdout.splitlines()[-1]
@@ -201,6 +202,7 @@ _nixpkgs_package = repository_rule(
         "build_file": attr.label(),
         "build_file_content": attr.string(),
         "nixopts": attr.string_list(),
+        "quiet": attr.bool(),
         "fail_not_supported": attr.bool(default = True, doc = """
             If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
                                         """),
