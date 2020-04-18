@@ -1,6 +1,6 @@
 # rules_nixpkgs
 
-[![CircleCI](https://circleci.com/gh/tweag/rules_nixpkgs.svg?style=svg)](https://circleci.com/gh/tweag/rules_nixpkgs)
+[![Build status](https://badge.buildkite.com/79bd0a8aa1e47a92e0254ca3afe5f439776e6d389cfbde9d8c.svg?branch=master)](https://buildkite.com/tweag-1/rules-nixpkgs)
 
 Rules for importing Nixpkgs packages into Bazel.
 
