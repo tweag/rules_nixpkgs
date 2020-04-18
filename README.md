@@ -1,8 +1,18 @@
-# rules_nixpkgs
+# Nixpkgs rules for Bazel
 
 [![Build status](https://badge.buildkite.com/79bd0a8aa1e47a92e0254ca3afe5f439776e6d389cfbde9d8c.svg?branch=master)](https://buildkite.com/tweag-1/rules-nixpkgs)
 
-Rules for importing Nixpkgs packages into Bazel.
+Use Nixpkgs to import external dependencies (like system packages)
+into Bazel hermetically. If the version of any dependency changes,
+Bazel will correctly rebuild targets, and only those targets that use
+the external dependencies that changed.
+
+Links:
+* [Nix + Bazel = fully reproducible, incremental builds][blog-bazel-nix]
+* [Nix + Bazel lightning talk][youtube-bazel-nix]
+
+[blog-bazel-nix]: https://www.tweag.io/posts/2018-03-15-bazel-nix.html
+[youtube-bazel-nix]: https://www.youtube.com/watch?v=hDdDUrty1Gw
 
 ## Rules
 
