@@ -20,6 +20,7 @@ platform(
         "@platforms//os:linux",
         "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
     ],
+    deprecation = "Use @io_tweag_rules_nixpkgs//platforms:host instead.",
     visibility = ["//visibility:public"],
 )
 
@@ -30,5 +31,6 @@ platform(
         "@platforms//os:osx",
         "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
     ],
+    deprecation = "Use @io_tweag_rules_nixpkgs//platforms:host instead.",
     visibility = ["//visibility:public"],
 )
