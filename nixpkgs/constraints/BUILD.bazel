@@ -1,7 +1,16 @@
+package(default_visibility = ["//visibility:public"])
+
+constraint_setting(name = "nix")
+
+constraint_value(
+    name =  "support_nix",
+    constraint_setting = ":nix",
+)
+
 constraint_value(
     name = "nixpkgs",
     constraint_setting = "@bazel_tools//tools/cpp:cc_compiler",
-    visibility = ["//visibility:public"],
+    deprecation = "Use support_nix constraint value instead.",
 )
 
 platform(
