@@ -9,8 +9,9 @@ correctly rebuild targets, and only those targets that use the
 external dependencies that changed.
 
 Links:
-* [Nix + Bazel = fully reproducible, incremental builds][blog-bazel-nix]
-* [Nix + Bazel lightning talk][youtube-bazel-nix]
+* [Nix + Bazel = fully reproducible, incremental
+  builds][blog-bazel-nix] (blog post)
+* [Nix + Bazel][youtube-bazel-nix] (lightning talk)
 
 [nix]: https://nixos.org/nix
 [nixpkgs]: https://github.com/NixOS/nixpkgs
