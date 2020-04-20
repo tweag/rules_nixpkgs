@@ -16,6 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
+- The constraint value for targets to detect whether Nix is available
+  on the current platform is now called
+  `@//nixpkgs/constraints:support_nix`. The associated constraint
+  setting is `@//nixpkgs/constraints:nix`. The old constraint
+  `@//nixpkgs/constraints:nixpkgs` constraint setting is still
+  available. But it is highly recommended to migrate to the new
+  constraint setting, and update platform definitions accordingly.
+  This is a breaking change for users of `nixpkgs_python_configure`.
 - Show Nix output by default, like in releases prior to v0.6.
 
 ## [0.6.0] - 2019-11-14
