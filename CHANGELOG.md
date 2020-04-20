@@ -28,7 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.6.0] - 2019-11-14
 
-[0.6.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.5.2...0.6.0
+[0.6.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.5.2...v0.6.0
 
 ### Added
 
@@ -58,6 +58,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.5.2] - 2019-01-28
 
+[0.5.2]: https://github.com/tweag/rules_nixpkgs/compare/v0.5.1...v0.5.2
+
 ### Added
 - `nixpkgs_package` now has a new optional argument `fail_not_supported`
   allowing the rule to _not_ fail on Windows (when set to `False`)
@@ -69,6 +71,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   instead of throwing an error.
 
 ## [0.5.1] - 2018-12-18
+
+[0.5.1]: https://github.com/tweag/rules_nixpkgs/compare/v0.4.1...v0.5.1
 
 ### Changed
 
@@ -86,6 +90,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   `nixpkgs_package` now also works on MacOS
 
 ## [0.4.1] - 2018-11-17
+
+[0.4.1]: https://github.com/tweag/rules_nixpkgs/compare/v0.3.1...v0.4.1
 
 ### Added
 
@@ -108,11 +114,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.3.1] - 2018-10-24
 
+[0.3.1]: https://github.com/tweag/rules_nixpkgs/compare/v0.3.0...v0.3.1
+
 ### Fixed
 
 * `repositories` is no longer a required argument to `nixpkgs_package`.
 
 ## [0.3] - 2018-10-23
+
+[0.3]: https://github.com/tweag/rules_nixpkgs/compare/v0.2.3...v0.3
 
 ### Added
 
