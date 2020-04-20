@@ -350,7 +350,7 @@ toolchain(
     exec_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:{os}",
-        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
+        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
     ],
     target_compatible_with = [
         "@platforms//cpu:x86_64",
@@ -413,7 +413,7 @@ def nixpkgs_python_configure(
     Creates `nixpkgs_package`s for Python 2 or 3 `py_runtime` instances and a
     corresponding `py_runtime_pair` and `toolchain`. The toolchain is
     automatically registered and uses the constraint:
-      "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs"
+      "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix"
 
     Attrs:
       name: The name-prefix for the created external repositories.
@@ -533,7 +533,7 @@ toolchain(
     exec_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:{os}",
-        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:nixpkgs",
+        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
     ],
     target_compatible_with = [
         "@platforms//cpu:x86_64",

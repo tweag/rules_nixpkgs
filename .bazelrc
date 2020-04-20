@@ -1,1 +1,1 @@
-build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/constraints:linux_x86_64_nixpkgs
+build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
