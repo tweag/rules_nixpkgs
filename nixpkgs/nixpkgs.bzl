@@ -98,7 +98,7 @@ def _nixpkgs_package_impl(repository_ctx):
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
     elif repository_ctx.attr.nix_file:
         nix_file = _cp(repository_ctx, repository_ctx.attr.nix_file)
-        expr_args = [nix_file]
+        expr_args = [repository_ctx.path(nix_file)]
     elif repository_ctx.attr.nix_file_content:
         expr_args = ["-E", repository_ctx.attr.nix_file_content]
     elif not repositories:
@@ -642,7 +642,7 @@ def _cp(repository_ctx, src, dest = None):
         By default the relative path to the repository root is preserved.
 
     Returns:
-      The absolute target path.
+      The dest value
     """
     if dest == None:
         if type(src) != "Label":
@@ -653,7 +653,7 @@ def _cp(repository_ctx, src, dest = None):
             if component
         ])
     repository_ctx.template(dest, src, executable = False)
-    return repository_ctx.path(dest)
+    return dest
 
 def _label_string(label):
     """Convert the given (optional) Label to a string."""
