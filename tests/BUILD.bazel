@@ -88,3 +88,15 @@ go_binary(
     name = "go-test",
     srcs = ["go-test.go"]
 )
+
+sh_test(
+    name = "run-test-invalid-nixpkgs-package",
+    timeout = "short",
+    srcs = ["test_invalid_nixpkgs_package.sh"],
+    data = [
+        "//nixpkgs:srcs",
+        "//tests/invalid_nixpkgs_package:srcs",
+        "@busybox_static//:bin",
+        "@nix-unstable//:bin"
+    ],
+)
