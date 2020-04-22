@@ -142,7 +142,7 @@ def _nixpkgs_package_impl(repository_ctx):
             for f in content.splitlines():
                 # Hack: this is to register all Nix files as dependencies
                 # of this rule (see issue #113)
-                repository_ctx.path(Label("@{}//:{}".format(path_name, f)))
+                repository_ctx.path(target.relative(":{}".format(f)))
 
     # If repositories is not set, leave empty so nix will fail
     # unless a pinned nixpkgs is set in the `nix_file` attribute.
