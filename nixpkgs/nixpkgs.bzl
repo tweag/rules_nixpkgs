@@ -135,28 +135,26 @@ def _nixpkgs_package_impl(repository_ctx):
 
     expr_args.extend(repository_ctx.attr.nixopts)
 
-    for (target, path_name) in repositories.items():
-        path = str(repository_ctx.path(target).dirname) + "/nix-file-deps"
+    for repo in repositories.keys():
+        path = str(repository_ctx.path(repo).dirname) + "/nix-file-deps"
         if repository_ctx.path(path).exists:
             content = repository_ctx.read(path)
             for f in content.splitlines():
                 # Hack: this is to register all Nix files as dependencies
                 # of this rule (see issue #113)
-                repository_ctx.path(target.relative(":{}".format(f)))
+                repository_ctx.path(repo.relative(":{}".format(f)))
 
     # If repositories is not set, leave empty so nix will fail
     # unless a pinned nixpkgs is set in the `nix_file` attribute.
-    nix_paths = []
-    if repositories:
-        nix_paths = [
-            (path_name + "=" + str(repository_ctx.path(target)))
-            for (target, path_name) in repositories.items()
-        ]
-    elif not (repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content):
+    nix_path = [
+        "{}={}".format(prefix, repository_ctx.path(repo))
+        for (repo, prefix) in repositories.items()
+    ]
+    if not (repositories or repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content):
         fail(strFailureImplicitNixpkgs)
 
-    for nix_path in nix_paths:
-        expr_args.extend(["-I", nix_path])
+    for dir in nix_path:
+        expr_args.extend(["-I", dir])
 
     if not_supported and fail_not_supported:
         fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
