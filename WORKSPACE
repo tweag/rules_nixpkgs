@@ -134,6 +134,14 @@ nixpkgs_package(
     repository = "@nixpkgs",
 )
 
+# This is used to run Nix in a sandboxed Bazel test. See the test
+# run-test-invalid-nixpkgs-package.
+nixpkgs_package(
+    name = "busybox_static",
+    attribute_path = "pkgsStatic.busybox",
+    repository = "@nixpkgs",
+)
+
 nixpkgs_cc_configure(repository = "@remote_nixpkgs")
 
 nixpkgs_python_configure(

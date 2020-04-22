@@ -1,0 +1,20 @@
+workspace(name = "io_tweag_rules_nixpkgs")
+
+load(
+    "//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_local_repository",
+    "nixpkgs_package",
+)
+
+nixpkgs_local_repository(
+    name = "nixpkgs",
+    nix_file = "//:default.nix",
+    nix_file_deps = [ "//:message.nix" ],
+)
+
+nixpkgs_package(
+    name = "hello",
+    attribute_path = "hello",
+    repository = "@nixpkgs",
+    nixopts = [ "--option", "sandbox", "false", "--option", "binary-caches", "" ]
+)

@@ -88,3 +88,18 @@ go_binary(
     name = "go-test",
     srcs = ["go-test.go"]
 )
+
+# Note that Nix needs to write to /dev/pts (see
+# https://github.com/NixOS/nix/blob/4a2a45f53d16040f744580747d0963f97ec51164/src/libstore/build.cc#L2255)
+# This test has then to be executed with the flag --sandbox_writable_path /dev/pts
+sh_test(
+    name = "run-test-invalid-nixpkgs-package",
+    timeout = "short",
+    srcs = ["test_invalid_nixpkgs_package.sh"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+    data = [
+        "//nixpkgs:srcs",
+        "//tests/invalid_nixpkgs_package:srcs",
+        "@busybox_static//:bin"
+    ],
+)
