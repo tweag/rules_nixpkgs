@@ -26,6 +26,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   This is a breaking change for users of `nixpkgs_python_configure`.
 - Show Nix output by default, like in releases prior to v0.6.
 
+### Fixed
+
+- `nixpkgs_local_repository` now correctly invalidates the cache when
+  Nix source files change. See
+  [#123](https://github.com/tweag/rules_nixpkgs/issues/113).
+
 ## [0.6.0] - 2019-11-14
 
 [0.6.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.5.2...v0.6.0
