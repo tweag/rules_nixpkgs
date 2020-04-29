@@ -1,9 +1,13 @@
 #!/bin/sh
 set -e
 
-ln -s tests/invalid_nixpkgs_package/workspace.bazel WORKSPACE
-ln -s tests/invalid_nixpkgs_package/nested-build.bazel BUILD
-ln -s tests/invalid_nixpkgs_package/default.nix default.nix
+cleanup () {
+    rm -f WORKSPACE BUILD default.nix
+}
+trap cleanup EXIT
+ln -fs tests/invalid_nixpkgs_package/workspace.bazel WORKSPACE
+ln -fs tests/invalid_nixpkgs_package/nested-build.bazel BUILD
+ln -fs tests/invalid_nixpkgs_package/default.nix default.nix
 
 # We need to provide a nixpkgs to create an output store path which is
 # a folder (because nixpkgs_package requires the output store path to

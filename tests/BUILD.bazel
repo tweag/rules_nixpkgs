@@ -102,4 +102,5 @@ sh_test(
         "//tests/invalid_nixpkgs_package:srcs",
         "@busybox_static//:bin"
     ],
+    tags = ["no-sandbox"],
 )
