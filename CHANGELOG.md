@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 [Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...HEAD
 
+### Added
+
+- Define `nixpkgs_cc_configure_hermetic` in `//nixpkgs:repositories.bzl`.
+  See [#128][#128].
+
 ### Changed
 
 - The values in the `nixopts` attribute to `nixpkgs_package` are now subject to
@@ -16,6 +21,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   `LABEL`. To pass a plain `$` to Nix it must be escaped as `$$`.
   See [#132][#132].
 
+### Deprecated
+
+- `nixpkgs_cc_configure` has been deprecated in favor of
+  `nixpkgs_cc_configure_hermetic` and will be replaced by it in future.
+  See [#128][#128].
+
+[#128]: https://github.com/tweag/rules_nixpkgs/pull/128
 [#132]: https://github.com/tweag/rules_nixpkgs/pull/132
 
 ## [0.7.0] - 2020-04-20

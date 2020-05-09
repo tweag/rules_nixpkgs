@@ -1,6 +1,7 @@
 package(default_testonly = 1)
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(":cc-test.bzl", "cc_toolchain_test")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
 
 expand_location_unit_test_suite()
@@ -75,10 +76,15 @@ sh_test(
     toolchains = ["@rules_sh//sh/posix:make_variables"],
 )
 
-# Test nixpkgs_cc_configure() by building some CC code.
+# Test nixpkgs_cc_configure_hermetic() by building some CC code.
 cc_binary(
     name = "cc-test",
     srcs = ["cc-test.cc"],
+)
+
+# Test that nixpkgs_cc_configure_hermetic is selected.
+cc_toolchain_test(
+    name = "cc-toolchain",
 )
 
 # Test nixpkgs_python_configure() by running some Python code.
