@@ -86,7 +86,7 @@ sh_test(
 # Test nixpkgs_go_configure()
 go_binary(
     name = "go-test",
-    srcs = ["go-test.go"]
+    srcs = ["go-test.go"],
 )
 
 sh_test(
@@ -97,6 +97,6 @@ sh_test(
         "//nixpkgs:srcs",
         "//tests/invalid_nixpkgs_package:srcs",
         "@busybox_static//:bin",
-        "@nix-unstable//:bin"
+        "@nix-unstable//:bin",
     ],
 )

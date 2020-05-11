@@ -6,7 +6,8 @@ load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 def _nixpkgs_git_repository_impl(repository_ctx):
     repository_ctx.file(
         "BUILD",
-        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])')
+        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])',
+    )
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for default.nix.
@@ -208,7 +209,7 @@ def _nixpkgs_package_impl(repository_ctx):
         if create_build_file_if_needed:
             p = repository_ctx.path("BUILD")
             if not p.exists:
-               repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
+                repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,

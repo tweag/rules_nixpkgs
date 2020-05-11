@@ -2,20 +2,19 @@ load(
     "@io_bazel_rules_go//go:deps.bzl",
     "go_wrap_sdk",
 )
-
 load(
     "//nixpkgs:nixpkgs.bzl",
-    "nixpkgs_package"
+    "nixpkgs_package",
 )
 
 def nixpkgs_go_configure(
-    sdk_name = "go_sdk",
-    repository = None,
-    repositories = {},
-    nix_file = None,
-    nix_file_deps = None,
-    nix_file_content = None,
-    nixopts = []):
+        sdk_name = "go_sdk",
+        repository = None,
+        repositories = {},
+        nix_file = None,
+        nix_file_deps = None,
+        nix_file_content = None,
+        nixopts = []):
     """
     Use go toolchain from Nixpkgs. Will fail if not a nix-based platform.
 
@@ -40,7 +39,6 @@ def nixpkgs_go_configure(
               '';
             }
         """
-
 
     nixpkgs_package(
         name = "nixpkgs_go_toolchain",

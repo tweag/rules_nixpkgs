@@ -6,7 +6,11 @@ exports_files([
     "nixpkgs.bzl",
 ])
 
-filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
 
 # @bazel_tools//tools does not define a bzl_library itself, instead we are
 # supposed to define our own using the @bazel_tools//tools:bzl_srcs filegroup.

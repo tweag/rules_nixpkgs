@@ -202,12 +202,11 @@ http_archive(
 
 load(
     "//nixpkgs:toolchains/go.bzl",
-    "nixpkgs_go_configure"
+    "nixpkgs_go_configure",
 )
 
 nixpkgs_go_configure(repository = "@nixpkgs")
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
-
