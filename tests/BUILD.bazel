@@ -54,6 +54,30 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary")
     ),
 ]
 
+# Test nixopts location expansion
+sh_test(
+    name = "location-expansion-test",
+    srcs = ["location_expansion.sh"],
+    args = [
+        "$(POSIX_DIFF)",
+        "$(rootpath //:nixpkgs.json)",
+        "$(rootpath //:nixpkgs.nix)",
+        "$(rootpath //tests:relative_imports/nixpkgs.nix)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/nixpkgs.json)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/nixpkgs.nix)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/relative_imports.nix)",
+    ],
+    data = [
+        "//:nixpkgs.json",
+        "//:nixpkgs.nix",
+        "//tests:relative_imports/nixpkgs.nix",
+        "@nixpkgs_location_expansion_test//:out/nixpkgs.json",
+        "@nixpkgs_location_expansion_test//:out/nixpkgs.nix",
+        "@nixpkgs_location_expansion_test//:out/relative_imports.nix",
+    ],
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
+
 # Test nixpkgs_cc_configure() by building some CC code.
 cc_binary(
     name = "cc-test",

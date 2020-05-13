@@ -170,6 +170,27 @@ nixpkgs_package(
     repository = "@remote_nixpkgs",
 )
 
+nixpkgs_package(
+    name = "nixpkgs_location_expansion_test",
+    build_file_content = "exports_files(glob(['out/**']))",
+    expand_location = True,
+    nix_file = "//tests:location_expansion.nix",
+    nix_file_deps = [
+        "//:nixpkgs.json",
+        "//:nixpkgs.nix",
+        "@io_tweag_rules_nixpkgs//tests:relative_imports/nixpkgs.nix",
+    ],
+    nixopts = [
+        "--arg",
+        "attrs",
+        "{ nixpkgs_json = $(location //:nixpkgs.json); nixpkgs_nix = $(location //:nixpkgs.nix); }",
+        "--arg",
+        "relative_imports",
+        "$(location @io_tweag_rules_nixpkgs//tests:relative_imports/nixpkgs.nix)",
+    ],
+    repository = "@remote_nixpkgs",
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
