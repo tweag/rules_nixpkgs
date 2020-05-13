@@ -73,6 +73,54 @@ nixpkgs_local_repository = repository_rule(
 def _is_supported_platform(repository_ctx):
     return repository_ctx.which("nix-build") != None
 
+def _expand_location(repository_ctx, string, labels, attr = None):
+    """Expand `$(location label)` to a path.
+
+    Attrs:
+      repository_ctx: The repository rule context.
+      string: string, Replace instances of `$(location )` in this string.
+      labels: dict from label to path: Known label to path mappings.
+      attr: string, The rule attribute to use for error reporting.
+
+    Returns:
+      The string with all instances of `$(location )` replaced by paths.
+    """
+    num = string.count("$(location ")
+    result = ""
+    offset = 0
+    for i in range(num):
+        start = string.find("$(location ", offset)
+        label_start = start + len("$(location ")
+        label_end = string.find(")", label_start)
+        if label_end == -1:
+            fail("Unbalanced parentheses in location expansion for '{}'.".format(string[start:]), attr)
+        end = label_end + 1
+        label_str = string[label_start:label_end]
+        label_candidates = [
+            (lbl, path)
+            for (lbl, path) in labels.items()
+            if lbl.relative(label_str) == lbl
+        ]
+        if len(label_candidates) == 0:
+            fail("Unknown label '{}' in location expansion for '{}'.".format(label_str, string), attr)
+        elif len(label_candidates) > 1:
+            fail(
+                "Ambiguous label '{}' in location expansion for '{}'. Candidates: {}".format(
+                    label_str,
+                    string,
+                    ", ".join([str(lbl) for lbl in label_candidates]),
+                ),
+                attr,
+            )
+        location = paths.join(".", paths.relativize(
+            str(repository_ctx.path(label_candidates[0][1])),
+            str(repository_ctx.path(".")),
+        ))
+        result += string[offset:start] + location
+        offset = end
+    result += string[offset:]
+    return result
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
