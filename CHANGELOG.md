@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...HEAD
+
+### Added
+
+- Add `expand_location` attribute to `nixpkgs_package`. When enabled instances
+  of `$(location LABEL)` in the `nixopts` attribute will be expanded to the
+  file path of the file referenced by `LABEL`.
+  See [#128][#128].
+
 ## [0.7.0] - 2020-04-20
 
 [0.7.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.6.0...v0.7.0
