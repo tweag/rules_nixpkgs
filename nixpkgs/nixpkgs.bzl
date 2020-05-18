@@ -4,7 +4,9 @@ load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 
 def _nixpkgs_git_repository_impl(repository_ctx):
-    repository_ctx.file("BUILD")
+    repository_ctx.file(
+        "BUILD",
+        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])')
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for default.nix.

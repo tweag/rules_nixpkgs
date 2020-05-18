@@ -1,0 +1,6 @@
+genrule(
+    name = "hello-output",
+    outs = ["hello-output.txt"],
+    cmd = "$(execpath @hello//:bin) > \"$@\"",
+    tools = [ "@hello//:bin" ]
+)
