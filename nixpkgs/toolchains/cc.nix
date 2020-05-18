@@ -250,13 +250,15 @@ in
       #
       # Each line has the following shape:
       #   <key>:<value1>:<value2>:...
-      # I.e. each line contains one colon-separated key-value pair, where the
-      # value is a colon-separated list.
+      # or
+      #   <key>
+      # I.e. each line is a colon-separated list of the key and the values.
       mkdir -p $out
       write_info() {
         local -n flags=$1
+        local output=( "$1" "''${flags[@]}" )
         IFS=:
-        echo "$1:''${flags[*]}" >>$out/CC_TOOLCHAIN_INFO
+        echo "''${output[*]}" >>$out/CC_TOOLCHAIN_INFO
         unset IFS
       }
       write_info TOOL_NAMES
