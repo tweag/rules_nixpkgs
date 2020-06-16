@@ -427,7 +427,8 @@ def nixpkgs_python_configure(
         repositories = {},
         nix_file_deps = None,
         nixopts = [],
-        fail_not_supported = True):
+        fail_not_supported = True,
+        quiet = False):
     """Define and register a Python toolchain provided by nixpkgs.
 
     Creates `nixpkgs_package`s for Python 2 or 3 `py_runtime` instances and a
@@ -453,6 +454,7 @@ def nixpkgs_python_configure(
         nix_file_deps = nix_file_deps,
         nixopts = nixopts,
         fail_not_supported = fail_not_supported,
+        quiet = quiet,
     )
     python2_runtime = None
     if python2_attribute_path:
