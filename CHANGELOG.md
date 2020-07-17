@@ -13,7 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Add `expand_location` attribute to `nixpkgs_package`. When enabled instances
   of `$(location LABEL)` in the `nixopts` attribute will be expanded to the
   file path of the file referenced by `LABEL`.
-  See [#128][#128].
+  See [#132][#132].
+
+[#132]: https://github.com/tweag/rules_nixpkgs/pull/132
 
 ## [0.7.0] - 2020-04-20
 
