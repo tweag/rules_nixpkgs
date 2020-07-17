@@ -187,6 +187,9 @@ nixpkgs_package(
         "--arg",
         "relative_imports",
         "$(location @io_tweag_rules_nixpkgs//tests:relative_imports/nixpkgs.nix)",
+        "--argstr",
+        "escaped_string",
+        "$$ $$(location //:does-not-exist) )(",
     ],
     repository = "@remote_nixpkgs",
 )
