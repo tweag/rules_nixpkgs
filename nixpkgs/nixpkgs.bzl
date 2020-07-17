@@ -306,6 +306,7 @@ def _parse_cc_toolchain_info(content, filename):
         "COVERAGE_COMPILE_FLAGS",
         "COVERAGE_LINK_FLAGS",
         "SUPPORTS_START_END_LIB",
+        "IS_CLANG",
     ])
     actual_keys = sets.make(info.keys())
     missing_keys = sets.difference(expected_keys, actual_keys)
@@ -344,6 +345,7 @@ def _parse_cc_toolchain_info(content, filename):
         coverage_compile_flags = info["COVERAGE_COMPILE_FLAGS"],
         coverage_link_flags = info["COVERAGE_LINK_FLAGS"],
         supports_start_end_lib = info["SUPPORTS_START_END_LIB"] == ["True"],
+        is_clang = info["IS_CLANG"] == ["True"],
     )
 
 def _nixpkgs_cc_toolchain_config_impl(repository_ctx):

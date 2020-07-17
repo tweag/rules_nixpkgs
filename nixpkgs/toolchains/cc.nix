@@ -245,6 +245,11 @@ in
           if [[ -x ${cc}/bin/ld.gold ]]; then echo True; else echo False; fi
         )
       )
+      IS_CLANG=(
+        $(
+          ${cc}/bin/cc -v 2>&1 | grep -q clang && echo True || echo False
+        )
+      )
 
       # Write CC_TOOLCHAIN_INFO
       #
@@ -275,4 +280,5 @@ in
       write_info COVERAGE_COMPILE_FLAGS
       write_info COVERAGE_LINK_FLAGS
       write_info SUPPORTS_START_END_LIB
+      write_info IS_CLANG
     ''
