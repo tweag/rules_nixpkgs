@@ -1,6 +1,7 @@
 """Rules for importing Nixpkgs packages."""
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
+load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load(
     "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
@@ -370,6 +371,23 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         repository_ctx.path(repository_ctx.attr._armeabi_cc_toolchain_config),
         "armeabi_cc_toolchain_config.bzl",
     )
+
+    # A module map is required for clang starting from Bazel version 3.3.0.
+    # https://github.com/bazelbuild/bazel/commit/8b9f74649512ee17ac52815468bf3d7e5e71c9fa
+    needs_module_map = info.is_clang and versions.is_at_least("3.3.0", versions.get())
+    if needs_module_map:
+        generate_system_module_map = [
+            repository_ctx.path(repository_ctx.attr._generate_system_module_map),
+        ]
+        repository_ctx.file(
+            "module.modulemap",
+            _execute_or_fail(
+                repository_ctx,
+                generate_system_module_map + info.cxx_builtin_include_directories,
+                "Failed to generate system module map.",
+            ).stdout.strip(),
+            executable = False,
+        )
     cc_wrapper_src = (
         repository_ctx.attr._osx_cc_wrapper if darwin else repository_ctx.attr._linux_cc_wrapper
     )
@@ -395,6 +413,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         {
             "%{cc_toolchain_identifier}": "local",
             "%{name}": cpu_value,
+            "%{modulemap}": ("\":module.modulemap\"" if needs_module_map else "None"),
             "%{supports_param_files}": "0" if darwin else "1",
             "%{cc_compiler_deps}": get_starlark_list(
                 [":builtin_include_directory_paths"] + (
@@ -436,6 +455,9 @@ _nixpkgs_cc_toolchain_config = repository_rule(
         ),
         "_armeabi_cc_toolchain_config": attr.label(
             default = Label("@bazel_tools//tools/cpp:armeabi_cc_toolchain_config.bzl"),
+        ),
+        "_generate_system_module_map": attr.label(
+            default = Label("@bazel_tools//tools/cpp:generate_system_module_map.sh"),
         ),
         "_osx_cc_wrapper": attr.label(
             default = Label("@bazel_tools//tools/cpp:osx_cc_wrapper.sh.tpl"),
