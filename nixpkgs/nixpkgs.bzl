@@ -91,6 +91,7 @@ def _expand_location(repository_ctx, string, labels, attr = None):
     """
     result = ""
     offset = 0
+
     # Step through occurrences of `$`. This is bounded by the length of the string.
     for _ in range(len(string)):
         start = string.find("$", offset)

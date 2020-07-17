@@ -72,12 +72,12 @@ sh_test(
     data = [
         "//:nixpkgs.json",
         "//:nixpkgs.nix",
-        "//tests:relative_imports/nixpkgs.nix",
         "//tests:location_expansion/escaped_string",
+        "//tests:relative_imports/nixpkgs.nix",
+        "@nixpkgs_location_expansion_test//:out/escaped_string",
         "@nixpkgs_location_expansion_test//:out/nixpkgs.json",
         "@nixpkgs_location_expansion_test//:out/nixpkgs.nix",
         "@nixpkgs_location_expansion_test//:out/relative_imports.nix",
-        "@nixpkgs_location_expansion_test//:out/escaped_string",
     ],
     toolchains = ["@rules_sh//sh/posix:make_variables"],
 )
