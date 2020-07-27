@@ -1,10 +1,5 @@
 workspace(name = "foo")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-# master from 17 July 2020
-rules_nixpkgs_rev = "85b767e3c6325d8f4d7916d6c8cac5691d791eef"
-
 local_repository(
     name = "io_tweag_rules_nixpkgs",
     path = "..",
@@ -25,5 +20,5 @@ nixpkgs_package(
 exports_files(["variables.bzl"])
 """,
     nix_file_deps = [],
-    repositories = {"nixpkgs": "//:build/nix/default.nix"},
+    repositories = {"nixpkgs": "//:default.nix"},
 )
