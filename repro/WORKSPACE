@@ -1,0 +1,29 @@
+workspace(name = "foo")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# master from 17 July 2020
+rules_nixpkgs_rev = "85b767e3c6325d8f4d7916d6c8cac5691d791eef"
+
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "..",
+)
+
+load(
+    "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_package",
+)
+
+nixpkgs_package(
+    name = "toolchain_variables",
+    attribute_path = "toolchain_variables",
+    build_file_content = """
+# That's not //:variable.bzl, that's
+# @toolchain_variables//:variables.bzl and it contains the list of
+# toolchain paths.
+exports_files(["variables.bzl"])
+""",
+    nix_file_deps = [],
+    repositories = {"nixpkgs": "//:build/nix/default.nix"},
+)
