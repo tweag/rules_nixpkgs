@@ -13,7 +13,6 @@ in
 
   toolchain_variables = pkgs.callPackage ./inc.nix {};
 
-
   repro = pkgs.mkShell {
     buildInputs = [ pkgs.bazel ];
 
@@ -40,7 +39,7 @@ For a reproduction.
 
 runs:
 
-$ nix-shell build/nix -A repro
+$ nix-shell -A repro
 
 You should see something like `foo = "12"`.
 
@@ -48,14 +47,14 @@ Change the value in build/nix/autogen/toolchains/default.nix to something differ
 
 runs:
 
-$ nix-shell build/nix -A repro
+$ nix-shell -A repro
 
 You should see "12". This is a caching issue, the expected value is what you set in the file.
 
 If you clean and re-run using:
 
-$ nix-shell build/nix -A clean
-$ nix-shell build/nix -A repro
+$ nix-shell -A clean
+$ nix-shell -A repro
 
 You will see your value.
 */
