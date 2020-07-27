@@ -11,7 +11,7 @@ in
 {
   inherit pkgs;
 
-  toolchain_variables = pkgs.callPackage ./autogen/toolchains {};
+  toolchain_variables = pkgs.callPackage ./inc.nix {};
 
 
   repro = pkgs.mkShell {

@@ -5,7 +5,7 @@ writeTextFile
 {
    name = "toolchain-config";
    text = ''
-foo = "21"
+foo = "22"
 '';
    destination = "/variables.bzl";
 }
