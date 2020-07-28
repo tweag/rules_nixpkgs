@@ -7,7 +7,16 @@ local_repository(
 
 load(
     "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_local_repository",
     "nixpkgs_package",
+)
+
+nixpkgs_local_repository(
+    name = "nixpkgs",
+    nix_file = "//:default.nix",
+    # Fails without this
+    #   error: getting status of '.../external/nixpkgs/inc.nix': No such file or directory
+    nix_file_deps = ["//:inc.nix"],
 )
 
 nixpkgs_package(
@@ -20,5 +29,5 @@ nixpkgs_package(
 exports_files(["variables.bzl"])
 """,
     nix_file_deps = [],
-    repositories = {"nixpkgs": "//:default.nix"},
+    repositories = {"nixpkgs": "@nixpkgs"},
 )
