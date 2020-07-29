@@ -176,7 +176,7 @@ Make the content of a Nixpkgs package available in the Bazel workspace.
 nixpkgs_package(
     name, attribute_path, nix_file, nix_file_deps, nix_file_content,
     repository, repositories, build_file, build_file_content, nixopts,
-    expand_location, fail_not_supported,
+    fail_not_supported,
 )
 ```
 
@@ -303,18 +303,11 @@ filegroup(
       <td><code>nixopts</code></td>
       <td>
         <p><code>String list; optional</code></p>
-        <p>Extra flags to pass when calling Nix.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>nixopts</code></td>
-      <td>
-        <p><code>Bool; optional</code></p>
         <p>
-            If set to <code>True</code> any instance of
-            <code>$(location LABEL)</code> in <code>nixopts</code>
-            will be replaced by the path to the file referenced by
-            <code>LABEL</code> relative to the workspace root.
+            Extra flags to pass when calling Nix. Subject to location
+            expansion, any instance of <code>$(location LABEL)</code> will be
+            replaced by the path to the file ferenced by <code>LABEL</code>
+            relative to the workspace root.
         </p>
       </td>
     </tr>

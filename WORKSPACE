@@ -173,7 +173,6 @@ nixpkgs_package(
 nixpkgs_package(
     name = "nixpkgs_location_expansion_test",
     build_file_content = "exports_files(glob(['out/**']))",
-    expand_location = True,
     nix_file = "//tests:location_expansion.nix",
     nix_file_deps = [
         "//:nixpkgs.json",
