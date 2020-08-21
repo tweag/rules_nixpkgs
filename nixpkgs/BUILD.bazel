@@ -45,5 +45,19 @@ bzl_library(
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
         "@bazel_skylib//lib:sets",
+        "@bazel_skylib//lib:versions",
+    ],
+)
+
+bzl_library(
+    name = "toolchains_go",
+    srcs = [
+        "toolchains/go.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":bazel_tools",
+        ":nixpkgs",
+        "@io_bazel_rules_go//go:go_lib",
     ],
 )

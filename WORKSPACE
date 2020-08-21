@@ -1,5 +1,7 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()
@@ -13,6 +15,22 @@ load(
     "nixpkgs_python_configure",
     "nixpkgs_sh_posix_configure",
 )
+
+# For documentation
+
+http_archive(
+    name = "io_bazel_stardoc",
+    sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
+    strip_prefix = "stardoc-0.4.0",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
+        "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
+    ],
+)
+
+load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
+
+stardoc_repositories()
 
 # For tests
 
@@ -202,8 +220,6 @@ nixpkgs_package(
     ],
     repository = "@remote_nixpkgs",
 )
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_sh",

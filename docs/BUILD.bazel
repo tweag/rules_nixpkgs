@@ -1,0 +1,26 @@
+load("stardoc.bzl", "stardoc")
+
+stardoc(
+    name = "nixpkgs",
+    out = "nixpkgs.md",
+    input = "//nixpkgs:nixpkgs.bzl",
+    deps = ["//nixpkgs"],
+    symbol_names = [
+        "nixpkgs_git_repository",
+        "nixpkgs_local_repository",
+        "nixpkgs_package",
+        "nixpkgs_cc_configure",
+        "nixpkgs_python_configure",
+        "nixpkgs_sh_posix_configure",
+    ],
+)
+
+stardoc(
+    name = "go",
+    out = "toolchains/go.md",
+    input = "//nixpkgs:toolchains/go.bzl",
+    deps = ["//nixpkgs:toolchains_go"],
+    symbol_names = [
+        "nixpkgs_go_configure",
+    ],
+)
