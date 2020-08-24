@@ -51,6 +51,15 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "
 load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_toolchain") # optional
 ```
 
+If you use `rules_nixpkgs` to configure a toolchain then you will also need to
+configure the build platform to include the
+`@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix` constraint. For
+example by adding the following to `.bazelrc`:
+
+```
+build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+```
+
 ## Example
 
 ```bzl
