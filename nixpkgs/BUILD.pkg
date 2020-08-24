@@ -12,5 +12,5 @@ filegroup(
 
 filegroup(
     name = "include",
-    srcs = glob(["include/**/*.h"], allow_empty = True),
+    srcs = glob(["include/**/*.h", "include/**/*.hh", "include/**/*.hpp", "include/**/*.hxx"], allow_empty = True),
 )
