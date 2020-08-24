@@ -24,3 +24,46 @@ stardoc(
         "nixpkgs_go_configure",
     ],
 )
+
+genrule(
+    name = "readme",
+    srcs = [
+        "README.md.tpl",
+        "nixpkgs.md",
+        "toolchains/go.md",
+    ],
+    outs = ["README.md"],
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
+    cmd = """\
+$(POSIX_AWK) \\
+  <$(execpath README.md.tpl) \\
+  >$(OUTS) \\
+  '{
+      if (/%nixpkgs%/) {
+          RS="\\0";
+          getline content <"$(execpath nixpkgs.md)";
+          print content
+      } else if (/%toolchains_go%/) {
+          RS="\\0";
+          getline content <"$(execpath toolchains/go.md)";
+          print content
+      } else {
+          print
+      }
+  }'
+""",
+)
+
+sh_test(
+    name = "check-readme",
+    srcs = ["check-readme.sh"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+    data = ["//:README.md", "README.md"],
+)
+
+sh_binary(
+    name = "update-readme",
+    srcs = ["update-readme.sh"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+    data = ["README.md"],
+)
