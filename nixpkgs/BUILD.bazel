@@ -58,6 +58,6 @@ bzl_library(
     deps = [
         ":bazel_tools",
         ":nixpkgs",
-        "@io_bazel_rules_go//go:go_lib",
+        "@io_bazel_rules_go//go:deps",
     ],
 )

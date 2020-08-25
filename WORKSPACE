@@ -242,11 +242,11 @@ sh_posix_configure()
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "fa7c8682999a5516a8844c1963365b478e13d4f558041a840fc1b2c41567955d",
-    strip_prefix = "rules_go-c3e725364a20d2f3549a297c14194cb133e78753",
+    sha256 = "6d7285b47655379752da1956b053d924e4268feaf8bb6c460940a58fd132bdf0",
+    strip_prefix = "rules_go-88800debc0aa167faa63ae3ceaf8203568c5bcc8",
     urls = [
-        # XXX: Update once upstream PR is merged https://github.com/bazelbuild/rules_go/pull/2620
-        "https://github.com/bazelbuild/rules_go/archive/c3e725364a20d2f3549a297c14194cb133e78753.tar.gz",
+        # XXX: Update once upstream PR is merged https://github.com/bazelbuild/rules_go/pull/2621
+        "https://github.com/bazelbuild/rules_go/archive/88800debc0aa167faa63ae3ceaf8203568c5bcc8.tar.gz",
     ],
 )
 
