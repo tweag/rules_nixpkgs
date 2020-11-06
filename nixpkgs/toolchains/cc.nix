@@ -114,7 +114,7 @@ in
       IFS=$'\n'
       include_dirs_for() {
         $cc -E -x "$1" - -v "''${@:2}" 2>&1 \
-          | sed '1,/^#include <...>/d;/^[^ ]/,$d;s/^ *//' \
+          | sed -e '1,/^#include <...>/d;/^[^ ]/,$d;s/^ *//' -e 's: (framework directory)::g' \
           | tr '\n' '\0' \
           | xargs -0 realpath -ms
       }
