@@ -148,6 +148,7 @@ in
           add_compiler_option_if_supported -Wself-assign
           # Disable problematic warnings.
           add_compiler_option_if_supported -Wunused-but-set-parameter
+          add_compiler_option_if_supported -Wno-unused-command-line-argument
           # has false positives
           add_compiler_option_if_supported -Wno-free-nonheap-object
           # Enable coloring even if there's no attached terminal. Bazel removes the
