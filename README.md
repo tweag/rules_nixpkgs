@@ -340,6 +340,8 @@ following tools are expected `ar`, `cpp`, `dwp`, `cc`, `gcov`, `ld`, `nm`,
 `objcopy`, `objdump`, `strip`. Tools that aren't found are replaced by
 `${coreutils}/bin/false`.
 
+This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
+
 Note:
 
 You need to configure `--crosstool_top=@<name>//:toolchain` to activate this
