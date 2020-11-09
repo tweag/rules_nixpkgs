@@ -23,7 +23,8 @@ let
       # Override cc
       rm -f $out/bin/cc $out/bin/clang $out/bin/clang++
       makeWrapper ${stdenv.cc}/bin/cc $out/bin/cc --add-flags \
-        "-isystem ${llvmPackages.libcxx}/include/c++/v1 \
+        "-Wno-unused-command-line-argument \
+        -isystem ${llvmPackages.libcxx}/include/c++/v1 \
         -F${CoreFoundation}/Library/Frameworks \
         -F${CoreServices}/Library/Frameworks \
         -F${Security}/Library/Frameworks \
@@ -148,7 +149,6 @@ in
           add_compiler_option_if_supported -Wself-assign
           # Disable problematic warnings.
           add_compiler_option_if_supported -Wunused-but-set-parameter
-          add_compiler_option_if_supported -Wno-unused-command-line-argument
           # has false positives
           add_compiler_option_if_supported -Wno-free-nonheap-object
           # Enable coloring even if there's no attached terminal. Bazel removes the
