@@ -16,6 +16,10 @@ load(
 
 # For tests
 
+load("@bazel_skylib//lib:unittest.bzl", "register_unittest_toolchains")
+
+register_unittest_toolchains()
+
 nixpkgs_git_repository(
     name = "remote_nixpkgs",
     remote = "https://github.com/NixOS/nixpkgs",

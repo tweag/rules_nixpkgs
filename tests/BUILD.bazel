@@ -1,6 +1,9 @@
 package(default_testonly = 1)
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
+
+expand_location_unit_test_suite()
 
 [
     # All of these tests use the "hello" binary to see
