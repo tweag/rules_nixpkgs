@@ -139,7 +139,12 @@ def _nixpkgs_package_impl(repository_ctx):
     ])
 
     expr_args.extend([
-        expand_location(repository_ctx, opt, nix_file_deps, "nixopts")
+        expand_location(
+            repository_ctx = repository_ctx,
+            string = opt,
+            labels = nix_file_deps,
+            attr = "nixopts",
+        )
         for opt in repository_ctx.attr.nixopts
     ])
 
