@@ -174,25 +174,26 @@ nixpkgs_package(
     repository = "@remote_nixpkgs",
 )
 
+local_repository(
+    name = "nixpkgs_location_expansion_test_file",
+    path = "tests/location_expansion/test_repo",
+)
+
 nixpkgs_package(
     name = "nixpkgs_location_expansion_test",
     build_file_content = "exports_files(glob(['out/**']))",
     nix_file = "//tests:location_expansion.nix",
     nix_file_deps = [
-        "//:nixpkgs.json",
-        "//:nixpkgs.nix",
-        "@io_tweag_rules_nixpkgs//tests:relative_imports/nixpkgs.nix",
+        "//tests:location_expansion/test_file",
+        "@nixpkgs_location_expansion_test_file//:test_file",
     ],
     nixopts = [
         "--arg",
-        "attrs",
-        "{ nixpkgs_json = $(location //:nixpkgs.json); nixpkgs_nix = $(location //:nixpkgs.nix); }",
+        "local_file",
+        "$(location //tests:location_expansion/test_file)",
         "--arg",
-        "relative_imports",
-        "$(location @io_tweag_rules_nixpkgs//tests:relative_imports/nixpkgs.nix)",
-        "--argstr",
-        "escaped_string",
-        "$$ $$(location //:does-not-exist) )(",
+        "external_file",
+        "$(location @nixpkgs_location_expansion_test_file//:test_file)",
     ],
     repository = "@remote_nixpkgs",
 )

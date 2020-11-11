@@ -1,6 +1,6 @@
 with import <nixpkgs> { config = {}; overlays = []; };
 
-{ attrs, relative_imports, escaped_string }:
+{ local_file, external_file }:
 let
   inherit (attrs) nixpkgs_json nixpkgs_nix;
 in
@@ -11,8 +11,6 @@ in
     }
     ''
       mkdir -p $out/out
-      cp ${nixpkgs_json} $out/out/nixpkgs.json
-      cp ${nixpkgs_nix} $out/out/nixpkgs.nix
-      cp ${relative_imports} $out/out/relative_imports.nix
-      echo '${escaped_string}' >$out/out/escaped_string
+      cp ${local_file} $out/out/local_file
+      cp ${external_file} $out/out/external_file
     ''
