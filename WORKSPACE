@@ -161,7 +161,12 @@ nixpkgs_package(
     repository = "@nixpkgs",
 )
 
-nixpkgs_cc_configure(repository = "@remote_nixpkgs")
+nixpkgs_cc_configure(
+    # Use a different name to be able to distinguish this toolchain from the
+    # builtin one in the tests.
+    name = "nixpkgs_config_cc",
+    repository = "@remote_nixpkgs",
+)
 
 nixpkgs_python_configure(
     python2_attribute_path = "python2",

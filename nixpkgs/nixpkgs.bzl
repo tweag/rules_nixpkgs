@@ -523,7 +523,7 @@ _nixpkgs_cc_toolchain = repository_rule(
 )
 
 def nixpkgs_cc_configure(
-        name = "nixpkgs_config_cc",
+        name = "local_config_cc",
         attribute_path = "",
         nix_file = None,
         nix_file_content = "",
