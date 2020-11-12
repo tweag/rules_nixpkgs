@@ -6,7 +6,7 @@ rules_nixpkgs_dependencies()
 
 load(
     "//nixpkgs:nixpkgs.bzl",
-    "nixpkgs_cc_configure_hermetic",
+    "nixpkgs_cc_configure",
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
@@ -161,7 +161,7 @@ nixpkgs_package(
     repository = "@nixpkgs",
 )
 
-nixpkgs_cc_configure_hermetic(repository = "@remote_nixpkgs")
+nixpkgs_cc_configure(repository = "@remote_nixpkgs")
 
 nixpkgs_python_configure(
     python2_attribute_path = "python2",

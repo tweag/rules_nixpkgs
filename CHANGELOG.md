@@ -8,13 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 [Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...HEAD
 
-### Added
-
-- Define `nixpkgs_cc_configure_hermetic` in `//nixpkgs:repositories.bzl`.
-  See [#128][#128].
-
 ### Changed
 
+- The implementation of `nixpkgs_cc_configure` has been replaced by a more
+  hermetic version that no longer uses Bazel's builtin autodection toolchain
+  under the hood. The previous behavior is now available under the name
+  `nixpkgs_cc_configure_deprecated`, if required.
+  See [#128][#128].
 - The values in the `nixopts` attribute to `nixpkgs_package` are now subject to
   location expansion. Any instance of `$(location LABEL)` in the `nixopts`
   attribute will be expanded to the file path of the file referenced by
@@ -23,8 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Deprecated
 
-- `nixpkgs_cc_configure` has been deprecated in favor of
-  `nixpkgs_cc_configure_hermetic` and will be replaced by it in future.
+- The old implementation of `nixpkgs_cc_configure`, now available under the
+  name `nixpkgs_cc_configure_deprecated`, has been marked as deprecated in
+  favor of `nixpkgs_cc_configure` and will be replaced by it in future.
   See [#128][#128].
 
 [#128]: https://github.com/tweag/rules_nixpkgs/pull/128

@@ -522,7 +522,7 @@ _nixpkgs_cc_toolchain = repository_rule(
     },
 )
 
-def nixpkgs_cc_configure_hermetic(
+def nixpkgs_cc_configure(
         name = "nixpkgs_config_cc",
         attribute_path = "",
         nix_file = None,
@@ -682,7 +682,7 @@ nixpkgs_cc_autoconf = repository_rule(
     ],
 )
 
-def nixpkgs_cc_configure(
+def nixpkgs_cc_configure_deprecated(
         repository = None,
         repositories = {},
         nix_file = None,
@@ -692,7 +692,7 @@ def nixpkgs_cc_configure(
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     Deprecated:
-      Use `nixpkgs_cc_configure_hermetic` instead.
+      Use `nixpkgs_cc_configure` instead.
 
       While this improves upon Bazel's autoconfigure toolchain by picking tools
       from a Nix derivation rather than the environment, it is still not fully

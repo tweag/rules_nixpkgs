@@ -24,6 +24,7 @@ Links:
 * [nixpkgs_git_repository](#nixpkgs_git_repository)
 * [nixpkgs_package](#nixpkgs_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
+* [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_go_configure](#nixpkgs_go_configure)
 
 ## Setup
@@ -326,7 +327,7 @@ filegroup(
   </tbody>
 </table>
 
-### nixpkgs_cc_configure_hermetic
+### nixpkgs_cc_configure
 
 Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
@@ -350,7 +351,7 @@ toolchain.
 Example:
 
 ```bzl
-nixpkgs_cc_configure_hermetic(repository = "@nixpkgs//:default.nix")
+nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
 ```
 
 <table class="table table-condensed table-bordered table-params">
@@ -421,7 +422,7 @@ nixpkgs_cc_configure_hermetic(repository = "@nixpkgs//:default.nix")
   </tbody>
 </table>
 
-### nixpkgs_cc_configure
+### nixpkgs_cc_configure_deprecated
 
 Tells Bazel to use compilers and linkers from Nixpkgs for the CC
 toolchain. By default, Bazel autodetects a toolchain on the current
@@ -430,7 +431,7 @@ is considered a best practice.
 
 Deprecated:
 
-Use `nixpkgs_cc_configure_hermetic` instead.
+Use `nixpkgs_cc_configure` instead.
 
 While this improves upon Bazel's autoconfigure toolchain by picking tools from
 a Nix derivation rather than the environment, it is still not fully hermetic as
@@ -441,7 +442,7 @@ depending on the cc toolchain leading to cache misses.
 Example:
 
 ```bzl
-nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
+nixpkgs_cc_configure_deprecated(repository = "@nixpkgs//:default.nix")
 ```
 
 <table class="table table-condensed table-bordered table-params">
