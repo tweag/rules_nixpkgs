@@ -1074,6 +1074,18 @@ create_posix_toolchain()
         **kwargs
     )
 
+# Note [Target constraints for posix tools
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# There is an overlap between the tools provided by posix toolchains
+# and cc toolchains. In addition, many of the tools provided
+# exclusively by posix toolchains don't depend on what the target
+# platform is when cross-compiling.
+#
+# Therefore, for now, we depend on toolchain resolution for the cc
+# toolchain to provide target-sensitive tools, and we use a x86 linux
+# posix toolchain for the other tools.
+
 def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
     repository_ctx.file("BUILD", executable = False, content = """
@@ -1086,10 +1098,8 @@ toolchain(
         "@platforms//os:{os}",
         "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
     ],
-    target_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-    ],
+    # See Note [Target constraints for posix tools]
+    target_compatible_with = [],
 )
     """.format(
         workspace = repository_ctx.attr.workspace,
