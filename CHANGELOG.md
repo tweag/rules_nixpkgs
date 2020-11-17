@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...HEAD
+
+### Changed
+
+- The values in the `nixopts` attribute to `nixpkgs_package` are now subject to
+  location expansion. Any instance of `$(location LABEL)` in the `nixopts`
+  attribute will be expanded to the file path of the file referenced by
+  `LABEL`. To pass a plain `$` to Nix it must be escaped as `$$`.
+  See [#132][#132].
+
+[#132]: https://github.com/tweag/rules_nixpkgs/pull/132
+
 ## [0.7.0] - 2020-04-20
 
 [0.7.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.6.0...v0.7.0

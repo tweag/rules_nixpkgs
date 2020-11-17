@@ -3,7 +3,7 @@ package(default_visibility = ["//visibility:public"])
 constraint_setting(name = "nix")
 
 constraint_value(
-    name =  "support_nix",
+    name = "support_nix",
     constraint_setting = ":nix",
 )
 

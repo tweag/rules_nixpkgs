@@ -303,7 +303,12 @@ filegroup(
       <td><code>nixopts</code></td>
       <td>
         <p><code>String list; optional</code></p>
-        <p>Extra flags to pass when calling Nix.</p>
+        <p>
+            Extra flags to pass when calling Nix. Subject to location
+            expansion, any instance of <code>$(location LABEL)</code> will be
+            replaced by the path to the file ferenced by <code>LABEL</code>
+            relative to the workspace root.
+        </p>
       </td>
     </tr>
     <tr>

@@ -1,6 +1,9 @@
 package(default_testonly = 1)
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
+
+expand_location_unit_test_suite()
 
 [
     # All of these tests use the "hello" binary to see
@@ -54,6 +57,24 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary")
     ),
 ]
 
+# Test nixopts location expansion
+sh_test(
+    name = "location-expansion-test",
+    srcs = ["location_expansion.sh"],
+    args = [
+        "$(POSIX_DIFF)",
+        "$(rootpath //tests:location_expansion/test_file)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/local_file)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/external_file)",
+    ],
+    data = [
+        "//tests:location_expansion/test_file",
+        "@nixpkgs_location_expansion_test//:out/external_file",
+        "@nixpkgs_location_expansion_test//:out/local_file",
+    ],
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
+
 # Test nixpkgs_cc_configure() by building some CC code.
 cc_binary(
     name = "cc-test",
@@ -86,7 +107,7 @@ sh_test(
 # Test nixpkgs_go_configure()
 go_binary(
     name = "go-test",
-    srcs = ["go-test.go"]
+    srcs = ["go-test.go"],
 )
 
 sh_test(
@@ -97,6 +118,6 @@ sh_test(
         "//nixpkgs:srcs",
         "//tests/invalid_nixpkgs_package:srcs",
         "@busybox_static//:bin",
-        "@nix-unstable//:bin"
+        "@nix-unstable//:bin",
     ],
 )

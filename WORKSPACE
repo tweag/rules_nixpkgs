@@ -16,6 +16,10 @@ load(
 
 # For tests
 
+load("@bazel_skylib//lib:unittest.bzl", "register_unittest_toolchains")
+
+register_unittest_toolchains()
+
 nixpkgs_git_repository(
     name = "remote_nixpkgs",
     remote = "https://github.com/NixOS/nixpkgs",
@@ -170,6 +174,30 @@ nixpkgs_package(
     repository = "@remote_nixpkgs",
 )
 
+local_repository(
+    name = "nixpkgs_location_expansion_test_file",
+    path = "tests/location_expansion/test_repo",
+)
+
+nixpkgs_package(
+    name = "nixpkgs_location_expansion_test",
+    build_file_content = "exports_files(glob(['out/**']))",
+    nix_file = "//tests:location_expansion.nix",
+    nix_file_deps = [
+        "//tests:location_expansion/test_file",
+        "@nixpkgs_location_expansion_test_file//:test_file",
+    ],
+    nixopts = [
+        "--arg",
+        "local_file",
+        "$(location //tests:location_expansion/test_file)",
+        "--arg",
+        "external_file",
+        "$(location @nixpkgs_location_expansion_test_file//:test_file)",
+    ],
+    repository = "@remote_nixpkgs",
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -202,12 +230,11 @@ http_archive(
 
 load(
     "//nixpkgs:toolchains/go.bzl",
-    "nixpkgs_go_configure"
+    "nixpkgs_go_configure",
 )
 
 nixpkgs_go_configure(repository = "@nixpkgs")
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
-

@@ -2,11 +2,13 @@
 
 load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
+load(":private/location_expansion.bzl", "expand_location")
 
 def _nixpkgs_git_repository_impl(repository_ctx):
     repository_ctx.file(
         "BUILD",
-        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])')
+        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])',
+    )
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for default.nix.
@@ -119,8 +121,9 @@ def _nixpkgs_package_impl(repository_ctx):
     else:
         expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
 
+    nix_file_deps = {}
     for dep in repository_ctx.attr.nix_file_deps:
-        _cp(repository_ctx, dep)
+        nix_file_deps[dep] = _cp(repository_ctx, dep)
 
     expr_args.extend([
         "-A",
@@ -135,7 +138,15 @@ def _nixpkgs_package_impl(repository_ctx):
         "bazel-support/nix-out-link",
     ])
 
-    expr_args.extend(repository_ctx.attr.nixopts)
+    expr_args.extend([
+        expand_location(
+            repository_ctx = repository_ctx,
+            string = opt,
+            labels = nix_file_deps,
+            attr = "nixopts",
+        )
+        for opt in repository_ctx.attr.nixopts
+    ])
 
     for repo in repositories.keys():
         path = str(repository_ctx.path(repo).dirname) + "/nix-file-deps"
@@ -208,7 +219,7 @@ def _nixpkgs_package_impl(repository_ctx):
         if create_build_file_if_needed:
             p = repository_ctx.path("BUILD")
             if not p.exists:
-               repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
+                repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
