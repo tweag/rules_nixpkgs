@@ -581,20 +581,31 @@ def nixpkgs_cc_configure(
         fail("'attribute_path' requires one of 'nix_file' or 'nix_file_content'", "attribute_path")
     elif attribute_path:
         nixopts.extend([
-            "--argstr", "ccType", "ccTypeAttribute",
-            "--argstr", "ccAttrPath", attribute_path,
-            "--arg", "ccAttrSet", nix_expr,
+            "--argstr",
+            "ccType",
+            "ccTypeAttribute",
+            "--argstr",
+            "ccAttrPath",
+            attribute_path,
+            "--arg",
+            "ccAttrSet",
+            nix_expr,
         ])
     elif nix_expr:
         nixopts.extend([
-            "--argstr", "ccType", "ccTypeExpression",
-            "--arg", "ccExpr", nix_expr,
+            "--argstr",
+            "ccType",
+            "ccTypeExpression",
+            "--arg",
+            "ccExpr",
+            nix_expr,
         ])
     else:
         nixopts.extend([
-            "--argstr", "ccType", "ccTypeDefault",
+            "--argstr",
+            "ccType",
+            "ccTypeDefault",
         ])
-
 
     # Invoke `toolchains/cc.nix` which generates `CC_TOOLCHAIN_INFO`.
     nixpkgs_package(
