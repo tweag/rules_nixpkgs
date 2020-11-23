@@ -1,4 +1,6 @@
-with import <nixpkgs> { config = {}; overlays = []; };
+let
+  pkgs = import <nixpkgs> { config = {}; overlays = []; };
+in
 
 { attribute_path ? null
 , nix_expr ? null
@@ -8,50 +10,49 @@ let
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
-    with darwin.apple_sdk.frameworks;
-    runCommand "bazel-nixpkgs-cc-wrapper"
+    pkgs.runCommand "bazel-nixpkgs-cc-wrapper"
     {
-      buildInputs = [ stdenv.cc makeWrapper ];
+      buildInputs = [ pkgs.stdenv.cc pkgs.makeWrapper ];
     }
     ''
       mkdir -p $out/bin
 
-      for i in ${stdenv.cc}/bin/*; do
+      for i in ${pkgs.stdenv.cc}/bin/*; do
         ln -sf $i $out/bin
       done
 
       # Override cc
       rm -f $out/bin/cc $out/bin/clang $out/bin/clang++
-      makeWrapper ${stdenv.cc}/bin/cc $out/bin/cc --add-flags \
+      makeWrapper ${pkgs.stdenv.cc}/bin/cc $out/bin/cc --add-flags \
         "-Wno-unused-command-line-argument \
-        -isystem ${llvmPackages.libcxx}/include/c++/v1 \
-        -F${CoreFoundation}/Library/Frameworks \
-        -F${CoreServices}/Library/Frameworks \
-        -F${Security}/Library/Frameworks \
-        -F${Foundation}/Library/Frameworks \
-        -L${libcxx}/lib \
-        -L${darwin.libobjc}/lib"
+        -isystem ${pkgs.darwin.apple_sdk.frameworks.llvmPackages.libcxx}/include/c++/v1 \
+        -F${pkgs.darwin.apple_sdk.frameworks.CoreFoundation}/Library/Frameworks \
+        -F${pkgs.darwin.apple_sdk.frameworks.CoreServices}/Library/Frameworks \
+        -F${pkgs.darwin.apple_sdk.frameworks.Security}/Library/Frameworks \
+        -F${pkgs.darwin.apple_sdk.frameworks.Foundation}/Library/Frameworks \
+        -L${pkgs.darwin.apple_sdk.frameworks.libcxx}/lib \
+        -L${pkgs.darwin.apple_sdk.frameworks.darwin.libobjc}/lib"
     '';
   cc =
     if isNull nix_expr then
-      buildEnv {
+      pkgs.buildEnv {
         name = "bazel-nixpkgs-cc";
         # XXX: `gcov` is missing in `/bin`.
         #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
         paths =
-          if stdenv.isDarwin then
-            [ (overrideCC stdenv darwinCC).cc darwin.binutils ]
+          if pkgs.stdenv.isDarwin then
+            [ (pkgs.overrideCC pkgs.stdenv darwinCC).cc pkgs.darwin.binutils ]
           else
-            [ stdenv.cc binutils ];
+            [ pkgs.stdenv.cc pkgs.binutils ];
         pathsToLink = [ "/bin" ];
       }
     else if isNull attribute_path then
       nix_expr
     else
-      lib.attrByPath (lib.splitString "." attribute_path) null nix_expr
+      pkgs.lib.attrByPath (pkgs.lib.splitString "." attribute_path) null nix_expr
   ;
 in
-  runCommand "bazel-nixpkgs-cc-toolchain"
+  pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     { executable = false;
       # Pointless to do this on a remote machine.
       preferLocalBuild = true;
@@ -74,7 +75,7 @@ in
         if [[ -x $tool_path ]]; then
           TOOL_PATHS[$tool_name]=$tool_path
         else
-          TOOL_PATHS[$tool_name]=${coreutils}/bin/false
+          TOOL_PATHS[$tool_name]=${pkgs.coreutils}/bin/false
         fi
       done
       cc=''${TOOL_PATHS[gcc]}
@@ -166,7 +167,7 @@ in
           add_linker_option_if_supported -Wl,-z,relro,-z,now -z
         )
         ${
-          if stdenv.isDarwin
+          if pkgs.stdenv.isDarwin
           then "-undefined dynamic_lookup -headerpad_max_install_names"
           else "-B${cc}/bin"
         }
@@ -204,7 +205,7 @@ in
       )
       OPT_LINK_FLAGS=(
         ${
-          if stdenv.isDarwin
+          if pkgs.stdenv.isDarwin
           then ""
           else "$(add_linker_option_if_supported -Wl,--gc-sections -gc-sections)"
         }
@@ -227,7 +228,7 @@ in
       DBG_COMPILE_FLAGS=(-g)
       COVERAGE_COMPILE_FLAGS=(
         ${
-          if stdenv.isDarwin then
+          if pkgs.stdenv.isDarwin then
             "-fprofile-instr-generate -fcoverage-mapping"
           else
             "--coverage"
@@ -235,7 +236,7 @@ in
       )
       COVERAGE_LINK_FLAGS=(
         ${
-          if stdenv.isDarwin then
+          if pkgs.stdenv.isDarwin then
             "-fprofile-instr-generate"
           else
             "--coverage"
