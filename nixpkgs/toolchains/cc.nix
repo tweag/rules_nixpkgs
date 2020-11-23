@@ -136,7 +136,7 @@ in
       #
       # This is copied and adapted to bash from
       # `@bazel_tools//tools/cpp:unix_cc_configure.bzl`.
-      COMPILER_FLAGS=(
+      COMPILE_FLAGS=(
         # Security hardening requires optimization.
         # We need to undef it as some distributions now have it enabled by default.
         -U_FORTIFY_SOURCE
@@ -270,7 +270,7 @@ in
       write_info TOOL_NAMES
       write_info TOOL_PATHS
       write_info CXX_BUILTIN_INCLUDE_DIRECTORIES
-      write_info COMPILER_FLAGS
+      write_info COMPILE_FLAGS
       write_info CXX_FLAGS
       write_info LINK_FLAGS
       write_info LINK_LIBS
