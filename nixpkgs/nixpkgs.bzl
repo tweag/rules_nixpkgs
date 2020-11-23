@@ -363,6 +363,8 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
 
     # Generate the cc_toolchain workspace following the example from
     # `@bazel_tools//tools/cpp:unix_cc_configure.bzl`.
+    # Uses the corresponding templates from `@bazel_tools` as well, see the
+    # private attributes of the `_nixpkgs_cc_toolchain_config` rule.
     repository_ctx.symlink(
         repository_ctx.path(repository_ctx.attr._unix_cc_toolchain_config),
         "cc_toolchain_config.bzl",
