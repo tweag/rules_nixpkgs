@@ -12,7 +12,7 @@ let
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.runCommand "bazel-nixpkgs-cc-wrapper"
     {
-      buildInputs = [ pkgs.stdenv.cc pkgs.makeWrapper ];
+      buildInputs = [ pkgs.makeWrapper ];
     }
     ''
       mkdir -p $out/bin
