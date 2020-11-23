@@ -335,11 +335,11 @@ By default, Bazel auto-configures a CC toolchain from commands (e.g.
 `gcc`) available in the environment. To make builds more hermetic, use
 this rule to specify explicitly which commands the toolchain should use.
 
-Specifically, it builds a Nix derivation that provides the CC toolchain tools
-in the `bin/` path and constructs a CC toolchain that uses those tools. The
-following tools are expected `ar`, `cpp`, `dwp`, `cc`, `gcov`, `ld`, `nm`,
-`objcopy`, `objdump`, `strip`. Tools that aren't found are replaced by
-`${coreutils}/bin/false`.
+Specifically, it builds a Nix derivation that provides the CC toolchain
+tools in the `bin/` path and constructs a CC toolchain that uses those
+tools. Tools that aren't found are replaced by `${coreutils}/bin/false`.
+You can inspect the resulting `@<name>_info//:CC_TOOLCHAIN_INFO` to see
+which tools were discovered.
 
 This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
