@@ -565,22 +565,36 @@ def nixpkgs_cc_configure(
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
     """
 
-    if attribute_path and not (nix_file or nix_file_content):
-        fail("'attribute_path' requires one of 'nix_file' or 'nix_file_content'", "attribute_path")
-    if nix_file and nix_file_content:
-        fail("Cannot specify both 'nix_file' and 'nix_file_content'.")
-
     nixopts = list(nixopts)
     nix_file_deps = list(nix_file_deps)
-    if attribute_path:
-        # The `attribute_path` is forwarded to `cc.nix` as an argument.
-        nixopts.extend(["--argstr", "attribute_path", attribute_path])
-    if nix_file:
-        nixopts.extend(["--arg", "nix_expr", "import $(location {})".format(nix_file)])
+
+    nix_expr = None
+    if nix_file and nix_file_content:
+        fail("Cannot specify both 'nix_file' and 'nix_file_content'.")
+    elif nix_file:
+        nix_expr = "import $(location {})".format(nix_file)
         nix_file_deps.append(nix_file)
-    if nix_file_content:
-        # The `nix_file_content` is forwarded to `cc.nix` as an argument.
-        nixopts.extend(["--arg", "nix_expr", nix_file_content])
+    elif nix_file_content:
+        nix_expr = nix_file_content
+
+    if attribute_path and nix_expr == None:
+        fail("'attribute_path' requires one of 'nix_file' or 'nix_file_content'", "attribute_path")
+    elif attribute_path:
+        nixopts.extend([
+            "--argstr", "ccType", "ccTypeAttribute",
+            "--argstr", "ccAttrPath", attribute_path,
+            "--arg", "ccAttrSet", nix_expr,
+        ])
+    elif nix_expr:
+        nixopts.extend([
+            "--argstr", "ccType", "ccTypeExpression",
+            "--arg", "ccExpr", nix_expr,
+        ])
+    else:
+        nixopts.extend([
+            "--argstr", "ccType", "ccTypeDefault",
+        ])
+
 
     # Invoke `toolchains/cc.nix` which generates `CC_TOOLCHAIN_INFO`.
     nixpkgs_package(

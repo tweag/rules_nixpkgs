@@ -2,8 +2,9 @@ let
   pkgs = import <nixpkgs> { config = {}; overlays = []; };
 in
 
-{ attribute_path ? null
-, nix_expr ? null
+{ ccType
+, ccAttrPath ? null, ccAttrSet ? null
+, ccExpr ? null
 }:
 
 let
@@ -34,7 +35,11 @@ let
         -L${pkgs.darwin.apple_sdk.frameworks.darwin.libobjc}/lib"
     '';
   cc =
-    if isNull nix_expr then
+    if ccType == "ccTypeAttribute" then
+      pkgs.lib.attrByPath (pkgs.lib.splitString "." ccAttrPath) null ccAttrSet
+    else if ccType == "ccTypeExpression" then
+      ccExpr
+    else
       pkgs.buildEnv {
         name = "bazel-nixpkgs-cc";
         # XXX: `gcov` is missing in `/bin`.
@@ -46,10 +51,6 @@ let
             [ pkgs.stdenv.cc pkgs.binutils ];
         pathsToLink = [ "/bin" ];
       }
-    else if isNull attribute_path then
-      nix_expr
-    else
-      pkgs.lib.attrByPath (pkgs.lib.splitString "." attribute_path) null nix_expr
   ;
 in
   pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
