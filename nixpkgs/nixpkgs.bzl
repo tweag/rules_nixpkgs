@@ -513,7 +513,7 @@ toolchain(
 """.format(
             cc_toolchain_config = repository_ctx.attr.cc_toolchain_config,
             cpu = cpu,
-            os = {"darwin": "osx"}.get(cpu, "linux"),
+            os = "osx" if cpu == "darwin" else "linux",
         ),
     )
 
