@@ -82,6 +82,11 @@ cc_binary(
     srcs = ["cc-test.cc"],
 )
 
+cc_binary(
+    name = "c-test",
+    srcs = ["c-test.c"],
+)
+
 # Test that nixpkgs_cc_configure is selected.
 cc_toolchain_test(
     name = "cc-toolchain",
