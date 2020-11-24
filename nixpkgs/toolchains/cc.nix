@@ -26,13 +26,13 @@ let
       rm -f $out/bin/cc $out/bin/clang $out/bin/clang++
       makeWrapper ${pkgs.stdenv.cc}/bin/cc $out/bin/cc --add-flags \
         "-Wno-unused-command-line-argument \
-        -isystem ${pkgs.darwin.apple_sdk.frameworks.llvmPackages.libcxx}/include/c++/v1 \
+        -isystem ${pkgs.llvmPackages.libcxx}/include/c++/v1 \
         -F${pkgs.darwin.apple_sdk.frameworks.CoreFoundation}/Library/Frameworks \
         -F${pkgs.darwin.apple_sdk.frameworks.CoreServices}/Library/Frameworks \
         -F${pkgs.darwin.apple_sdk.frameworks.Security}/Library/Frameworks \
         -F${pkgs.darwin.apple_sdk.frameworks.Foundation}/Library/Frameworks \
-        -L${pkgs.darwin.apple_sdk.frameworks.libcxx}/lib \
-        -L${pkgs.darwin.apple_sdk.frameworks.darwin.libobjc}/lib"
+        -L${pkgs.libcxx}/lib \
+        -L${pkgs.darwin.libobjc}/lib"
     '';
   cc =
     if ccType == "ccTypeAttribute" then
