@@ -160,7 +160,10 @@ in
         # Keep stack frames for debugging, even in opt mode.
         -fno-omit-frame-pointer
       )
-      CXX_FLAGS=(-std=c++0x)
+      CXX_FLAGS=(
+        -x c++
+        -std=c++0x
+      )
       LINK_FLAGS=(
         $(
           if [[ -x ${cc}/bin/ld.gold ]]; then echo -fuse-ld=gold; fi
@@ -176,10 +179,11 @@ in
           # Have gcc return the exit code from ld.
           add_compiler_option_if_supported -pass-exit-codes
         )
+      )
+      LINK_LIBS=(
         -lstdc++
         -lm
       )
-      LINK_LIBS=()
       OPT_COMPILE_FLAGS=(
         # No debug symbols.
         # Maybe we should enable https://gcc.gnu.org/wiki/DebugFission for opt or
