@@ -31,10 +31,19 @@ def _nixpkgs_git_repository_impl(repository_ctx):
 nixpkgs_git_repository = repository_rule(
     implementation = _nixpkgs_git_repository_impl,
     attrs = {
-        "revision": attr.string(mandatory = True),
-        "remote": attr.string(default = "https://github.com/NixOS/nixpkgs"),
-        "sha256": attr.string(),
+        "revision": attr.string(
+            mandatory = True,
+            doc = "Git commit hash or tag identifying the version of Nixpkgs to use.",
+        ),
+        "remote": attr.string(
+            default = "https://github.com/NixOS/nixpkgs",
+            doc = "The URI of the remote Git repository. This must be a HTTP URL. There is currently no support for authentication. Defaults to [upstream nixpkgs](https://github.com/NixOS/nixpkgs).",
+        ),
+        "sha256": attr.string(doc = "The SHA256 used to verify the integrity of the repository."),
     },
+    doc = """\
+Name a specific revision of Nixpkgs on GitHub or a local checkout.
+""",
 )
 
 def _nixpkgs_local_repository_impl(repository_ctx):
@@ -73,10 +82,20 @@ def _nixpkgs_local_repository_impl(repository_ctx):
 nixpkgs_local_repository = repository_rule(
     implementation = _nixpkgs_local_repository_impl,
     attrs = {
-        "nix_file": attr.label(allow_single_file = [".nix"]),
-        "nix_file_deps": attr.label_list(),
-        "nix_file_content": attr.string(),
+        "nix_file": attr.label(
+            allow_single_file = [".nix"],
+            doc = "A file containing an expression for a Nix derivation.",
+        ),
+        "nix_file_deps": attr.label_list(
+            doc = "Dependencies of `nix_file` if any.",
+        ),
+        "nix_file_content": attr.string(
+            doc = "An expression for a Nix derivation.",
+        ),
     },
+    doc = """\
+Create an external repository representing the content of Nixpkgs, based on a Nix expression stored locally or provided inline. One of `nix_file` or `nix_file_content` must be provided.
+""",
 )
 
 def _is_supported_platform(repository_ctx):
@@ -248,7 +267,84 @@ _nixpkgs_package = repository_rule(
     },
 )
 
-def nixpkgs_package(*args, **kwargs):
+def nixpkgs_package(
+        name,
+        attribute_path = "",
+        nix_file = None,
+        nix_file_deps = [],
+        nix_file_content = "",
+        repository = None,
+        repositories = {},
+        build_file = None,
+        build_file_content = "",
+        nixopts = [],
+        quiet = False,
+        fail_not_supported = True,
+        **kwargs):
+    """Make the content of a Nixpkgs package available in the Bazel workspace.
+
+    If `repositories` is not specified, you must provide a nixpkgs clone in `nix_file` or `nix_file_content`.
+
+    Args:
+      name: A unique name for this repository.
+      attribute_path: Select an attribute from the top-level Nix expression being evaluated. The attribute path is a sequence of attribute names separated by dots.
+      nix_file: A file containing an expression for a Nix derivation.
+      nix_file_deps: Dependencies of `nix_file` if any.
+      nix_file_content: An expression for a Nix derivation.
+      repository: A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`
+      repositories: A dictionary mapping `NIX_PATH` entries to repository labels.
+
+        Setting it to
+        ```
+        repositories = { "myrepo" : "//:myrepo" }
+        ```
+        for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+
+        Specify one of `repository` or `repositories`.
+      build_file: The file to use as the BUILD file for this repository.
+
+        Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
+
+        For common use cases we provide filegroups that expose certain files as targets:
+
+        <dl>
+          <dt><code>:bin</code></dt>
+          <dd>Everything in the <code>bin/</code> directory.</dd>
+          <dt><code>:lib</code></dt>
+          <dd>All <code>.so</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
+          <dt><code>:include</code></dt>
+          <dd>All <code>.h</code> files that can be found in subdirectories of <code>bin/</code>.</dd>
+        </dl>
+
+        If you need different files from the nix package, you can reference them like this:
+        ```
+        package(default_visibility = [ "//visibility:public" ])
+        filegroup(
+            name = "our-docs",
+            srcs = glob(["share/doc/ourpackage/**/*"]),
+        )
+        ```
+        See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
+      build_file_content: Like `build_file`, but a string of the contents instead of a file name.
+      nixopts: Extra flags to pass when calling Nix.
+      quiet: Whether to hide the output of the Nix command.
+      fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
+    """
+    kwargs.update(
+        name = name,
+        attribute_path = attribute_path,
+        nix_file = nix_file,
+        nix_file_deps = nix_file_deps,
+        nix_file_content = nix_file_content,
+        repository = repository,
+        repositories = repositories,
+        build_file = build_file,
+        build_file_content = build_file_content,
+        nixopts = nixopts,
+        quiet = quiet,
+        fail_not_supported = fail_not_supported,
+    )
+
     # Because of https://github.com/bazelbuild/bazel/issues/7989 we can't
     # directly pass a dict from strings to labels to the rule (which we'd like
     # for the `repositories` arguments), but we can pass a dict from labels to
@@ -256,14 +352,9 @@ def nixpkgs_package(*args, **kwargs):
     # distinct).
     if "repositories" in kwargs:
         inversed_repositories = {value: key for (key, value) in kwargs["repositories"].items()}
-        kwargs.pop("repositories")
-        _nixpkgs_package(
-            repositories = inversed_repositories,
-            *args,
-            **kwargs
-        )
-    else:
-        _nixpkgs_package(*args, **kwargs)
+        kwargs["repositories"] = inversed_repositories
+
+    _nixpkgs_package(**kwargs)
 
 def _parse_cc_toolchain_info(content, filename):
     """Parses the `CC_TOOLCHAIN_INFO` file generated by Nix.
@@ -549,11 +640,11 @@ def nixpkgs_cc_configure(
 
     This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
-    Note:
-      You need to configure `--crosstool_top=@<name>//:toolchain` to activate this
-      toolchain.
+    **Note:**
+    You need to configure `--crosstool_top=@<name>//:toolchain` to activate
+    this toolchain.
 
-    Attrs:
+    Args:
       attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
       nix_file: optional, Label, Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
       nix_file_content: optional, string, Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
@@ -719,6 +810,37 @@ def nixpkgs_cc_configure_deprecated(
         nixopts = []):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
+    Tells Bazel to use compilers and linkers from Nixpkgs for the CC toolchain.
+    By default, Bazel auto-configures a CC toolchain from commands available in
+    the environment (e.g. `gcc`). Overriding this autodetection makes builds
+    more hermetic and is considered a best practice.
+
+    #### Example
+
+      ```bzl
+      nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
+      ```
+
+    Args:
+      repository: A repository label identifying which Nixpkgs to use.
+        Equivalent to `repositories = { "nixpkgs": ...}`.
+      repositories: A dictionary mapping `NIX_PATH` entries to repository labels.
+
+        Setting it to
+        ```
+        repositories = { "myrepo" : "//:myrepo" }
+        ```
+        for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+
+        Specify one of `repository` or `repositories`.
+      nix_file: An expression for a Nix environment derivation.
+        The environment should expose all the commands that make up a CC
+        toolchain (`cc`, `ld` etc). Exposes all commands in `stdenv.cc` and
+        `binutils` by default.
+      nix_file_deps: Dependencies of `nix_file` if any.
+      nix_file_content: An expression for a Nix environment derivation.
+      nixopts: Options to forward to the nix command.
+
     Deprecated:
       Use `nixpkgs_cc_configure` instead.
 
@@ -728,11 +850,6 @@ def nixpkgs_cc_configure_deprecated(
       include directories specified in the environment can leak in and affect
       the cache keys of targets depending on the cc toolchain leading to cache
       misses.
-
-    By default, Bazel auto-configures a CC toolchain from commands (e.g.
-    `gcc`) available in the environment. To make builds more hermetic, use
-    this rule to specific explicitly which commands the toolchain should
-    use.
     """
     if not nix_file and not nix_file_content:
         nix_file_content = """
@@ -838,15 +955,23 @@ def nixpkgs_python_configure(
     Creates `nixpkgs_package`s for Python 2 or 3 `py_runtime` instances and a
     corresponding `py_runtime_pair` and `toolchain`. The toolchain is
     automatically registered and uses the constraint:
-      "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix"
 
-    Attrs:
+    ```
+    "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix"
+    ```
+
+    Args:
       name: The name-prefix for the created external repositories.
       python2_attribute_path: The nixpkgs attribute path for python2.
       python2_bin_path: The path to the interpreter within the package.
       python3_attribute_path: The nixpkgs attribute path for python3.
       python3_bin_path: The path to the interpreter within the package.
-      ...: See `nixpkgs_package` for the remaining attributes.
+      repository: See [`nixpkgs_package`](#nixpkgs_package-repository).
+      repositories: See [`nixpkgs_package`](#nixpkgs_package-repositories).
+      nix_file_deps: See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+      nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
+      fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
+      quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
     """
     python2_specified = python2_attribute_path and python2_bin_path
     python3_specified = python3_attribute_path and python3_bin_path

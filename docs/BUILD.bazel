@@ -1,0 +1,72 @@
+load("stardoc.bzl", "stardoc")
+
+stardoc(
+    name = "nixpkgs",
+    out = "nixpkgs.md",
+    input = "//nixpkgs:nixpkgs.bzl",
+    symbol_names = [
+        "nixpkgs_git_repository",
+        "nixpkgs_local_repository",
+        "nixpkgs_package",
+        "nixpkgs_cc_configure",
+        "nixpkgs_cc_configure_deprecated",
+        "nixpkgs_python_configure",
+        "nixpkgs_sh_posix_configure",
+    ],
+    deps = ["//nixpkgs"],
+)
+
+stardoc(
+    name = "go",
+    out = "toolchains/go.md",
+    input = "//nixpkgs:toolchains/go.bzl",
+    symbol_names = [
+        "nixpkgs_go_configure",
+    ],
+    deps = ["//nixpkgs:toolchains_go"],
+)
+
+genrule(
+    name = "readme",
+    srcs = [
+        "README.md.tpl",
+        "nixpkgs.md",
+        "toolchains/go.md",
+    ],
+    outs = ["README.md"],
+    cmd = """$(POSIX_AWK) \\
+  <$(execpath README.md.tpl) \\
+  >$(OUTS) \\
+  '{
+      if (/{{nixpkgs}}/) {
+          RS="\\0";
+          getline content <"$(execpath nixpkgs.md)";
+          print content
+      } else if (/{{toolchains_go}}/) {
+          RS="\\0";
+          getline content <"$(execpath toolchains/go.md)";
+          print content
+      } else {
+          print
+      }
+  }'
+""",
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
+
+sh_test(
+    name = "check-readme",
+    srcs = ["check-readme.sh"],
+    data = [
+        "README.md",
+        "//:README.md",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+sh_binary(
+    name = "update-readme",
+    srcs = ["update-readme.sh"],
+    data = ["README.md"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)

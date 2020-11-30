@@ -1,5 +1,6 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()
@@ -13,6 +14,22 @@ load(
     "nixpkgs_python_configure",
     "nixpkgs_sh_posix_configure",
 )
+
+# For documentation
+
+http_archive(
+    name = "io_bazel_stardoc",
+    sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
+    strip_prefix = "stardoc-0.4.0",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
+        "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
+    ],
+)
+
+load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
+
+stardoc_repositories()
 
 # For tests
 
@@ -203,8 +220,6 @@ nixpkgs_package(
     repository = "@remote_nixpkgs",
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 http_archive(
     name = "rules_sh",
     sha256 = "83a065ba6469135a35786eb741e17d50f360ca92ab2897857475ab17c0d29931",
@@ -226,10 +241,12 @@ sh_posix_configure()
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "b27e55d2dcc9e6020e17614ae6e0374818a3e3ce6f2024036e688ada24110444",
+    sha256 = "c024f8272a6042b5a438fbc56a673ec1c839241980aa695ab3fcf6ecc40e69d8",
+    strip_prefix = "rules_go-2bada599e10349d42e369cab1ec4f4679f148598",
     urls = [
-        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.21.0/rules_go-v0.21.0.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.21.0/rules_go-v0.21.0.tar.gz",
+        # XXX: Update once a release is available that includes
+        # https://github.com/bazelbuild/rules_go/pull/2621
+        "https://github.com/bazelbuild/rules_go/archive/2bada599e10349d42e369cab1ec4f4679f148598.tar.gz",
     ],
 )
 
