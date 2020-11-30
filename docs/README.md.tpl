@@ -77,9 +77,9 @@ nixpkgs_package(
 
 ## Rules
 
-%nixpkgs%
+{{nixpkgs}}
 
-%toolchains_go%
+{{toolchains_go}}
 
 ## Migration
 

@@ -38,11 +38,11 @@ genrule(
   <$(execpath README.md.tpl) \\
   >$(OUTS) \\
   '{
-      if (/%nixpkgs%/) {
+      if (/{{nixpkgs}}/) {
           RS="\\0";
           getline content <"$(execpath nixpkgs.md)";
           print content
-      } else if (/%toolchains_go%/) {
+      } else if (/{{toolchains_go}}/) {
           RS="\\0";
           getline content <"$(execpath toolchains/go.md)";
           print content
