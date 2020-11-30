@@ -2,4 +2,8 @@ exports_files([
     "nixpkgs.json",
     "nixpkgs.nix",
 ])
-exports_files(["README.md"], visibility = ["//docs:__subpackages__"])
+
+exports_files(
+    ["README.md"],
+    visibility = ["//docs:__subpackages__"],
+)

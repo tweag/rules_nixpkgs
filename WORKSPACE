@@ -1,7 +1,6 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()

@@ -344,6 +344,7 @@ def nixpkgs_package(
         quiet = quiet,
         fail_not_supported = fail_not_supported,
     )
+
     # Because of https://github.com/bazelbuild/bazel/issues/7989 we can't
     # directly pass a dict from strings to labels to the rule (which we'd like
     # for the `repositories` arguments), but we can pass a dict from labels to
