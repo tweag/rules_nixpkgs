@@ -640,11 +640,11 @@ def nixpkgs_cc_configure(
 
     This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
-    Note:
-      You need to configure `--crosstool_top=@<name>//:toolchain` to activate this
-      toolchain.
+    **Note:**
+    You need to configure `--crosstool_top=@<name>//:toolchain` to activate
+    this toolchain.
 
-    Attrs:
+    Args:
       attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
       nix_file: optional, Label, Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
       nix_file_content: optional, string, Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
@@ -815,16 +815,6 @@ def nixpkgs_cc_configure_deprecated(
     the environment (e.g. `gcc`). Overriding this autodetection makes builds
     more hermetic and is considered a best practice.
 
-    Deprecated:
-      Use `nixpkgs_cc_configure` instead.
-
-      While this improves upon Bazel's autoconfigure toolchain by picking tools
-      from a Nix derivation rather than the environment, it is still not fully
-      hermetic as it is affected by the environment. In particular, system
-      include directories specified in the environment can leak in and affect
-      the cache keys of targets depending on the cc toolchain leading to cache
-      misses.
-
     #### Example
 
       ```bzl
@@ -850,6 +840,16 @@ def nixpkgs_cc_configure_deprecated(
       nix_file_deps: Dependencies of `nix_file` if any.
       nix_file_content: An expression for a Nix environment derivation.
       nixopts: Options to forward to the nix command.
+
+    Deprecated:
+      Use `nixpkgs_cc_configure` instead.
+
+      While this improves upon Bazel's autoconfigure toolchain by picking tools
+      from a Nix derivation rather than the environment, it is still not fully
+      hermetic as it is affected by the environment. In particular, system
+      include directories specified in the environment can leak in and affect
+      the cache keys of targets depending on the cc toolchain leading to cache
+      misses.
     """
     if not nix_file and not nix_file_content:
         nix_file_content = """

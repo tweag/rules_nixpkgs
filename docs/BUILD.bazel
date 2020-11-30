@@ -9,6 +9,7 @@ stardoc(
         "nixpkgs_local_repository",
         "nixpkgs_package",
         "nixpkgs_cc_configure",
+        "nixpkgs_cc_configure_deprecated",
         "nixpkgs_python_configure",
         "nixpkgs_sh_posix_configure",
     ],

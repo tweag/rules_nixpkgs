@@ -254,20 +254,10 @@ which tools were discovered.
 
 This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
-Note:
-  You need to configure `--crosstool_top=@&lt;name&gt;//:toolchain` to activate this
-  toolchain.
+**Note:**
+You need to configure `--crosstool_top=@&lt;name&gt;//:toolchain` to activate
+this toolchain.
 
-Attrs:
-  attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
-  nix_file: optional, Label, Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
-  nix_file_content: optional, string, Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
-  nix_file_deps: optional, list of Label, Additional files that the Nix expression depends on.
-  repositories: dict of Label to string, Provides `&lt;nixpkgs&gt;` and other repositories. Specify one of `repositories` or `repository`.
-  repository: Label, Provides `&lt;nixpkgs&gt;`. Specify one of `repositories` or `repository`.
-  nixopts: optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
-  quiet: bool, Whether to hide `nix-build` output.
-  fail_not_supported: bool, Whether to fail if `nix-build` is not available.
 
 #### Parameters
 
@@ -293,6 +283,11 @@ default is <code>"local_config_cc"</code>
 optional.
 default is <code>""</code>
 
+<p>
+
+optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-nix_file">
@@ -302,6 +297,11 @@ default is <code>""</code>
 optional.
 default is <code>None</code>
 
+<p>
+
+optional, Label, Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-nix_file_content">
@@ -311,6 +311,11 @@ default is <code>None</code>
 optional.
 default is <code>""</code>
 
+<p>
+
+optional, string, Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-nix_file_deps">
@@ -320,6 +325,11 @@ default is <code>""</code>
 optional.
 default is <code>[]</code>
 
+<p>
+
+optional, list of Label, Additional files that the Nix expression depends on.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-repositories">
@@ -329,6 +339,11 @@ default is <code>[]</code>
 optional.
 default is <code>{}</code>
 
+<p>
+
+dict of Label to string, Provides `<nixpkgs>` and other repositories. Specify one of `repositories` or `repository`.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-repository">
@@ -338,6 +353,11 @@ default is <code>{}</code>
 optional.
 default is <code>None</code>
 
+<p>
+
+Label, Provides `<nixpkgs>`. Specify one of `repositories` or `repository`.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-nixopts">
@@ -347,6 +367,11 @@ default is <code>None</code>
 optional.
 default is <code>[]</code>
 
+<p>
+
+optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-quiet">
@@ -356,6 +381,11 @@ default is <code>[]</code>
 optional.
 default is <code>False</code>
 
+<p>
+
+bool, Whether to hide `nix-build` output.
+
+</p>
 </td>
 </tr>
 <tr id="nixpkgs_cc_configure-fail_not_supported">
@@ -365,6 +395,142 @@ default is <code>False</code>
 optional.
 default is <code>True</code>
 
+<p>
+
+bool, Whether to fail if `nix-build` is not available.
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<a id="#nixpkgs_cc_configure_deprecated"></a>
+
+### nixpkgs_cc_configure_deprecated
+
+<pre>
+nixpkgs_cc_configure_deprecated(<a href="#nixpkgs_cc_configure_deprecated-repository">repository</a>, <a href="#nixpkgs_cc_configure_deprecated-repositories">repositories</a>, <a href="#nixpkgs_cc_configure_deprecated-nix_file">nix_file</a>, <a href="#nixpkgs_cc_configure_deprecated-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_cc_configure_deprecated-nix_file_content">nix_file_content</a>,
+                                <a href="#nixpkgs_cc_configure_deprecated-nixopts">nixopts</a>)
+</pre>
+
+Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
+
+Tells Bazel to use compilers and linkers from Nixpkgs for the CC toolchain.
+By default, Bazel auto-configures a CC toolchain from commands available in
+the environment (e.g. `gcc`). Overriding this autodetection makes builds
+more hermetic and is considered a best practice.
+
+#### Example
+
+  ```bzl
+  nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
+  ```
+
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_cc_configure_deprecated-repository">
+<td><code>repository</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+A repository label identifying which Nixpkgs to use.
+  Equivalent to `repositories = { "nixpkgs": ...}`.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure_deprecated-repositories">
+<td><code>repositories</code></td>
+<td>
+
+optional.
+default is <code>{}</code>
+
+<p>
+
+A dictionary mapping `NIX_PATH` entries to repository labels.
+
+  Setting it to
+  ```
+  repositories = { "myrepo" : "//:myrepo" }
+  ```
+  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+
+  Specify one of `repository` or `repositories`.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure_deprecated-nix_file">
+<td><code>nix_file</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+An expression for a Nix environment derivation.
+  The environment should expose all the commands that make up a CC
+  toolchain (`cc`, `ld` etc). Exposes all commands in `stdenv.cc` and
+  `binutils` by default.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure_deprecated-nix_file_deps">
+<td><code>nix_file_deps</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Dependencies of `nix_file` if any.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure_deprecated-nix_file_content">
+<td><code>nix_file_content</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+An expression for a Nix environment derivation.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure_deprecated-nixopts">
+<td><code>nixopts</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+<p>
+
+Options to forward to the nix command.
+
+</p>
 </td>
 </tr>
 </tbody>
