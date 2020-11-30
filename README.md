@@ -249,13 +249,13 @@ this rule to specify explicitly which commands the toolchain should use.
 Specifically, it builds a Nix derivation that provides the CC toolchain
 tools in the `bin/` path and constructs a CC toolchain that uses those
 tools. Tools that aren't found are replaced by `${coreutils}/bin/false`.
-You can inspect the resulting `@&lt;name&gt;_info//:CC_TOOLCHAIN_INFO` to see
+You can inspect the resulting `@<name>_info//:CC_TOOLCHAIN_INFO` to see
 which tools were discovered.
 
 This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
 **Note:**
-You need to configure `--crosstool_top=@&lt;name&gt;//:toolchain` to activate
+You need to configure `--crosstool_top=@<name>//:toolchain` to activate
 this toolchain.
 
 
