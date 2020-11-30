@@ -42,6 +42,8 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         ":bazel_tools",
+        "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
+        "@bazel_skylib//lib:sets",
     ],
 )

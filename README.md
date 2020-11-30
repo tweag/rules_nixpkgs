@@ -24,6 +24,7 @@ Links:
 * [nixpkgs_git_repository](#nixpkgs_git_repository)
 * [nixpkgs_package](#nixpkgs_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
+* [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_go_configure](#nixpkgs_go_configure)
 
 ## Setup
@@ -328,15 +329,132 @@ filegroup(
 
 ### nixpkgs_cc_configure
 
-Tells Bazel to use compilers and linkers from Nixpkgs for the CC
-toolchain. By default, Bazel autodetects a toolchain on the current
-`PATH`. Overriding this autodetection makes builds more hermetic and
-is considered a best practice.
+Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
+
+By default, Bazel auto-configures a CC toolchain from commands (e.g.
+`gcc`) available in the environment. To make builds more hermetic, use
+this rule to specify explicitly which commands the toolchain should use.
+
+Specifically, it builds a Nix derivation that provides the CC toolchain
+tools in the `bin/` path and constructs a CC toolchain that uses those
+tools. Tools that aren't found are replaced by `${coreutils}/bin/false`.
+You can inspect the resulting `@<name>_info//:CC_TOOLCHAIN_INFO` to see
+which tools were discovered.
+
+This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
+
+Note:
+
+You need to configure `--crosstool_top=@<name>//:toolchain` to activate this
+toolchain.
 
 Example:
 
 ```bzl
 nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
+```
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>attribute_path</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.</p>
+      </td>
+      <td><code>nix_file</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file_content</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nix_file_deps</code></td>
+      <td>
+        <p><code>List of labels; optional</code></p>
+        <p>Additional files that the Nix expression depends on.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repository</code></td>
+      <td>
+        <p><code>Label; optional</code></p>
+        <p>Provides `<nixpkgs>`. Specify one of `repositories` or `repository`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repositories</code></td>
+      <td>
+        <p><code>String-keyed label dict; optional</code></p>
+        <p>Provides `<nixpkgs>` and other repositories. Specify one of `repositories` or `repository`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>nixopts</code></td>
+      <td>
+        <p><code>String list; optional</code></p>
+        <p>
+            Extra flags to pass when calling Nix. Subject to location
+            expansion, any instance of <code>$(location LABEL)</code> will be
+            replaced by the path to the file ferenced by <code>LABEL</code>
+            relative to the workspace root.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>quiet</code></td>
+      <td>
+        <p><code>Bool; optional</code></p>
+        <p>Whether to hide `nix-build` output.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>fail_not_supported</code></td>
+      <td>
+        <p><code>Bool; optional</code></p>
+        <p>Whether to fail if `nix-build` is not available.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### nixpkgs_cc_configure_deprecated
+
+Tells Bazel to use compilers and linkers from Nixpkgs for the CC
+toolchain. By default, Bazel autodetects a toolchain on the current
+`PATH`. Overriding this autodetection makes builds more hermetic and
+is considered a best practice.
+
+Deprecated:
+
+Use `nixpkgs_cc_configure` instead.
+
+While this improves upon Bazel's autoconfigure toolchain by picking tools from
+a Nix derivation rather than the environment, it is still not fully hermetic as
+it is affected by the environment. In particular, system include directories
+specified in the environment can leak in and affect the cache keys of targets
+depending on the cc toolchain leading to cache misses.
+
+Example:
+
+```bzl
+nixpkgs_cc_configure_deprecated(repository = "@nixpkgs//:default.nix")
 ```
 
 <table class="table table-condensed table-bordered table-params">
