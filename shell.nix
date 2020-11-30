@@ -9,5 +9,6 @@ mkShell {
     gcc
     nix
     git
+    jdk11
   ];
 }
