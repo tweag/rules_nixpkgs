@@ -33,9 +33,9 @@ stardoc_repositories()
 
 # For tests
 
-load("@bazel_skylib//lib:unittest.bzl", "register_unittest_toolchains")
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
-register_unittest_toolchains()
+bazel_skylib_workspace()
 
 nixpkgs_git_repository(
     name = "remote_nixpkgs",
@@ -241,12 +241,10 @@ sh_posix_configure()
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "c024f8272a6042b5a438fbc56a673ec1c839241980aa695ab3fcf6ecc40e69d8",
-    strip_prefix = "rules_go-2bada599e10349d42e369cab1ec4f4679f148598",
+    sha256 = "7904dbecbaffd068651916dce77ff3437679f9d20e1a7956bff43826e7645fcc",
     urls = [
-        # XXX: Update once a release is available that includes
-        # https://github.com/bazelbuild/rules_go/pull/2621
-        "https://github.com/bazelbuild/rules_go/archive/2bada599e10349d42e369cab1ec4f4679f148598.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.25.1/rules_go-v0.25.1.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.25.1/rules_go-v0.25.1.tar.gz",
     ],
 )
 
