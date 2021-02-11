@@ -6,7 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.8.0...HEAD
+
+## [0.8.0] - 2021-02-11
+
+[0.8.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...v0.8.0
+
+### Added
+
+- Bazel Skylib is now included as a dependency on `rules_nixpkgs_dependencies`.
+  See [#125][#125].
+- `nixpkgs_python_configure` now exposes the `quiet` attribute for the
+  underlying `nispkgs_package`.
+  See [#131][#131].
+- The default `BUILD` file of `nixpkgs_package` now finds more kinds of C/C++
+  header files in the `include` target.
+  See [#137][#137].
 
 ### Changed
 
@@ -28,7 +43,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   favor of `nixpkgs_cc_configure` and will be replaced by it in future.
   See [#128][#128].
 
+### Fixed
+
+- Incorrect label contruction for Nix file dependencies.
+  See [#124][#124].
+
+[#124]: https://github.com/tweag/rules_nixpkgs/pull/124
+[#125]: https://github.com/tweag/rules_nixpkgs/pull/125
 [#128]: https://github.com/tweag/rules_nixpkgs/pull/128
+[#131]: https://github.com/tweag/rules_nixpkgs/pull/131
 [#132]: https://github.com/tweag/rules_nixpkgs/pull/132
 
 ## [0.7.0] - 2020-04-20
