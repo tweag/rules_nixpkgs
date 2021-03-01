@@ -50,10 +50,10 @@ def nixpkgs_go_configure(
           ctx.file("BUILD", "")
 
           imports_for_nix = \"""
-              load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_toolchain")
+              load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure")
 
               def fix_go():
-                  nixpkgs_go_toolchain(repository = "@nixpkgs")
+                  nixpkgs_go_configure(repository = "@nixpkgs")
           \"""
           imports_for_non_nix = \"""
               def fix_go():

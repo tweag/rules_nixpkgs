@@ -48,7 +48,7 @@ rules_nixpkgs_dependencies()
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package", "nixpkgs_cc_toolchain")
 
-load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_toolchain") # optional
+load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure") # optional
 ```
 
 If you use `rules_nixpkgs` to configure a toolchain then you will also need to
@@ -1070,10 +1070,10 @@ and also provide an empty normal file named `PACKAGE_ROOT` at the root of packag
       ctx.file("BUILD", "")
 
       imports_for_nix = """
-          load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_toolchain")
+          load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure")
 
           def fix_go():
-              nixpkgs_go_toolchain(repository = "@nixpkgs")
+              nixpkgs_go_configure(repository = "@nixpkgs")
       """
       imports_for_non_nix = """
           def fix_go():
