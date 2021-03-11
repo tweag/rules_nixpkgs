@@ -134,6 +134,7 @@ sh_test(
         "//conditions:default": [],
     }),
     target_compatible_with = [
+        # busybox_static is not available on MacOS.
         "@platforms//os:linux",
     ],
 )
