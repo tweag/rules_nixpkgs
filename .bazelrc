@@ -5,3 +5,18 @@ build --crosstool_top=@nixpkgs_config_cc//:toolchain
 # resolved before `--incompatible_enable_cc_toolchain_resolution` can be
 # recommended for `nixpkgs_cc_configure_hermetic`.
 # build --incompatible_enable_cc_toolchain_resolution
+
+# CI Configuration
+# ----------------
+common:ci --color=no
+build:ci --verbose_failures
+test:ci --test_output=errors
+
+# Use a remote cache during CI
+build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
+build:ci --bes_backend=grpcs://cloud.buildbuddy.io
+build:ci --remote_cache=grpcs://cloud.buildbuddy.io
+build:ci --remote_timeout=3600
+# Avoid failures of the form `deadline exceeded after 14999958197ns DEADLINE_EXCEEDED`.
+# See https://github.com/tweag/rules_haskell/issues/1498.
+build:ci --keep_backend_build_event_connections_alive=false
