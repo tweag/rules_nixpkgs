@@ -128,7 +128,13 @@ sh_test(
     data = [
         "//nixpkgs:srcs",
         "//tests/invalid_nixpkgs_package:srcs",
-        "@busybox_static//:bin",
         "@nix-unstable//:bin",
+    ] + select({
+        "@platforms//os:linux": ["@busybox_static//:bin"],
+        "//conditions:default": [],
+    }),
+    target_compatible_with = [
+        # busybox_static is not available on MacOS.
+        "@platforms//os:linux",
     ],
 )
