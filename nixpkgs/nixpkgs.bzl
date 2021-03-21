@@ -1203,7 +1203,21 @@ def _cp(repository_ctx, src, dest = None):
             for component in [src.workspace_root, src.package, src.name]
             if component
         ])
-    repository_ctx.template(dest, src, executable = False)
+
+    # Copy the file
+    # TODO: auto detect the executable bit of the source file
+    # It is set to False (i.e. not executable) which was the previous behavior.
+    # It means that executable files will miss the bit and won't be executable.
+    # Forcing it to True will fix this behavior, but will impact a lot of file
+    # (most of the time, files do not have the executable bit) and this may
+    # lead to other errors in the next process are checking for executable bit.
+    # One other side effect of this change is that you will have a difference
+    # in the nix hash computed when nix is run by rules_nixpkgs or directly.
+    repository_ctx.file(repository_ctx.path(dest),
+                        repository_ctx.read(repository_ctx.path(src)),
+                        executable=False,
+                        legacy_utf8=False)
+
     return dest
 
 def _label_string(label):
