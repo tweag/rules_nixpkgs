@@ -1210,7 +1210,7 @@ def _cp(repository_ctx, src, dest = None):
     # It means that executable files will miss the bit and won't be executable.
     # Forcing it to True will fix this behavior, but will impact a lot of file
     # (most of the time, files do not have the executable bit) and this may
-    # lead to other errors in the next process are checking for executable bit.
+    # lead to other errors if the next process is checking the executable bit.
     # One other side effect of this change is that you will have a difference
     # in the nix hash computed when nix is run by rules_nixpkgs or directly.
     repository_ctx.file(repository_ctx.path(dest),
