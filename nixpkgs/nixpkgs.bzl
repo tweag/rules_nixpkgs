@@ -661,6 +661,8 @@ def nixpkgs_cc_configure(
       nixopts: optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
       quiet: bool, Whether to hide `nix-build` output.
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
+      exec_constraints: Constraints for the execution platform.
+      target_constraints: Constraints for the target platform.
     """
 
     nixopts = list(nixopts)
@@ -726,6 +728,8 @@ def nixpkgs_cc_configure(
     )
 
     # Generate the `cc_toolchain` workspace.
+    if (exec_constraints == None) != (target_constraints == None):
+        fail("Both exec_constraints and target_constraints need to be provided or none of them.")
     _nixpkgs_cc_toolchain(
         name = "{}_toolchains".format(name),
         cc_toolchain_config = name,
