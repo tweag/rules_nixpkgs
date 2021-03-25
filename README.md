@@ -237,7 +237,8 @@ Dependencies of `nix_file` if any.
 
 <pre>
 nixpkgs_cc_configure(<a href="#nixpkgs_cc_configure-name">name</a>, <a href="#nixpkgs_cc_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_cc_configure-nix_file">nix_file</a>, <a href="#nixpkgs_cc_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_cc_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_cc_configure-repositories">repositories</a>,
-                     <a href="#nixpkgs_cc_configure-repository">repository</a>, <a href="#nixpkgs_cc_configure-nixopts">nixopts</a>, <a href="#nixpkgs_cc_configure-quiet">quiet</a>, <a href="#nixpkgs_cc_configure-fail_not_supported">fail_not_supported</a>)
+                     <a href="#nixpkgs_cc_configure-repository">repository</a>, <a href="#nixpkgs_cc_configure-nixopts">nixopts</a>, <a href="#nixpkgs_cc_configure-quiet">quiet</a>, <a href="#nixpkgs_cc_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_cc_configure-exec_constraints">exec_constraints</a>,
+                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>)
 </pre>
 
 Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
@@ -398,6 +399,34 @@ default is <code>True</code>
 <p>
 
 bool, Whether to fail if `nix-build` is not available.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure-exec_constraints">
+<td><code>exec_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Constraints for the execution platform.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure-target_constraints">
+<td><code>target_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Constraints for the target platform.
 
 </p>
 </td>
