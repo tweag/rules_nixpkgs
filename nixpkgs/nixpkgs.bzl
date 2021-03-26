@@ -1074,17 +1074,34 @@ create_posix_toolchain()
         **kwargs
     )
 
-# Note [Target constraints for posix tools
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Note [Target constraints for POSIX tools]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# There is an overlap between the tools provided by posix toolchains
-# and cc toolchains. In addition, many of the tools provided
-# exclusively by posix toolchains don't depend on what the target
-# platform is when cross-compiling.
+# There at least three cases for POSIX tools.
 #
-# Therefore, for now, we depend on toolchain resolution for the cc
-# toolchain to provide target-sensitive tools, and we use a x86 linux
-# posix toolchain for the other tools.
+# Case 1) The tools are used at build time in the execution platform.
+#
+# Case 2) The tools are used at runtime time in the target platform
+#         when the target platform is the same as the execution
+#         platform.
+#
+# Case 3) The tools are used at runtime time in the target platform
+#         when cross-compiling.
+#
+# At the moment, only (1) and (2) are supported by ignoring any target
+# constraints when defining the toolchain. This makes available
+# any tools that don't depend on the target platform like grep, find
+# or sort. In case (2), the tools are still usable at runtime since
+# the platforms match.
+#
+# POSIX tools that depend on the target platform, like cc and strip,
+# are better taken from the Bazel cc toolchain instead, so they do
+# match the target platform.
+#
+# TODO: In order to support (3), where the tools would be needed at
+# runtime, nixpkgs_sh_posix_configure will need to be changed to take
+# as parameter the constraints for the platform in which the tools
+# should run.
 
 def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
@@ -1098,7 +1115,8 @@ toolchain(
         "@platforms//os:{os}",
         "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
     ],
-    # See Note [Target constraints for posix tools]
+    # Leaving the target constraints empty matter for cross-compilation.
+    # See Note [Target constraints for POSIX tools]
     target_compatible_with = [],
 )
     """.format(
