@@ -566,6 +566,18 @@ _nixpkgs_cc_toolchain_config = repository_rule(
 
 def _nixpkgs_cc_toolchain_impl(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
+    os = {"darwin": "osx"}.get(cpu, "linux")
+
+    if repository_ctx.attr.target_constraints == None and repository_ctx.attr.exec_constraints == None:
+        target_constraints = ["@platforms//cpu:x86_64"]
+        target_constraints.append("@platforms//os:{}".format(os))
+        exec_constraints = target_constraints
+    else:
+        target_constraints = list(repository_ctx.attr.target_constraints)
+        exec_constraints = list(repository_ctx.attr.exec_constraints)
+
+    exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
+
     repository_ctx.file(
         "BUILD.bazel",
         executable = False,
@@ -576,26 +588,15 @@ toolchain(
     name = "cc-toolchain-{cpu}",
     toolchain = "@{cc_toolchain_config}//:cc-compiler-{cpu}",
     toolchain_type = "@rules_cc//cc:toolchain_type",
-    exec_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
-    ],
-    target_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-    ],
+    exec_compatible_with = {exec_constraints},
+    target_compatible_with = {target_constraints},
 )
 
 toolchain(
     name = "cc-toolchain-armeabi-v7a",
     toolchain = "@{cc_toolchain_config}//:cc-compiler-armeabi-v7a",
     toolchain_type = "@rules_cc//cc:toolchain_type",
-    exec_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
-    ],
+    exec_compatible_with = {exec_constraints},
     target_compatible_with = [
         "@platforms//cpu:arm",
         "@platforms//os:android",
@@ -604,7 +605,9 @@ toolchain(
 """.format(
             cc_toolchain_config = repository_ctx.attr.cc_toolchain_config,
             cpu = cpu,
-            os = "osx" if cpu == "darwin" else "linux",
+            os = os,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
         ),
     )
 
@@ -612,6 +615,8 @@ _nixpkgs_cc_toolchain = repository_rule(
     _nixpkgs_cc_toolchain_impl,
     attrs = {
         "cc_toolchain_config": attr.string(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
     },
 )
 
@@ -625,7 +630,9 @@ def nixpkgs_cc_configure(
         repository = None,
         nixopts = [],
         quiet = False,
-        fail_not_supported = True):
+        fail_not_supported = True,
+        exec_constraints = None,
+        target_constraints = None):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -654,6 +661,8 @@ def nixpkgs_cc_configure(
       nixopts: optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
       quiet: bool, Whether to hide `nix-build` output.
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
+      exec_constraints: Constraints for the execution platform.
+      target_constraints: Constraints for the target platform.
     """
 
     nixopts = list(nixopts)
@@ -719,9 +728,13 @@ def nixpkgs_cc_configure(
     )
 
     # Generate the `cc_toolchain` workspace.
+    if (exec_constraints == None) != (target_constraints == None):
+        fail("Both exec_constraints and target_constraints need to be provided or none of them.")
     _nixpkgs_cc_toolchain(
         name = "{}_toolchains".format(name),
         cc_toolchain_config = name,
+        exec_constraints = exec_constraints,
+        target_constraints = target_constraints,
     )
 
     maybe(
