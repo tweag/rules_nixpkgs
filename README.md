@@ -1070,17 +1070,18 @@ dependencies on rules_go for those who don't need go toolchain.
 
 <pre>
 nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>,
-                     <a href="#nixpkgs_go_configure-nixopts">nixopts</a>)
+                     <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>)
 </pre>
 
-Use go toolchain from Nixpkgs. Will fail if not a nix-based platform.
+Use go toolchain from Nixpkgs.
 
 By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS),
 there is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
-This command allows to setup hermetic go sdk from Nixpkgs, which should be considerate as best practice.
+This command allows to setup a hermetic go sdk from Nixpkgs, which should be considered as best practice.
+Cross toolchains are declared and registered for each entry in the `PLATFORMS` constant in `rules_go`.
 
 Note that the nix package must provide a full go sdk at the root of the package instead of in `$out/share/go`,
-and also provide an empty normal file named `PACKAGE_ROOT` at the root of package.
+and also provide an empty normal file named `ROOT` at the root of package.
 
 #### Example
 
@@ -1192,7 +1193,7 @@ A dictionary mapping `NIX_PATH` entries to repository labels.
   ```
   repositories = { "myrepo" : "//:myrepo" }
   ```
-  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) in the nix manual for more information.
+  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
 
   Specify one of `path` or `repositories`.
 
@@ -1208,7 +1209,7 @@ default is <code>None</code>
 
 <p>
 
-An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `PACKAGE_ROOT` file in the root of pacakge.
+An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge.
 
 </p>
 </td>
@@ -1248,6 +1249,34 @@ An expression for a Nix environment derivation.
 optional.
 default is <code>[]</code>
 
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-fail_not_supported">
+<td><code>fail_not_supported</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-quiet">
+<td><code>quiet</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+Whether to hide the output of the Nix command.
+
+</p>
 </td>
 </tr>
 </tbody>
