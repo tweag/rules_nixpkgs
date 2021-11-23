@@ -564,19 +564,22 @@ _nixpkgs_cc_toolchain_config = repository_rule(
     },
 )
 
-def _nixpkgs_cc_toolchain_impl(repository_ctx):
+def _ensure_constraints(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
     os = {"darwin": "osx"}.get(cpu, "linux")
-
-    if repository_ctx.attr.target_constraints == None and repository_ctx.attr.exec_constraints == None:
+    if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
         target_constraints = ["@platforms//cpu:x86_64"]
         target_constraints.append("@platforms//os:{}".format(os))
         exec_constraints = target_constraints
     else:
         target_constraints = list(repository_ctx.attr.target_constraints)
         exec_constraints = list(repository_ctx.attr.exec_constraints)
-
     exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
+    return exec_constraints, target_constraints
+
+def _nixpkgs_cc_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
 
     repository_ctx.file(
         "BUILD.bazel",
@@ -605,7 +608,6 @@ toolchain(
 """.format(
             cc_toolchain_config = repository_ctx.attr.cc_toolchain_config,
             cpu = cpu,
-            os = os,
             exec_constraints = exec_constraints,
             target_constraints = target_constraints,
         ),
@@ -889,7 +891,8 @@ def nixpkgs_cc_configure_deprecated(
     native.register_toolchains("@local_config_cc//:all")
 
 def _nixpkgs_python_toolchain_impl(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
+
     repository_ctx.file("BUILD.bazel", executable = False, content = """
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 py_runtime_pair(
@@ -901,20 +904,14 @@ toolchain(
     name = "toolchain",
     toolchain = ":py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
-    exec_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-        "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
-    ],
-    target_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-    ],
+    exec_compatible_with = {exec_constraints},
+    target_compatible_with = {target_constraints},
 )
 """.format(
         python2_runtime = _label_string(repository_ctx.attr.python2_runtime),
         python3_runtime = _label_string(repository_ctx.attr.python3_runtime),
-        os = {"darwin": "osx"}.get(cpu, "linux"),
+        exec_constraints = exec_constraints,
+        target_constraints = target_constraints,
     ))
 
 _nixpkgs_python_toolchain = repository_rule(
@@ -925,6 +922,8 @@ _nixpkgs_python_toolchain = repository_rule(
         # necessary, so that builds don't fail on platforms without nixpkgs.
         "python2_runtime": attr.string(),
         "python3_runtime": attr.string(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
     },
 )
 
@@ -962,7 +961,9 @@ def nixpkgs_python_configure(
         nix_file_deps = None,
         nixopts = [],
         fail_not_supported = True,
-        quiet = False):
+        quiet = False,
+        exec_constraints = None,
+        target_constraints = None):
     """Define and register a Python toolchain provided by nixpkgs.
 
     Creates `nixpkgs_package`s for Python 2 or 3 `py_runtime` instances and a
@@ -985,6 +986,8 @@ def nixpkgs_python_configure(
       nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
+      exec_constraints: Constraints for the execution platform.
+      target_constraints: Constraints for the target platform.
     """
     python2_specified = python2_attribute_path and python2_bin_path
     python3_specified = python3_attribute_path and python3_bin_path
@@ -1026,6 +1029,8 @@ def nixpkgs_python_configure(
         name = name,
         python2_runtime = python2_runtime,
         python3_runtime = python3_runtime,
+        exec_constraints = exec_constraints,
+        target_constraints = target_constraints,
     )
     native.register_toolchains("@%s//:toolchain" % name)
 
