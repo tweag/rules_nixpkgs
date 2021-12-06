@@ -7,12 +7,6 @@ http_archive(
     ]
 )
 
-load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
-
-rules_cc_dependencies()
-
-rules_cc_toolchains()
-
 local_repository(
     name = "io_tweag_rules_nixpkgs",
     path = "../../../"
@@ -28,6 +22,14 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
 nixpkgs_git_repository(
     name = "nixpkgs",
     revision = "21.11",
+	sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
 )
 
-nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix")
+nixpkgs_cc_configure(repository = "@nixpkgs//:default.nix", fail_not_supported = False)
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
+
+rules_cc_dependencies()
+
+rules_cc_toolchains()
+
