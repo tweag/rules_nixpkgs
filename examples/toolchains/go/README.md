@@ -14,3 +14,4 @@ To run the example without Nix, make sure you have Bazel installed, and issue th
 ```
 bazel run :hello
 ```
+This non-Nix example will download a binary distribution of Go's toolchain from the Internet.

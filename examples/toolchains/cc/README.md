@@ -14,3 +14,4 @@ To run the example without Nix, make sure you have Bazel installed, and issue th
 ```
 bazel run :hello
 ```
+This non-Nix example will look for the C++ toolchain on the PATH.
