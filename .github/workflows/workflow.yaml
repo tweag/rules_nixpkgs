@@ -27,3 +27,7 @@ jobs:
             set -euo pipefail
             bazel test //...
           '
+          for dir in $PWD/examples/toolchains/*; do
+              cd "$dir"
+              nix-shell --command 'bazel run --config=nix :hello'
+          done
