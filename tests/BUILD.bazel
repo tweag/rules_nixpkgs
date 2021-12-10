@@ -1,7 +1,9 @@
 package(default_testonly = 1)
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@rules_java//java:defs.bzl", "java_binary", "java_test")
 load(":cc-test.bzl", "cc_toolchain_test")
+load(":java-test.bzl", "java_runtime_test")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
 
 expand_location_unit_test_suite()
@@ -90,6 +92,18 @@ cc_binary(
 # Test that nixpkgs_cc_configure is selected.
 cc_toolchain_test(
     name = "cc-toolchain",
+)
+
+# Test nixpkgs_java_configure() by building some Java code.
+java_test(
+    name = "java-test",
+    test_class = "JavaTest",
+    srcs = ["JavaTest.java"],
+)
+
+# Test that nixpkgs_java_runtime is selected.
+java_runtime_test(
+    name = "java-runtime",
 )
 
 # Test nixpkgs_python_configure() by running some Python code.
