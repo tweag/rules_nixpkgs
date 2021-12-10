@@ -890,6 +890,140 @@ def nixpkgs_cc_configure_deprecated(
     native.bind(name = "cc_toolchain", actual = "@local_config_cc//:toolchain")
     native.register_toolchains("@local_config_cc//:all")
 
+_java_nix_file_content = """\
+with import <nixpkgs> { config = {}; overlays = []; };
+
+{ attrPath
+, attrSet
+, filePath
+}:
+
+let
+  javaHome =
+    if attrSet == null then
+      pkgs.lib.getAttrFromPath (pkgs.lib.splitString "." attrPath) pkgs
+    else
+      pkgs.lib.getAttrFromPath (pkgs.lib.splitString "." attrPath) attrSet
+    ;
+  javaHomePath =
+    if filePath == "" then
+      "${javaHome}"
+    else
+      "${javaHome}/${filePath}"
+    ;
+in
+
+pkgs.runCommand "bazel-nixpkgs-java-runtime"
+  { executable = false;
+    # Pointless to do this on a remote machine.
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+  }
+  ''
+    n=$out/BUILD.bazel
+    mkdir -p "$(dirname "$n")"
+
+    cat >>$n <<EOF
+    load("@rules_java//java:defs.bzl", "java_runtime")
+    java_runtime(
+        name = "runtime",
+        java_home = r"${javaHomePath}",
+        visibility = ["//visibility:public"],
+    )
+    EOF
+  ''
+"""
+
+def nixpkgs_java_configure(
+        name = "nixpkgs_java_runtime",
+        attribute_path = None,
+        java_home_path = "",
+        repository = None,
+        repositories = {},
+        nix_file = None,
+        nix_file_content = "",
+        nix_file_deps = None,
+        nixopts = [],
+        fail_not_supported = True,
+        quiet = False):
+    """Define a Java runtime provided by nixpkgs.
+
+    Creates a `nixpkgs_package` for a `java_runtime` instance.
+    Bazel can use this instance to run JVM binaries and tests, refer to the
+    [Bazel documentation](https://docs.bazel.build/versions/4.0.0/bazel-and-java.html#configuring-the-jdk) for details.
+
+    #### Example
+
+    Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
+    ```bzl
+    load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
+    nixpkgs_java_configure(
+        attribute_path = "jdk11.home",
+        repository = "@nixpkgs",
+    )
+    ```
+
+    Add the following configuration to `.bazelrc` to enable this Java runtime:
+    ```
+    build --javabase=@nixpkgs_java_runtime//:runtime
+    build --host_javabase=@nixpkgs_java_runtime//:runtime
+    # Adjust this to match the Java version provided by this runtime.
+    # See `bazel query 'kind(java_toolchain, @bazel_tools//tools/jdk:all)'` for available options.
+    build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+    build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+    ```
+
+    Args:
+      name: The name-prefix for the created external repositories.
+      attribute_path: string, The nixpkgs attribute path for `jdk.home`.
+      java_home_path: optional, string, The path to `JAVA_HOME` within the package.
+      repository: See [`nixpkgs_package`](#nixpkgs_package-repository).
+      repositories: See [`nixpkgs_package`](#nixpkgs_package-repositories).
+      nix_file: optional, Label, Obtain the runtime from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
+      nix_file_content: optional, string, Obtain the runtime from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
+      nix_file_deps: See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+      nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
+      fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
+      quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
+    """
+    if attribute_path == None:
+        fail("'attribute_path' is required.", "attribute_path")
+
+    nix_expr = None
+    if nix_file and nix_file_content:
+        fail("Cannot specify both 'nix_file' and 'nix_file_content'.")
+    elif nix_file:
+        nix_expr = "import $(location {}) {{}}".format(nix_file)
+        nix_file_deps = depset(direct = [nix_file] + nix_file_deps).to_list()
+    elif nix_file_content:
+        nix_expr = nix_file_content
+    else:
+        nix_expr = "null"
+
+    nixopts = list(nixopts)
+    nixopts.extend([
+        "--argstr",
+        "attrPath",
+        attribute_path,
+        "--arg",
+        "attrSet",
+        nix_expr,
+        "--argstr",
+        "filePath",
+        java_home_path,
+    ])
+
+    nixpkgs_package(
+        name = name,
+        nix_file_content = _java_nix_file_content,
+        repository = repository,
+        repositories = repositories,
+        nix_file_deps = nix_file_deps,
+        nixopts = nixopts,
+        fail_not_supported = fail_not_supported,
+        quiet = quiet,
+    )
+
 def _nixpkgs_python_toolchain_impl(repository_ctx):
     exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
 
