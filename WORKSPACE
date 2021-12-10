@@ -8,6 +8,7 @@ rules_nixpkgs_dependencies()
 load(
     "//nixpkgs:nixpkgs.bzl",
     "nixpkgs_cc_configure",
+    "nixpkgs_java_configure",
     "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
@@ -182,6 +183,15 @@ nixpkgs_cc_configure(
     # Use a different name to be able to distinguish this toolchain from the
     # builtin one in the tests.
     name = "nixpkgs_config_cc",
+    repository = "@remote_nixpkgs",
+)
+
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
+nixpkgs_java_configure(
+    attribute_path = "jdk8.home",
     repository = "@remote_nixpkgs",
 )
 

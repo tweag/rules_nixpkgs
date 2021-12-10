@@ -1,10 +1,16 @@
 build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+
 build --crosstool_top=@nixpkgs_config_cc//:toolchain
 # Using toolchain resolution can lead to spurious dependencies on
 # `@local_config_cc//:builtin_include_directory_paths`. This needs to be
 # resolved before `--incompatible_enable_cc_toolchain_resolution` can be
 # recommended for `nixpkgs_cc_configure_hermetic`.
 # build --incompatible_enable_cc_toolchain_resolution
+
+build --javabase=@nixpkgs_java_runtime//:runtime
+build --host_javabase=@nixpkgs_java_runtime//:runtime
+build --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 
 # CI Configuration
 # ----------------
