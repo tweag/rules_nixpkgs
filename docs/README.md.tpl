@@ -28,6 +28,7 @@ Links:
 * [nixpkgs_package](#nixpkgs_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
+* [nixpkgs_java_configure](#nixpkgs_java_configure)
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
 * [nixpkgs_go_configure](#nixpkgs_go_configure)
