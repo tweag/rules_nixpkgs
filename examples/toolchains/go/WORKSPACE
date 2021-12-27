@@ -29,7 +29,7 @@ nixpkgs_git_repository(
 load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure")
 nixpkgs_go_configure(
     sdk_name = "nix_go",
-    repository = "@nixpkgs//:default.nix",
+    repository = "@nixpkgs",
     fail_not_supported = False,
 )
 

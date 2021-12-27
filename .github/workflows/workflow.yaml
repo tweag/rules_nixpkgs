@@ -27,7 +27,31 @@ jobs:
             set -euo pipefail
             bazel test //...
           '
+  test-examples:
+    name: Build & Test - Examples
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-11]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2.4.0
+      - uses: cachix/install-nix-action@v16
+        with:
+          nix_path: nixpkgs=./nixpkgs.nix
+      - name: Configure
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          cat >.bazelrc.local <<EOF
+          common --config=ci
+          build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
+          EOF
+      - name: Build & test
+        run: |
           for dir in $PWD/examples/toolchains/*; do
               cd "$dir"
+              echo
+              echo Running $(head -n1 README.md)
               nix-shell --command 'bazel run --config=nix :hello'
           done

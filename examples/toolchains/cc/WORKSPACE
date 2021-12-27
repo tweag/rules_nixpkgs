@@ -26,7 +26,7 @@ nixpkgs_git_repository(
 )
 
 nixpkgs_cc_configure(
-        repository = "@nixpkgs//:default.nix",
+        repository = "@nixpkgs",
         fail_not_supported = False,
 )
 
