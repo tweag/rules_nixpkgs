@@ -1061,7 +1061,16 @@ _nixpkgs_python_toolchain = repository_rule(
     },
 )
 
-_python_nix_file_content = """
+def _python_nix_file_content(attribute_path, bin_path, version):
+    if versions.is_at_least("4.2.0", versions.get()):
+        stub_shebang = """stub_shebang = "#!${{{attribute_path}}}/{bin_path}",""".format(
+            attribute_path = attribute_path,
+            bin_path = bin_path,
+        )
+    else:
+        stub_shebang = ""
+
+    return """
 with import <nixpkgs> {{ config = {{}}; overlays = []; }};
 runCommand "bazel-nixpkgs-python-toolchain"
   {{ executable = false;
@@ -1078,11 +1087,17 @@ runCommand "bazel-nixpkgs-python-toolchain"
         name = "runtime",
         interpreter_path = "${{{attribute_path}}}/{bin_path}",
         python_version = "{version}",
+        {stub_shebang}
         visibility = ["//visibility:public"],
     )
     EOF
   ''
-"""
+""".format(
+        attribute_path = attribute_path,
+        bin_path = bin_path,
+        stub_shebang = stub_shebang,
+        version = version,
+    )
 
 def nixpkgs_python_configure(
         name = "nixpkgs_python_toolchain",
@@ -1140,7 +1155,7 @@ def nixpkgs_python_configure(
         python2_runtime = "@%s_python2//:runtime" % name
         nixpkgs_package(
             name = name + "_python2",
-            nix_file_content = _python_nix_file_content.format(
+            nix_file_content = _python_nix_file_content(
                 attribute_path = python2_attribute_path,
                 bin_path = python2_bin_path,
                 version = "PY2",
@@ -1152,7 +1167,7 @@ def nixpkgs_python_configure(
         python3_runtime = "@%s_python3//:runtime" % name
         nixpkgs_package(
             name = name + "_python3",
-            nix_file_content = _python_nix_file_content.format(
+            nix_file_content = _python_nix_file_content(
                 attribute_path = python3_attribute_path,
                 bin_path = python3_bin_path,
                 version = "PY3",
