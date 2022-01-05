@@ -1,16 +1,19 @@
 # Replace with http_archive: https://github.com/tweag/rules_nixpkgs/#setup
 local_repository(
     name = "io_tweag_rules_nixpkgs",
-    path = "../../../"
+    path = "../../../",
 )
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
 rules_nixpkgs_dependencies()
 
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
-     "nixpkgs_git_repository",
-     "nixpkgs_cc_configure"
+load(
+    "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_cc_configure",
+    "nixpkgs_git_repository",
 )
+
 nixpkgs_git_repository(
     name = "nixpkgs",
     revision = "21.11",
@@ -19,8 +22,8 @@ nixpkgs_git_repository(
 
 nixpkgs_cc_configure(
     name = "nixpkgs_config_cc",
-    repository = "@nixpkgs",
     fail_not_supported = False,
+    repository = "@nixpkgs",
 )
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
@@ -34,7 +37,6 @@ nixpkgs_package(
 nixpkgs_package(
     name = "boost.dev",
     attribute_path = "boost175.dev",
-    repository = "@nixpkgs",
     build_file_content = """\
 load("@rules_cc//cc:defs.bzl", "cc_library")
 filegroup(
@@ -50,6 +52,7 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 """,
+    repository = "@nixpkgs",
 )
 
 nixpkgs_package(
@@ -59,7 +62,6 @@ nixpkgs_package(
 
 nixpkgs_package(
     name = "zlib.dev",
-    repository = "@nixpkgs",
     build_file_content = """\
 load("@rules_cc//cc:defs.bzl", "cc_library")
 filegroup(
@@ -75,4 +77,5 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 """,
+    repository = "@nixpkgs",
 )
