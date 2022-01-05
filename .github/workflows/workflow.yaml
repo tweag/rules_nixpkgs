@@ -52,6 +52,13 @@ jobs:
           for dir in $PWD/examples/toolchains/*; do
               cd "$dir"
               echo
-              echo Running $(head -n1 README.md)
+              echo Running $(head -n1 README.md) with Nix
               nix-shell --command 'bazel run --config=nix :hello'
+              # TODO: all toolchains should run without Nix
+          done
+          for dir in $PWD/examples/toolchains/{cc,go}; do
+              cd "$dir"
+              echo
+              echo Running $(head -n1 README.md) without Nix
+              bazel run :hello
           done
