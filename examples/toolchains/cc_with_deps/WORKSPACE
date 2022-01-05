@@ -1,3 +1,4 @@
+# Replace with http_archive: https://github.com/tweag/rules_nixpkgs/#setup
 local_repository(
     name = "io_tweag_rules_nixpkgs",
     path = "../../../"

@@ -1,3 +1,9 @@
+# Replace with http_archive: https://github.com/tweag/rules_nixpkgs/#setup
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../../../"
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_cc",
@@ -5,11 +11,6 @@ http_archive(
     urls = [
         "https://github.com/bazelbuild/rules_cc/releases/download/0.0.1/rules_cc-0.0.1.tar.gz",
     ]
-)
-
-local_repository(
-    name = "io_tweag_rules_nixpkgs",
-    path = "../../../"
 )
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")

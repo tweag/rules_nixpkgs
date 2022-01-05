@@ -1,7 +1,9 @@
 Go Toolchain Example
 ====================
 
-This is an example Go project that uses `rules_go`. It should build and run both with or without Nix installed.
+This is an example Go project that uses `rules_go`.
+
+If the Nix package manager is present in the build environment, this example will use Nix to provide the Go toolchain. Otherwise, it will use the toolchain provided by `rules_go` and not rely on Nix at all.
 
 # Usage
 
@@ -14,4 +16,3 @@ To run the example without Nix, make sure you have Bazel installed, and issue th
 ```
 bazel run :hello
 ```
-This non-Nix example will download a binary distribution of Go's toolchain from the Internet.

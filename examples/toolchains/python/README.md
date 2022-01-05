@@ -1,7 +1,9 @@
 Python Toolchain Example
 ========================
 
-This is an example Python project with modules that uses `rules_python`. Providing Python modules without Nix is currently not supported.
+This is an example Python project with modules that uses `rules_python`.
+
+This example uses the Nix package manager to provide Python packages, and as such only works with Nix installed. Demonstrating other methods of providing Python packages is out of scope of this example.
 
 # Usage
 

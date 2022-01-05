@@ -1,7 +1,9 @@
 C++ Toolchain Example
 =====================
 
-This is an example C++ project that uses `rules_cc`. It should build and run both with or without Nix installed.
+This is an example C++ project that uses `rules_cc`.
+
+If the Nix package manager is present in the build environment, this example will use Nix to provide the C++ toolchain. Otherwise, it will use the toolchain provided by `rules_cc` and not rely on Nix at all.
 
 # Usage
 
