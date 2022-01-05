@@ -1,0 +1,76 @@
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../../../"
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+rules_nixpkgs_dependencies()
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
+     "nixpkgs_git_repository",
+     "nixpkgs_cc_configure"
+)
+nixpkgs_git_repository(
+    name = "nixpkgs",
+    revision = "21.11",
+    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
+)
+
+nixpkgs_cc_configure(
+    repository = "@nixpkgs",
+    fail_not_supported = False,
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
+
+nixpkgs_package(
+    name = "boost",
+    attribute_path = "boost175",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_package(
+    name = "boost.dev",
+    attribute_path = "boost175.dev",
+    repository = "@nixpkgs",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h", "include/**/*.hpp"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "boost",
+    srcs = ["@boost//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+)
+
+nixpkgs_package(
+    name = "zlib",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_package(
+    name = "zlib.dev",
+    repository = "@nixpkgs",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "zlib",
+    srcs = ["@zlib//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+)
