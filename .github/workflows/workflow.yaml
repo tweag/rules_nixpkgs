@@ -49,16 +49,19 @@ jobs:
           EOF
       - name: Build & test
         run: |
-          for dir in $PWD/examples/toolchains/*; do
+          cd examples/toolchains
+          for dir in *; do
               cd "$dir"
               echo
               echo Running $(head -n1 README.md) with Nix
               nix-shell --command 'bazel run --config=nix :hello'
-              # TODO: all toolchains should run without Nix
+              # TODO: all toolchains should run without Nixpkgs
+              cd ..
           done
-          for dir in $PWD/examples/toolchains/{cc,go}; do
+          for dir in cc go; do
               cd "$dir"
               echo
               echo Running $(head -n1 README.md) without Nix
               bazel run :hello
+              cd ..
           done
