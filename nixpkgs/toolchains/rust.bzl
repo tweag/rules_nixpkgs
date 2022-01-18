@@ -1,73 +1,89 @@
 load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 
-_rust_nix_build = """\
-filegroup(
-    name = "rustc",
-    srcs = ["bin/rustc"],
-    visibility = ["//visibility:public"],
-)
+_rust_nix_contents = """\
+let
+    pkgs = import <nixpkgs> {};
+    rust = pkgs.rust;
+    platform = pkgs.stdenv.targetPlatform;
+    os = rust.toTargetOs platform;
+    target = rust.toRustTargetSpec platform;
+in
+pkgs.buildEnv {
+    extraOutputsToInstall = ["out" "bin" "lib"];
+    name = "bazel-rust-toolchain";
+    paths = [ pkgs.cargo pkgs.rustc ];
+    postBuild = ''
+        cat <<EOF > $out/BUILD
+        filegroup(
+            name = "rustc",
+            srcs = ["bin/rustc"],
+            visibility = ["//visibility:public"],
+        )
 
-filegroup(
-    name = "cargo",
-    srcs = ["bin/cargo"],
-    visibility = ["//visibility:public"],
-)
+        filegroup(
+            name = "cargo",
+            srcs = ["bin/cargo"],
+            visibility = ["//visibility:public"],
+        )
 
-filegroup(
-    name = "rustc_lib",
-    srcs = glob(
-        [
-            "bin/*.so",
-            "lib/*.so",
-            "lib/rustlib/*/codegen-backends/*.so",
-            "lib/rustlib/*/codegen-backends/*.dylib",
-            "lib/rustlib/*/bin/rust-lld",
-            "lib/rustlib/*/lib/*.so",
-            "lib/rustlib/*/lib/*.dylib",
-        ],
-        allow_empty = True,
-    ),
-    visibility = ["//visibility:public"],
-)
+        filegroup(
+            name = "rustc_lib",
+            srcs = glob(
+                [
+                    "bin/*.so",
+                    "lib/*.so",
+                    "lib/rustlib/*/codegen-backends/*.so",
+                    "lib/rustlib/*/codegen-backends/*.dylib",
+                    "lib/rustlib/*/bin/rust-lld",
+                    "lib/rustlib/*/lib/*.so",
+                    "lib/rustlib/*/lib/*.dylib",
+                ],
+                allow_empty = True,
+            ),
+            visibility = ["//visibility:public"],
+        )
 
-load("@rules_rust//rust:toolchain.bzl", "rust_stdlib_filegroup")
-rust_stdlib_filegroup(
-    name = "rust_lib",
-    srcs = glob(
-        [
-            "lib/rustlib/*/lib/*.rlib",
-            "lib/rustlib/*/lib/*.so",
-            "lib/rustlib/*/lib/*.dylib",
-            "lib/rustlib/*/lib/*.a",
-            "lib/rustlib/*/lib/self-contained/**",
-        ],
-        # Some patterns (e.g. `lib/*.a`) don't match anything, see https://github.com/bazelbuild/rules_rust/pull/245
-        allow_empty = True,
-    ),
-    visibility = ["//visibility:public"],
-)
+        load("@rules_rust//rust:toolchain.bzl", "rust_stdlib_filegroup")
+        rust_stdlib_filegroup(
+            name = "rust_lib",
+            srcs = glob(
+                [
+                    "lib/rustlib/*/lib/*.rlib",
+                    "lib/rustlib/*/lib/*.so",
+                    "lib/rustlib/*/lib/*.dylib",
+                    "lib/rustlib/*/lib/*.a",
+                    "lib/rustlib/*/lib/self-contained/**",
+                ],
+                # Some patterns (e.g. `lib/*.a`) don't match anything, see https://github.com/bazelbuild/rules_rust/pull/245
+                allow_empty = True,
+            ),
+            visibility = ["//visibility:public"],
+        )
 
-filegroup(
-    name = "rust_doc",
-    srcs = ["bin/rustdoc"],
-    visibility = ["//visibility:public"],
-)
+        filegroup(
+            name = "rust_doc",
+            srcs = ["bin/rustdoc"],
+            visibility = ["//visibility:public"],
+        )
 
-load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain')
-rust_toolchain(
-    name = "rust_nix_impl",
-    rustc = ":rustc",
-    rustc_lib = ":rustc_lib",
-    rust_lib = ":rust_lib",
-    rust_doc = ":rust_doc",
-    binary_ext = "",
-    staticlib_ext = ".a",
-    dylib_ext = ".so",
-    stdlib_linkflags = ["-lpthread", "-ldl"],
-    os = "linux",
-    target_triple = "x86_64-unknown-linux-gnu",
-)
+        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain')
+        rust_toolchain(
+            name = "rust_nix_impl",
+            rustc = ":rustc",
+            rustc_lib = ":rustc_lib",
+            rust_lib = ":rust_lib",
+            rust_doc = ":rust_doc",
+            binary_ext = "",
+            staticlib_ext = ".a",
+            dylib_ext = ".so",
+            stdlib_linkflags = ["-lpthread", "-ldl"],
+            os = "${os}",
+            target_triple = "${target}",
+        )
+        EOF
+    '';
+}
 """
 
 _rust_nix_toolchain = """
@@ -115,7 +131,7 @@ _nixpkgs_rust_toolchain = repository_rule(
 )
 
 def nixpkgs_rust_configure(
-        sdk_name = "rust_sdk",
+        sdk_name = "rust_linux_x86_64",
         repository = None,
         repositories = {},
         nix_file = None,
@@ -126,14 +142,8 @@ def nixpkgs_rust_configure(
         quiet = False,
         ):
     if not nix_file and not nix_file_content:
-        nix_file_content = """
-            with import <nixpkgs> { config = {}; overlays = []; }; buildEnv {
-              name = "bazel-rust-toolchain";
-              paths = [
-                rustc
-              ];
-            }
-        """
+        nix_file_content = _rust_nix_contents
+
     nixpkgs_package(
         name = sdk_name,
         repository = repository,
@@ -141,7 +151,6 @@ def nixpkgs_rust_configure(
         nix_file = nix_file,
         nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
-        build_file_content = _rust_nix_build,
         nixopts = nixopts,
         fail_not_supported = fail_not_supported,
         quiet = quiet,
