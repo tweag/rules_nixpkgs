@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - nixpkgs_cc_configure gained a flag to disable automatic registration of the
   toolchain it creates.
-  See [#XXX][#XXX]
+  See [#179][#179]
 
 ## [0.8.0] - 2021-02-11
 
