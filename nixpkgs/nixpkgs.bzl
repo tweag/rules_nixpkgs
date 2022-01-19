@@ -622,7 +622,8 @@ def nixpkgs_cc_configure(
         quiet = False,
         fail_not_supported = True,
         exec_constraints = None,
-        target_constraints = None):
+        target_constraints = None,
+        register = True):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -653,6 +654,7 @@ def nixpkgs_cc_configure(
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
       exec_constraints: Constraints for the execution platform.
       target_constraints: Constraints for the target platform.
+      register: Automatically register the created toolchain with the provided *_constraints. Defaults to True.
     """
 
     nixopts = list(nixopts)
@@ -716,6 +718,11 @@ def nixpkgs_cc_configure(
         cc_toolchain_info = "@{}_info//:CC_TOOLCHAIN_INFO".format(name),
         fail_not_supported = fail_not_supported,
     )
+
+    # Stop before generating the toolchain. The only point of not registering it
+    # is because it is not used.
+    if (not register):
+        return
 
     # Generate the `cc_toolchain` workspace.
     if (exec_constraints == None) != (target_constraints == None):

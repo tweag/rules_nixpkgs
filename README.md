@@ -432,6 +432,22 @@ Constraints for the target platform.
 </p>
 </td>
 </tr>
+<tr id="nixpkgs_cc_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+bool, whether the underlying toolchain should be automatically registered with
+<code>register_toolchains</code>. Useful when you need a more advanced
+toolchain configuration than the one provided here.
+
+</p>
+</td>
+</tr>
 </tbody>
 </table>
 
