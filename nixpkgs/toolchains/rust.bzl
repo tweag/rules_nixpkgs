@@ -1,5 +1,5 @@
 load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
-load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
+load("//nixpkgs:private/constraints.bzl", "ensure_constraints")
 
 # Adapted from rules_rust toolchain BUILD:
 # https://github.com/bazelbuild/rules_rust/blob/fd436df9e2d4ac1b234ca5e969e34a4cb5891910/rust/private/repository_utils.bzl#L17-L46
@@ -111,30 +111,16 @@ toolchain(
 )
 """
 
-def _ensure_constraints(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
-    os = {"darwin": "osx"}.get(cpu, "linux")
-    if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
-        target_constraints = ["@platforms//cpu:x86_64"]
-        target_constraints.append("@platforms//os:{}".format(os))
-        exec_constraints = target_constraints
-    else:
-        target_constraints = list(repository_ctx.attr.target_constraints)
-        exec_constraints = list(repository_ctx.attr.exec_constraints)
-    exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
-    return exec_constraints, target_constraints
-
 def _nixpkgs_rust_toolchain_impl(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
-    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
     repository_ctx.file(
-            "BUILD.bazel",
-            executable = False,
-            content = _rust_nix_toolchain.format(
-                    toolchain_repo = repository_ctx.attr.toolchain_repo,
-                    exec_constraints = exec_constraints,
-                    target_constraints = target_constraints
-            )
+        "BUILD.bazel",
+        executable = False,
+        content = _rust_nix_toolchain.format(
+            toolchain_repo = repository_ctx.attr.toolchain_repo,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
+        ),
     )
 
 _nixpkgs_rust_toolchain = repository_rule(
@@ -158,8 +144,7 @@ def nixpkgs_rust_configure(
         fail_not_supported = True,
         quiet = False,
         exec_constraints = None,
-        target_constraints = None,
-        ):
+        target_constraints = None):
     if not nix_file and not nix_file_content:
         nix_file_content = _rust_nix_contents.format(
             binary_ext = "",

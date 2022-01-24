@@ -1,5 +1,5 @@
 load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
-load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
+load("//nixpkgs:private/constraints.bzl", "ensure_constraints")
 
 _foreign_cc_nix_build = """
 load("@rules_foreign_cc//toolchains/native_tools:native_tools_toolchain.bzl", "native_tool_toolchain")
@@ -49,30 +49,16 @@ toolchain(
 )
 """
 
-def _ensure_constraints(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
-    os = {"darwin": "osx"}.get(cpu, "linux")
-    if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
-        target_constraints = ["@platforms//cpu:x86_64"]
-        target_constraints.append("@platforms//os:{}".format(os))
-        exec_constraints = target_constraints
-    else:
-        target_constraints = list(repository_ctx.attr.target_constraints)
-        exec_constraints = list(repository_ctx.attr.exec_constraints)
-    exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
-    return exec_constraints, target_constraints
-
 def _nixpkgs_foreign_cc_toolchain_impl(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
-    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
     repository_ctx.file(
-            "BUILD.bazel",
-            executable = False,
-            content = _foreign_cc_nix_toolchain.format(
-                    toolchain_repo = repository_ctx.attr.toolchain_repo,
-                    exec_constraints = exec_constraints,
-                    target_constraints = target_constraints
-            )
+        "BUILD.bazel",
+        executable = False,
+        content = _foreign_cc_nix_toolchain.format(
+            toolchain_repo = repository_ctx.attr.toolchain_repo,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
+        ),
     )
 
 _nixpkgs_foreign_cc_toolchain = repository_rule(
@@ -95,8 +81,7 @@ def nixpkgs_foreign_cc_configure(
         fail_not_supported = True,
         quiet = False,
         exec_constraints = None,
-        target_constraints = None,
-):
+        target_constraints = None):
     if not nix_file and not nix_file_content:
         nix_file_content = """
             with import <nixpkgs> { config = {}; overlays = []; }; buildEnv {
