@@ -22,7 +22,6 @@ nixpkgs_git_repository(
 
 nixpkgs_cc_configure(
     name = "nixpkgs_config_cc",
-    fail_not_supported = False,
     repository = "@nixpkgs",
 )
 

@@ -58,7 +58,7 @@ jobs:
               # TODO: all toolchains should run without Nixpkgs
               cd ..
           done
-          for dir in cc go; do
+          for dir in cc go rust; do
               cd "$dir"
               echo
               echo Running $(head -n1 README.md) without Nix

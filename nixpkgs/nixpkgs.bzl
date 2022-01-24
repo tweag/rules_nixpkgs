@@ -11,6 +11,7 @@ load(
 )
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(":private/location_expansion.bzl", "expand_location")
+load(":private/constraints.bzl", "ensure_constraints")
 
 def _nixpkgs_git_repository_impl(repository_ctx):
     repository_ctx.file(
@@ -564,22 +565,9 @@ _nixpkgs_cc_toolchain_config = repository_rule(
     },
 )
 
-def _ensure_constraints(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
-    os = {"darwin": "osx"}.get(cpu, "linux")
-    if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
-        target_constraints = ["@platforms//cpu:x86_64"]
-        target_constraints.append("@platforms//os:{}".format(os))
-        exec_constraints = target_constraints
-    else:
-        target_constraints = list(repository_ctx.attr.target_constraints)
-        exec_constraints = list(repository_ctx.attr.exec_constraints)
-    exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
-    return exec_constraints, target_constraints
-
 def _nixpkgs_cc_toolchain_impl(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
-    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
 
     repository_ctx.file(
         "BUILD.bazel",
@@ -1025,7 +1013,7 @@ def nixpkgs_java_configure(
     )
 
 def _nixpkgs_python_toolchain_impl(repository_ctx):
-    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
 
     repository_ctx.file("BUILD.bazel", executable = False, content = """
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
@@ -1408,10 +1396,12 @@ def _cp(repository_ctx, src, dest = None):
     # lead to other errors if the next process is checking the executable bit.
     # One other side effect of this change is that you will have a difference
     # in the nix hash computed when nix is run by rules_nixpkgs or directly.
-    repository_ctx.file(repository_ctx.path(dest),
-                        repository_ctx.read(repository_ctx.path(src)),
-                        executable=False,
-                        legacy_utf8=False)
+    repository_ctx.file(
+        repository_ctx.path(dest),
+        repository_ctx.read(repository_ctx.path(src)),
+        executable = False,
+        legacy_utf8 = False,
+    )
 
     return dest
 
