@@ -71,7 +71,7 @@ _nixpkgs_foreign_cc_toolchain = repository_rule(
 )
 
 def nixpkgs_foreign_cc_configure(
-        name = "foreign_cc_nix",
+        name = "nixpkgs_foreign_cc",
         repository = None,
         repositories = {},
         nix_file = None,

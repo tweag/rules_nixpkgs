@@ -133,7 +133,7 @@ _nixpkgs_rust_toolchain = repository_rule(
 )
 
 def nixpkgs_rust_configure(
-        sdk_name = "rust_linux_x86_64",
+        name = "nixpkgs_rust",
         default_edition = "2018",
         repository = None,
         repositories = {},
@@ -155,7 +155,7 @@ def nixpkgs_rust_configure(
         )
 
     nixpkgs_package(
-        name = sdk_name,
+        name = name,
         repository = repository,
         repositories = repositories,
         nix_file = nix_file,
@@ -166,9 +166,9 @@ def nixpkgs_rust_configure(
         quiet = quiet,
     )
     _nixpkgs_rust_toolchain(
-        name = sdk_name + "_toolchain",
-        toolchain_repo = sdk_name,
+        name = name + "_toolchain",
+        toolchain_repo = name,
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
     )
-    native.register_toolchains("@{}_toolchain//:rust_nix".format(sdk_name))
+    native.register_toolchains("@{}_toolchain//:rust_nix".format(name))
