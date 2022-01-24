@@ -49,10 +49,22 @@ toolchain(
 )
 """
 
-def _nixpkgs_foreign_cc_toolchain_impl(repository_ctx):
-    exec_constraints = [ "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix", "@platforms//cpu:x86_64" ]
-    target_constraints = [ "@platforms//cpu:x86_64" ]
+def _ensure_constraints(repository_ctx):
     cpu = get_cpu_value(repository_ctx)
+    os = {"darwin": "osx"}.get(cpu, "linux")
+    if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
+        target_constraints = ["@platforms//cpu:x86_64"]
+        target_constraints.append("@platforms//os:{}".format(os))
+        exec_constraints = target_constraints
+    else:
+        target_constraints = list(repository_ctx.attr.target_constraints)
+        exec_constraints = list(repository_ctx.attr.exec_constraints)
+    exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
+    return exec_constraints, target_constraints
+
+def _nixpkgs_foreign_cc_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
     repository_ctx.file(
             "BUILD.bazel",
             executable = False,
@@ -67,6 +79,8 @@ _nixpkgs_foreign_cc_toolchain = repository_rule(
     _nixpkgs_foreign_cc_toolchain_impl,
     attrs = {
         "toolchain_repo": attr.string(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
     },
 )
 
@@ -80,7 +94,9 @@ def nixpkgs_foreign_cc_configure(
         nixopts = [],
         fail_not_supported = True,
         quiet = False,
-        ):
+        exec_constraints = None,
+        target_constraints = None,
+):
     if not nix_file and not nix_file_content:
         nix_file_content = """
             with import <nixpkgs> { config = {}; overlays = []; }; buildEnv {
@@ -100,7 +116,12 @@ def nixpkgs_foreign_cc_configure(
         fail_not_supported = fail_not_supported,
         quiet = quiet,
     )
-    _nixpkgs_foreign_cc_toolchain(name = name + "_toolchain", toolchain_repo = name)
+    _nixpkgs_foreign_cc_toolchain(
+        name = name + "_toolchain",
+        toolchain_repo = name,
+        exec_constraints = exec_constraints,
+        target_constraints = target_constraints,
+    )
     native.register_toolchains(
         str(Label("@{}_toolchain//:cmake_nix_toolchain".format(name))),
         str(Label("@{}_toolchain//:make_nix_toolchain".format(name))),

@@ -1,18 +1,21 @@
 load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 
+# Adapted from rules_rust toolchain BUILD:
+# https://github.com/bazelbuild/rules_rust/blob/fd436df9e2d4ac1b234ca5e969e34a4cb5891910/rust/private/repository_utils.bzl#L17-L46
+# Nix generation is used to dynamically compute both Linux and Darwin environments
 _rust_nix_contents = """\
 let
-    pkgs = import <nixpkgs> {};
+    pkgs = import <nixpkgs> {{ config = {{}}; overrides = []; }};
     rust = pkgs.rust;
-    platform = pkgs.stdenv.targetPlatform;
-    os = rust.toTargetOs platform;
-    target = rust.toRustTargetSpec platform;
+    os = rust.toTargetOs pkgs.stdenv.targetPlatform;
+    build-triple = rust.toRustTargetSpec pkgs.stdenv.buildPlatform;
+    target-triple = rust.toRustTargetSpec pkgs.stdenv.targetPlatform;
 in
-pkgs.buildEnv {
+pkgs.buildEnv {{
     extraOutputsToInstall = ["out" "bin" "lib"];
     name = "bazel-rust-toolchain";
-    paths = [ pkgs.cargo pkgs.rustc ];
+    paths = [ pkgs.rustc pkgs.rustfmt pkgs.cargo pkgs.clippy ];
     postBuild = ''
         cat <<EOF > $out/BUILD
         filegroup(
@@ -22,8 +25,14 @@ pkgs.buildEnv {
         )
 
         filegroup(
-            name = "cargo",
-            srcs = ["bin/cargo"],
+            name = "rustfmt",
+            srcs = ["bin/rustfmt"],
+            visibility = ["//visibility:public"],
+        )
+
+        filegroup(
+            name = "clippy_driver",
+            srcs = ["bin/clippy-driver"],
             visibility = ["//visibility:public"],
         )
 
@@ -70,20 +79,26 @@ pkgs.buildEnv {
         load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain')
         rust_toolchain(
             name = "rust_nix_impl",
-            rustc = ":rustc",
-            rustc_lib = ":rustc_lib",
-            rust_lib = ":rust_lib",
             rust_doc = ":rust_doc",
-            binary_ext = "",
-            staticlib_ext = ".a",
-            dylib_ext = ".so",
-            stdlib_linkflags = ["-lpthread", "-ldl"],
-            os = "${os}",
-            target_triple = "${target}",
+            rust_lib = ":rust_lib",
+            rustc = ":rustc",
+            rustfmt = ":rustfmt",
+            cargo = ":cargo",
+            clippy_driver = ":clippy_driver",
+            rustc_lib = ":rustc_lib",
+            binary_ext = "{binary_ext}",
+            staticlib_ext = "{staticlib_ext}",
+            dylib_ext = "{dylib_ext}",
+            os = "${{os}}",
+            exec_triple = "${{build-triple}}",
+            target_triple = "${{target-triple}}",
+            default_edition = "{default_edition}",
+            stdlib_linkflags = {stdlib_linkflags},
+            visibility = ["//visibility:public"],
         )
         EOF
     '';
-}
+}}
 """
 
 _rust_nix_toolchain = """
@@ -110,9 +125,8 @@ def _ensure_constraints(repository_ctx):
     return exec_constraints, target_constraints
 
 def _nixpkgs_rust_toolchain_impl(repository_ctx):
-    exec_constraints = [ "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix", "@platforms//cpu:x86_64" ]
-    target_constraints = [ "@platforms//cpu:x86_64" ]
     cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = _ensure_constraints(repository_ctx)
     repository_ctx.file(
             "BUILD.bazel",
             executable = False,
@@ -127,11 +141,14 @@ _nixpkgs_rust_toolchain = repository_rule(
     _nixpkgs_rust_toolchain_impl,
     attrs = {
         "toolchain_repo": attr.string(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
     },
 )
 
 def nixpkgs_rust_configure(
         sdk_name = "rust_linux_x86_64",
+        default_edition = "2018",
         repository = None,
         repositories = {},
         nix_file = None,
@@ -140,9 +157,17 @@ def nixpkgs_rust_configure(
         nixopts = [],
         fail_not_supported = True,
         quiet = False,
+        exec_constraints = None,
+        target_constraints = None,
         ):
     if not nix_file and not nix_file_content:
-        nix_file_content = _rust_nix_contents
+        nix_file_content = _rust_nix_contents.format(
+            binary_ext = "",
+            dylib_ext = ".so",
+            staticlib_ext = ".a",
+            default_edition = default_edition,
+            stdlib_linkflags = '["-lpthread", "-ldl"]',
+        )
 
     nixpkgs_package(
         name = sdk_name,
@@ -155,5 +180,10 @@ def nixpkgs_rust_configure(
         fail_not_supported = fail_not_supported,
         quiet = quiet,
     )
-    _nixpkgs_rust_toolchain(name = sdk_name + "_toolchain", toolchain_repo = sdk_name)
+    _nixpkgs_rust_toolchain(
+        name = sdk_name + "_toolchain",
+        toolchain_repo = sdk_name,
+        exec_constraints = exec_constraints,
+        target_constraints = target_constraints,
+    )
     native.register_toolchains("@{}_toolchain//:rust_nix".format(sdk_name))
