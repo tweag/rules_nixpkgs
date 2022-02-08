@@ -1388,20 +1388,23 @@ def _cp(repository_ctx, src, dest = None):
         ])
 
     # Copy the file
-    # TODO: auto detect the executable bit of the source file
-    # It is set to False (i.e. not executable) which was the previous behavior.
-    # It means that executable files will miss the bit and won't be executable.
-    # Forcing it to True will fix this behavior, but will impact a lot of file
-    # (most of the time, files do not have the executable bit) and this may
-    # lead to other errors if the next process is checking the executable bit.
-    # One other side effect of this change is that you will have a difference
-    # in the nix hash computed when nix is run by rules_nixpkgs or directly.
     repository_ctx.file(
         repository_ctx.path(dest),
         repository_ctx.read(repository_ctx.path(src)),
         executable = False,
         legacy_utf8 = False,
     )
+
+    # Copy the executable bit of the source
+    # This is important to ensure that copied binaries are executable.
+    # Windows may not have chmod in path and doesn't have executable bits anyway.
+    if get_cpu_value(repository_ctx) != "x64_windows":
+        repository_ctx.execute([
+            repository_ctx.which("chmod"),
+            "--reference",
+            repository_ctx.path(src),
+            repository_ctx.path(dest),
+        ])
 
     return dest
 

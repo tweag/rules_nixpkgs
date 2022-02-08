@@ -1,15 +1,15 @@
 queue_rules:
   - name: default
     conditions:
-      - check-success=Build & Test - Nixpkgs (*)
-      - check-success=Build & Test - Examples (*)
+      - check-success~=Build & Test - Nixpkgs \(.*\)
+      - check-success~=Build & Test - Examples \(.*\)
 
 pull_request_rules:
   - name: merge using the merge queue
     conditions:
       - base=master
-      - check-success=Build & Test - Nixpkgs (*)
-      - check-success=Build & Test - Examples (*)
+      - check-success~=Build & Test - Nixpkgs \(.*\)
+      - check-success~=Build & Test - Examples \(.*\)
       - "#approved-reviews-by>=1"
     actions:
       queue:
