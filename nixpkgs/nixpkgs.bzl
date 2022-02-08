@@ -719,11 +719,6 @@ def nixpkgs_cc_configure(
         fail_not_supported = fail_not_supported,
     )
 
-    # Stop before generating the toolchain. The only point of not registering it
-    # is because it is not used.
-    if (not register):
-        return
-
     # Generate the `cc_toolchain` workspace.
     if (exec_constraints == None) != (target_constraints == None):
         fail("Both exec_constraints and target_constraints need to be provided or none of them.")
@@ -734,12 +729,13 @@ def nixpkgs_cc_configure(
         target_constraints = target_constraints,
     )
 
-    maybe(
-        native.bind,
-        name = "cc_toolchain",
-        actual = "@{}//:toolchain".format(name),
-    )
-    native.register_toolchains("@{}_toolchains//:all".format(name))
+    if register:
+        maybe(
+            native.bind,
+            name = "cc_toolchain",
+            actual = "@{}//:toolchain".format(name),
+        )
+        native.register_toolchains("@{}_toolchains//:all".format(name))
 
 def _readlink(repository_ctx, path):
     return repository_ctx.path(path).realpath

@@ -443,7 +443,8 @@ default is <code>True</code>
 
 bool, whether the underlying toolchain should be automatically registered with
 <code>register_toolchains</code>. Useful when you need a more advanced
-toolchain configuration than the one provided here.
+toolchain configuration than the one provided here and do not want this partial
+toolchain to be registered as-is.
 
 </p>
 </td>
