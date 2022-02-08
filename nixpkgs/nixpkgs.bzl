@@ -1397,10 +1397,12 @@ def _cp(repository_ctx, src, dest = None):
 
     # Copy the executable bit of the source
     # This is important to ensure that copied binaries are executable.
-    repository_ctx.execute([repository_ctx.which("chmod"),
-                            "--reference",
-                            repository_ctx.path(src),
-                            repository_ctx.path(dest)])
+    repository_ctx.execute([
+        repository_ctx.which("chmod"),
+        "--reference",
+        repository_ctx.path(src),
+        repository_ctx.path(dest),
+    ])
 
     return dest
 
