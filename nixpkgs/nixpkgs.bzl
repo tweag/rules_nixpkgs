@@ -1397,12 +1397,14 @@ def _cp(repository_ctx, src, dest = None):
 
     # Copy the executable bit of the source
     # This is important to ensure that copied binaries are executable.
-    repository_ctx.execute([
-        repository_ctx.which("chmod"),
-        "--reference",
-        repository_ctx.path(src),
-        repository_ctx.path(dest),
-    ])
+    # Windows may not have chmod in path and doesn't have executable bits anyway.
+    if get_cpu_value(repository_ctx) != "x64_windows":
+        repository_ctx.execute([
+            repository_ctx.which("chmod"),
+            "--reference",
+            repository_ctx.path(src),
+            repository_ctx.path(dest),
+        ])
 
     return dest
 
