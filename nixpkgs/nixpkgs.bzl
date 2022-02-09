@@ -654,7 +654,7 @@ def nixpkgs_cc_configure(
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
       exec_constraints: Constraints for the execution platform.
       target_constraints: Constraints for the target platform.
-      register: Automatically register the created toolchain with the provided *_constraints. Defaults to True.
+      register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
     """
 
     nixopts = list(nixopts)
