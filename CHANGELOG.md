@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 [Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.8.0...HEAD
 
+### Added
+
+- nixpkgs_cc_configure gained a flag to disable automatic registration of the
+  toolchain it creates.
+  See [#179][#179]
+
 ## [0.8.0] - 2021-02-11
 
 [0.8.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.7.0...v0.8.0

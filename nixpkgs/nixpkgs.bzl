@@ -622,7 +622,8 @@ def nixpkgs_cc_configure(
         quiet = False,
         fail_not_supported = True,
         exec_constraints = None,
-        target_constraints = None):
+        target_constraints = None,
+        register = True):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -653,6 +654,7 @@ def nixpkgs_cc_configure(
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
       exec_constraints: Constraints for the execution platform.
       target_constraints: Constraints for the target platform.
+      register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
     """
 
     nixopts = list(nixopts)
@@ -727,12 +729,13 @@ def nixpkgs_cc_configure(
         target_constraints = target_constraints,
     )
 
-    maybe(
-        native.bind,
-        name = "cc_toolchain",
-        actual = "@{}//:toolchain".format(name),
-    )
-    native.register_toolchains("@{}_toolchains//:all".format(name))
+    if register:
+        maybe(
+            native.bind,
+            name = "cc_toolchain",
+            actual = "@{}//:toolchain".format(name),
+        )
+        native.register_toolchains("@{}_toolchains//:all".format(name))
 
 def _readlink(repository_ctx, path):
     return repository_ctx.path(path).realpath

@@ -239,7 +239,7 @@ Dependencies of `nix_file` if any.
 <pre>
 nixpkgs_cc_configure(<a href="#nixpkgs_cc_configure-name">name</a>, <a href="#nixpkgs_cc_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_cc_configure-nix_file">nix_file</a>, <a href="#nixpkgs_cc_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_cc_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_cc_configure-repositories">repositories</a>,
                      <a href="#nixpkgs_cc_configure-repository">repository</a>, <a href="#nixpkgs_cc_configure-nixopts">nixopts</a>, <a href="#nixpkgs_cc_configure-quiet">quiet</a>, <a href="#nixpkgs_cc_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_cc_configure-exec_constraints">exec_constraints</a>,
-                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>)
+                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>, <a href="#nixpkgs_cc_configure-register">register</a>)
 </pre>
 
 Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
@@ -428,6 +428,20 @@ default is <code>None</code>
 <p>
 
 Constraints for the target platform.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
 
 </p>
 </td>
