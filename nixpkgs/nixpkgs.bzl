@@ -925,6 +925,41 @@ pkgs.runCommand "bazel-nixpkgs-java-runtime"
   ''
 """
 
+def _nixpkgs_java_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
+
+    repository_ctx.file(
+        "BUILD.bazel",
+        executable = False,
+        content = """\
+package(default_visibility = ["//visibility:public"])
+
+toolchain(
+    name = "java-toolchain-{cpu}",
+    toolchain = "{runtime}",
+    toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
+    exec_compatible_with = {exec_constraints},
+    target_compatible_with = {target_constraints},
+)
+""".format(
+            runtime = repository_ctx.attr.runtime,
+            cpu = cpu,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
+            version = native.bazel_version,
+        ),
+    )
+
+_nixpkgs_java_toolchain = repository_rule(
+    _nixpkgs_java_toolchain_impl,
+    attrs = {
+        "runtime": attr.label(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
+    },
+)
+
 def nixpkgs_java_configure(
         name = "nixpkgs_java_runtime",
         attribute_path = None,
@@ -936,10 +971,14 @@ def nixpkgs_java_configure(
         nix_file_deps = None,
         nixopts = [],
         fail_not_supported = True,
-        quiet = False):
+        quiet = False,
+        toolchain = False,
+        exec_constraints = None,
+        target_constraints = None):
     """Define a Java runtime provided by nixpkgs.
 
-    Creates a `nixpkgs_package` for a `java_runtime` instance.
+    Creates a `nixpkgs_package` for a `java_runtime` instance. Optionally,
+    you can also create & register a Java toolchain. This only works with Bazel >= 5.0
     Bazel can use this instance to run JVM binaries and tests, refer to the
     [Bazel documentation](https://docs.bazel.build/versions/4.0.0/bazel-and-java.html#configuring-the-jdk) for details.
 
@@ -976,6 +1015,9 @@ def nixpkgs_java_configure(
       nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
+      toolchain: Create & register a Bazel toolchain based on the Java runtime.
+      exec_constraints: Constraints for the execution platform. Only used when creating a toolchain.
+      target_constraints: Constraints for the target platform. Only used when creating a toolchain.
     """
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
@@ -1014,6 +1056,14 @@ def nixpkgs_java_configure(
         fail_not_supported = fail_not_supported,
         quiet = quiet,
     )
+    if toolchain:
+        _nixpkgs_java_toolchain(
+            name = "{}_toolchain".format(name),
+            runtime = "@{}//:runtime".format(name),
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
+        )
+        native.register_toolchains("@{}_toolchain//:all".format(name))
 
 def _nixpkgs_python_toolchain_impl(repository_ctx):
     exec_constraints, target_constraints = ensure_constraints(repository_ctx)
