@@ -35,7 +35,8 @@ jobs:
       fail-fast: false
       matrix:
         os: 
-          - ubuntu-latest # TODO: this job does not yet work on any version of macOS
+          - ubuntu-latest
+          - macos-11
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2.4.0
@@ -52,8 +53,25 @@ jobs:
           EOF
       - name: Build & test
         run: |
+          skip() {
+            echo "Will skip $(head -n1 $2/README.md) ${1%_nix} Nix"
+            local p="$1[@]"
+            read -a ${1} <<< $(echo ${!p//$2})
+          }
+
           cd examples/toolchains
-          for dir in *; do
+          with_nix=( $(ls) )
+          without_nix=( cc go rust )
+
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            # Python - https://github.com/tweag/rules_nixpkgs/issues/186
+            skip with_nix python
+            # Rust - https://github.com/tweag/rules_nixpkgs/issues/187
+            skip with_nix rust
+            skip without_nix rust
+          fi
+
+          for dir in "${with_nix[@]}"; do
               cd "$dir"
               echo
               echo Running $(head -n1 README.md) with Nix
@@ -61,7 +79,7 @@ jobs:
               # TODO: all toolchains should run without Nixpkgs
               cd ..
           done
-          for dir in cc go rust; do
+          for dir in "${without_nix[@]}"; do
               cd "$dir"
               echo
               echo Running $(head -n1 README.md) without Nix
