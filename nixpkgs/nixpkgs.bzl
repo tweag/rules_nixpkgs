@@ -1053,16 +1053,15 @@ _nixpkgs_python_toolchain = repository_rule(
 )
 
 def _python_nix_file_content(attribute_path, bin_path, version):
-    if versions.is_at_least("4.2.0", versions.get()):
-        stub_shebang = """stub_shebang = "#!${{{attribute_path}}}/{bin_path}",""".format(
-            attribute_path = attribute_path,
-            bin_path = bin_path,
-        )
-    else:
-        stub_shebang = ""
+    add_shebang = versions.is_at_least("4.2.0", versions.get())
 
     return """
 with import <nixpkgs> {{ config = {{}}; overlays = []; }};
+let
+  addShebang = {add_shebang};
+  interpreterPath = "${{{attribute_path}}}/{bin_path}";
+  shebangLine = interpreter: writers.makeScriptWriter {{ inherit interpreter; }} "shebang" "";
+in
 runCommand "bazel-nixpkgs-python-toolchain"
   {{ executable = false;
     # Pointless to do this on a remote machine.
@@ -1076,17 +1075,19 @@ runCommand "bazel-nixpkgs-python-toolchain"
     cat >>$n <<EOF
     py_runtime(
         name = "runtime",
-        interpreter_path = "${{{attribute_path}}}/{bin_path}",
+        interpreter_path = "${{interpreterPath}}",
         python_version = "{version}",
-        {stub_shebang}
+        ${{lib.optionalString addShebang ''
+          stub_shebang = "$(cat ${{shebangLine interpreterPath}})",
+        ''}}
         visibility = ["//visibility:public"],
     )
     EOF
   ''
 """.format(
+        add_shebang = "true" if add_shebang else "false",
         attribute_path = attribute_path,
         bin_path = bin_path,
-        stub_shebang = stub_shebang,
         version = version,
     )
 
