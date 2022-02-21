@@ -41,8 +41,8 @@ bazel_skylib_workspace()
 nixpkgs_git_repository(
     name = "remote_nixpkgs",
     remote = "https://github.com/NixOS/nixpkgs",
-    revision = "18.09",
-    sha256 = "6451af4083485e13daa427f745cbf859bc23cb8b70454c017887c006a13bd65e",
+    revision = "21.11",
+    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
 )
 
 nixpkgs_local_repository(
