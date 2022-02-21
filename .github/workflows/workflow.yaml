@@ -64,8 +64,6 @@ jobs:
           without_nix=( cc go rust )
 
           if [ "${{ runner.os }}" == "macOS" ]; then
-            # Python - https://github.com/tweag/rules_nixpkgs/issues/186
-            skip with_nix python
             # Rust - https://github.com/tweag/rules_nixpkgs/issues/187
             skip with_nix rust
             skip without_nix rust
