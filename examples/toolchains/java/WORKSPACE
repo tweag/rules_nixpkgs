@@ -23,4 +23,6 @@ nixpkgs_java_configure(
     repository = "@nixpkgs",
     attribute_path = "jdk11.home",
     toolchain = True,
+    toolchain_name = "nixpkgs_java",
+    toolchain_version = "11",
 )

@@ -934,20 +934,45 @@ def _nixpkgs_java_toolchain_impl(repository_ctx):
         executable = False,
         content = """\
 package(default_visibility = ["//visibility:public"])
-
+config_setting(
+    name = "{name}_name_setting",
+    values = {{"java_runtime_version": "{name}"}},
+    visibility = ["//visibility:private"],
+)
+config_setting(
+    name = "{name}_version_setting",
+    values = {{"java_runtime_version": "{version}"}},
+    visibility = ["//visibility:private"],
+)
+config_setting(
+    name = "{name}_name_version_setting",
+    values = {{"java_runtime_version": "{name}_{version}"}},
+    visibility = ["//visibility:private"],
+)
+alias(
+    name = "{name}_settings_alias",
+    actual = select({{
+        "{name}_name_setting": "{name}_name_setting",
+        "{name}_version_setting": "{name}_version_setting",
+        "//conditions:default": "{name}_name_version_setting",
+    }}),
+    visibility = ["//visibility:private"],
+)
 toolchain(
     name = "java-toolchain-{cpu}",
     toolchain = "{runtime}",
     toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
     exec_compatible_with = {exec_constraints},
     target_compatible_with = {target_constraints},
+    target_settings = [":{name}_settings_alias"],
 )
 """.format(
             runtime = repository_ctx.attr.runtime,
             cpu = cpu,
             exec_constraints = exec_constraints,
             target_constraints = target_constraints,
-            version = native.bazel_version,
+            version = repository_ctx.attr.runtime_version,
+            name = repository_ctx.attr.runtime_name,
         ),
     )
 
@@ -957,6 +982,8 @@ _nixpkgs_java_toolchain = repository_rule(
         "runtime": attr.label(),
         "exec_constraints": attr.string_list(),
         "target_constraints": attr.string_list(),
+        "runtime_version": attr.string(),
+        "runtime_name": attr.string(),
     },
 )
 
@@ -973,6 +1000,8 @@ def nixpkgs_java_configure(
         fail_not_supported = True,
         quiet = False,
         toolchain = False,
+        toolchain_name = None,
+        toolchain_version = None,
         exec_constraints = None,
         target_constraints = None):
     """Define a Java runtime provided by nixpkgs.
@@ -1016,6 +1045,8 @@ def nixpkgs_java_configure(
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
       toolchain: Create & register a Bazel toolchain based on the Java runtime.
+      toolchain_name: The name of the toolchain that can be used in --java_runtime_version.
+      toolchain_version: The version of the toolchain that can be used in --java_runtime_version.
       exec_constraints: Constraints for the execution platform. Only used when creating a toolchain.
       target_constraints: Constraints for the target platform. Only used when creating a toolchain.
     """
@@ -1062,6 +1093,8 @@ def nixpkgs_java_configure(
             runtime = "@{}//:runtime".format(name),
             exec_constraints = exec_constraints,
             target_constraints = target_constraints,
+            runtime_version = toolchain_version,
+            runtime_name = toolchain_name,
         )
         native.register_toolchains("@{}_toolchain//:all".format(name))
 
