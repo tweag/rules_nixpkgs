@@ -61,7 +61,7 @@ jobs:
 
           cd examples/toolchains
           with_nix=( $(ls) )
-          without_nix=( cc go rust )
+          without_nix=( cc go java rust )
 
           if [ "${{ runner.os }}" == "macOS" ]; then
             # Rust - https://github.com/tweag/rules_nixpkgs/issues/187
