@@ -3,11 +3,16 @@ Java Toolchain Example
 
 This is an example Java project with modules that uses the builtin Bazel Java rules.
 
-This example uses the Nix package manager to provide the Java toolchain, and as such only works with Nix installed.
+If the Nix package manager is present in the build environment, this example will use Nix to provide the Java runtime. Otherwise, it will use the default runtime and not rely on Nix at all.
 
 # Usage
 
 To run the example with Nix, issue the following command:
 ```
 nix-shell --command 'bazel run --config=nix :hello'
+```
+
+To run the example without Nix, make sure you have Bazel installed, and issue the following command:
+```
+bazel run :hello
 ```
