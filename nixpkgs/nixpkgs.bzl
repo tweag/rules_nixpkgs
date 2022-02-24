@@ -922,9 +922,6 @@ pkgs.runCommand "bazel-nixpkgs-java-runtime"
         visibility = ["//visibility:public"],
     )
     EOF
-    cat >$out/java_home.bzl <<EOF
-    java_home = r"${javaHomePath}"
-    EOF
   ''
 """
 
