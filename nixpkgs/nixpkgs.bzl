@@ -934,12 +934,11 @@ def _nixpkgs_java_toolchain_impl(repository_ctx):
         executable = False,
         content = """\
 load("@bazel_tools//tools/jdk:local_java_repository.bzl", "local_java_runtime")
-load("@{runtime}//:java_home.bzl", "java_home")
 local_java_runtime(
    name = "{name}",
    version = "{version}",
    runtime_name = "@{runtime}//:runtime",
-   java_home = java_home,
+   java_home = None,
 )
 """.format(
             runtime = repository_ctx.attr.runtime_repo,
