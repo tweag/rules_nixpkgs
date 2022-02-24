@@ -5,6 +5,20 @@ local_repository(
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_java",
+    url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
+    sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
+    strip_prefix = "rules_java-5.0.0",
+)
+
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
+
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()
