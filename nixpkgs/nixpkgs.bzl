@@ -980,6 +980,8 @@ def nixpkgs_java_configure(
 
     #### Example
 
+    ##### Bazel 4
+
     Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
     ```bzl
     load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
@@ -997,6 +999,27 @@ def nixpkgs_java_configure(
     # See `bazel query 'kind(java_toolchain, @bazel_tools//tools/jdk:all)'` for available options.
     build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
     build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+    ```
+
+    ##### Bazel 5
+
+    Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
+    ```bzl
+    load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
+    nixpkgs_java_configure(
+        attribute_path = "jdk11.home",
+        repository = "@nixpkgs",
+        toolchain = True,
+        toolchain_name = "nixpkgs_java",
+        toolchain_version = "11",
+    )
+    ```
+
+    Add the following configuration to `.bazelrc` to enable this Java runtime:
+    ```
+    build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+    build --java_runtime_version=nixpkgs_java
+    build --tool_java_runtime_version=nixpkgs_java
     ```
 
     Args:
