@@ -17,8 +17,6 @@ load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_jav
 
 rules_java_dependencies()
 
-rules_java_toolchains()
-
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()
@@ -40,3 +38,5 @@ nixpkgs_java_configure(
     toolchain_name = "nixpkgs_java",
     toolchain_version = "11",
 )
+
+rules_java_toolchains()

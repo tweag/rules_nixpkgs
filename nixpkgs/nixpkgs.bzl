@@ -926,21 +926,28 @@ pkgs.runCommand "bazel-nixpkgs-java-runtime"
 """
 
 def _nixpkgs_java_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
+
     repository_ctx.file(
         "BUILD.bazel",
         executable = False,
         content = """\
-load("@bazel_tools//tools/jdk:local_java_repository.bzl", "local_java_runtime")
+load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/java/local_java_repository.bzl", "local_java_runtime")
 local_java_runtime(
    name = "{name}",
    version = "{version}",
    runtime_name = "@{runtime}//:runtime",
    java_home = None,
+   exec_compatible_with = {exec_constraints},
+   target_compatible_with = {target_constraints},
 )
 """.format(
             runtime = repository_ctx.attr.runtime_repo,
             version = repository_ctx.attr.runtime_version,
             name = repository_ctx.attr.runtime_name,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
         ),
     )
 
@@ -950,6 +957,8 @@ _nixpkgs_java_toolchain = repository_rule(
         "runtime_repo": attr.string(),
         "runtime_version": attr.string(),
         "runtime_name": attr.string(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
     },
 )
 
@@ -967,7 +976,9 @@ def nixpkgs_java_configure(
         quiet = False,
         toolchain = False,
         toolchain_name = None,
-        toolchain_version = None):
+        toolchain_version = None,
+        exec_constraints = None,
+        target_constraints = None):
     """Define a Java runtime provided by nixpkgs.
 
     Creates a `nixpkgs_package` for a `java_runtime` instance. Optionally,
@@ -1034,6 +1045,8 @@ def nixpkgs_java_configure(
       toolchain: Create & register a Bazel toolchain based on the Java runtime.
       toolchain_name: The name of the toolchain that can be used in --java_runtime_version.
       toolchain_version: The version of the toolchain that can be used in --java_runtime_version.
+      exec_constraints: Constraints for the execution platform.
+      target_constraints: Constraints for the target platform.
     """
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
@@ -1078,6 +1091,8 @@ def nixpkgs_java_configure(
             runtime_repo = name,
             runtime_version = toolchain_version,
             runtime_name = toolchain_name,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
         )
         native.register_toolchains("@{}_toolchain//:all".format(name))
 
