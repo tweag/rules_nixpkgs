@@ -587,16 +587,20 @@ Options to forward to the nix command.
 
 <pre>
 nixpkgs_java_configure(<a href="#nixpkgs_java_configure-name">name</a>, <a href="#nixpkgs_java_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_java_configure-java_home_path">java_home_path</a>, <a href="#nixpkgs_java_configure-repository">repository</a>, <a href="#nixpkgs_java_configure-repositories">repositories</a>, <a href="#nixpkgs_java_configure-nix_file">nix_file</a>,
-                       <a href="#nixpkgs_java_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_java_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_java_configure-nixopts">nixopts</a>, <a href="#nixpkgs_java_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_java_configure-quiet">quiet</a>)
+                       <a href="#nixpkgs_java_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_java_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_java_configure-nixopts">nixopts</a>, <a href="#nixpkgs_java_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_java_configure-quiet">quiet</a>, <a href="#nixpkgs_java_configure-toolchain">toolchain</a>,
+                       <a href="#nixpkgs_java_configure-toolchain_name">toolchain_name</a>, <a href="#nixpkgs_java_configure-toolchain_version">toolchain_version</a>, <a href="#nixpkgs_java_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_java_configure-target_constraints">target_constraints</a>)
 </pre>
 
 Define a Java runtime provided by nixpkgs.
 
-Creates a `nixpkgs_package` for a `java_runtime` instance.
+Creates a `nixpkgs_package` for a `java_runtime` instance. Optionally,
+you can also create & register a Java toolchain. This only works with Bazel >= 5.0
 Bazel can use this instance to run JVM binaries and tests, refer to the
 [Bazel documentation](https://docs.bazel.build/versions/4.0.0/bazel-and-java.html#configuring-the-jdk) for details.
 
 #### Example
+
+##### Bazel 4
 
 Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
 ```bzl
@@ -615,6 +619,27 @@ build --host_javabase=@nixpkgs_java_runtime//:runtime
 # See `bazel query 'kind(java_toolchain, @bazel_tools//tools/jdk:all)'` for available options.
 build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+```
+
+##### Bazel 5
+
+Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
+```bzl
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
+nixpkgs_java_configure(
+    attribute_path = "jdk11.home",
+    repository = "@nixpkgs",
+    toolchain = True,
+    toolchain_name = "nixpkgs_java",
+    toolchain_version = "11",
+)
+```
+
+Add the following configuration to `.bazelrc` to enable this Java runtime:
+```
+build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build --java_runtime_version=nixpkgs_java
+build --tool_java_runtime_version=nixpkgs_java
 ```
 
 
@@ -776,6 +801,76 @@ default is <code>False</code>
 <p>
 
 See [`nixpkgs_package`](#nixpkgs_package-quiet).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_java_configure-toolchain">
+<td><code>toolchain</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+Create & register a Bazel toolchain based on the Java runtime.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_java_configure-toolchain_name">
+<td><code>toolchain_name</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+The name of the toolchain that can be used in --java_runtime_version.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_java_configure-toolchain_version">
+<td><code>toolchain_version</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+The version of the toolchain that can be used in --java_runtime_version.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_java_configure-exec_constraints">
+<td><code>exec_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Constraints for the execution platform.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_java_configure-target_constraints">
+<td><code>target_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Constraints for the target platform.
 
 </p>
 </td>

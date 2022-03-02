@@ -925,6 +925,43 @@ pkgs.runCommand "bazel-nixpkgs-java-runtime"
   ''
 """
 
+def _nixpkgs_java_toolchain_impl(repository_ctx):
+    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, target_constraints = ensure_constraints(repository_ctx)
+
+    repository_ctx.file(
+        "BUILD.bazel",
+        executable = False,
+        content = """\
+load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/java/local_java_repository.bzl", "local_java_runtime")
+local_java_runtime(
+   name = "{name}",
+   version = "{version}",
+   runtime_name = "@{runtime}//:runtime",
+   java_home = None,
+   exec_compatible_with = {exec_constraints},
+   target_compatible_with = {target_constraints},
+)
+""".format(
+            runtime = repository_ctx.attr.runtime_repo,
+            version = repository_ctx.attr.runtime_version,
+            name = repository_ctx.attr.runtime_name,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
+        ),
+    )
+
+_nixpkgs_java_toolchain = repository_rule(
+    _nixpkgs_java_toolchain_impl,
+    attrs = {
+        "runtime_repo": attr.string(),
+        "runtime_version": attr.string(),
+        "runtime_name": attr.string(),
+        "exec_constraints": attr.string_list(),
+        "target_constraints": attr.string_list(),
+    },
+)
+
 def nixpkgs_java_configure(
         name = "nixpkgs_java_runtime",
         attribute_path = None,
@@ -936,14 +973,22 @@ def nixpkgs_java_configure(
         nix_file_deps = None,
         nixopts = [],
         fail_not_supported = True,
-        quiet = False):
+        quiet = False,
+        toolchain = False,
+        toolchain_name = None,
+        toolchain_version = None,
+        exec_constraints = None,
+        target_constraints = None):
     """Define a Java runtime provided by nixpkgs.
 
-    Creates a `nixpkgs_package` for a `java_runtime` instance.
+    Creates a `nixpkgs_package` for a `java_runtime` instance. Optionally,
+    you can also create & register a Java toolchain. This only works with Bazel >= 5.0
     Bazel can use this instance to run JVM binaries and tests, refer to the
     [Bazel documentation](https://docs.bazel.build/versions/4.0.0/bazel-and-java.html#configuring-the-jdk) for details.
 
     #### Example
+
+    ##### Bazel 4
 
     Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
     ```bzl
@@ -964,6 +1009,27 @@ def nixpkgs_java_configure(
     build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
     ```
 
+    ##### Bazel 5
+
+    Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
+    ```bzl
+    load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
+    nixpkgs_java_configure(
+        attribute_path = "jdk11.home",
+        repository = "@nixpkgs",
+        toolchain = True,
+        toolchain_name = "nixpkgs_java",
+        toolchain_version = "11",
+    )
+    ```
+
+    Add the following configuration to `.bazelrc` to enable this Java runtime:
+    ```
+    build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+    build --java_runtime_version=nixpkgs_java
+    build --tool_java_runtime_version=nixpkgs_java
+    ```
+
     Args:
       name: The name-prefix for the created external repositories.
       attribute_path: string, The nixpkgs attribute path for `jdk.home`.
@@ -976,6 +1042,11 @@ def nixpkgs_java_configure(
       nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
+      toolchain: Create & register a Bazel toolchain based on the Java runtime.
+      toolchain_name: The name of the toolchain that can be used in --java_runtime_version.
+      toolchain_version: The version of the toolchain that can be used in --java_runtime_version.
+      exec_constraints: Constraints for the execution platform.
+      target_constraints: Constraints for the target platform.
     """
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
@@ -1014,6 +1085,16 @@ def nixpkgs_java_configure(
         fail_not_supported = fail_not_supported,
         quiet = quiet,
     )
+    if toolchain:
+        _nixpkgs_java_toolchain(
+            name = "{}_toolchain".format(name),
+            runtime_repo = name,
+            runtime_version = toolchain_version,
+            runtime_name = toolchain_name,
+            exec_constraints = exec_constraints,
+            target_constraints = target_constraints,
+        )
+        native.register_toolchains("@{}_toolchain//:all".format(name))
 
 def _nixpkgs_python_toolchain_impl(repository_ctx):
     exec_constraints, target_constraints = ensure_constraints(repository_ctx)
