@@ -18,6 +18,18 @@ stardoc(
 )
 
 stardoc(
+    name = "core",
+    out = "core.md",
+    input = "//core:nixpkgs.bzl",
+    symbol_names = [
+        "nixpkgs_git_repository",
+        "nixpkgs_local_repository",
+        "nixpkgs_package",
+    ],
+    deps = ["//core"],
+)
+
+stardoc(
     name = "go",
     out = "toolchains/go.md",
     input = "//nixpkgs:toolchains/go.bzl",
@@ -57,6 +69,30 @@ genrule(
     toolchains = ["@rules_sh//sh/posix:make_variables"],
 )
 
+genrule(
+    name = "readme_core",
+    srcs = [
+        "README_core.md.tpl",
+        "core.md",
+    ],
+    outs = ["core/README.md"],
+    cmd = """$(POSIX_AWK) \\
+  <$(execpath README_core.md.tpl) \\
+  >$(OUTS) \\
+  '{
+      if (/{{core}}/) {
+          RS="\\0";
+          getline content <"$(execpath core.md)";
+          print content;
+          RS="\\n";
+      } else {
+          print
+      }
+  }'
+""",
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
+
 sh_test(
     name = "check-readme",
     srcs = ["check-readme.sh"],
@@ -70,6 +106,6 @@ sh_test(
 sh_binary(
     name = "update-readme",
     srcs = ["update-readme.sh"],
-    data = ["README.md"],
+    data = ["README.md", "core/README.md"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

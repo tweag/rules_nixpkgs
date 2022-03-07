@@ -1,5 +1,28 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
     "nixpkgs.bzl",
 ])
+
+bzl_library(
+    name = "bazel_tools",
+    srcs = [
+        "@bazel_tools//tools:bzl_srcs",
+    ],
+)
+
+bzl_library(
+    name = "core",
+    srcs = [
+        "nixpkgs.bzl",
+        "util.bzl",
+        "//nixpkgs:private/location_expansion.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":bazel_tools",
+        "@bazel_skylib//lib:paths",
+    ],
+)

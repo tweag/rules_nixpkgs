@@ -11,6 +11,8 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 set -euo pipefail
 
 new="$(rlocation io_tweag_rules_nixpkgs/docs/README.md)"
+new2="$(rlocation io_tweag_rules_nixpkgs/docs/core/README.md)"
+
 
 # this variable is set by `bazel run`
 if [ -z "$BUILD_WORKSPACE_DIRECTORY" ]; then
@@ -19,3 +21,4 @@ if [ -z "$BUILD_WORKSPACE_DIRECTORY" ]; then
 fi
 
 cp "$new" "$BUILD_WORKSPACE_DIRECTORY/README.md"
+cp "$new2" "$BUILD_WORKSPACE_DIRECTORY/core/README.md"
