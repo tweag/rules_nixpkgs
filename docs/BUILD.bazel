@@ -42,11 +42,13 @@ genrule(
       if (/{{nixpkgs}}/) {
           RS="\\0";
           getline content <"$(execpath nixpkgs.md)";
-          print content
+          print content;
+          RS="\\n";
       } else if (/{{toolchains_go}}/) {
           RS="\\0";
           getline content <"$(execpath toolchains/go.md)";
-          print content
+          print content;
+          RS="\\n";
       } else {
           print
       }
