@@ -1,9 +1,9 @@
-load("//nixpkgs:private/location_expansion.bzl", "expand_location")
 load(
     ":util.bzl",
     "cp",
     "executable_path",
     "execute_or_fail",
+    "expand_location",
     "find_children",
     "is_supported_platform",
 )

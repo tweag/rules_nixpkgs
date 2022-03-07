@@ -37,8 +37,6 @@ bzl_library(
     name = "nixpkgs",
     srcs = [
         "nixpkgs.bzl",
-        "private/constraints.bzl",
-        "private/location_expansion.bzl",
     ],
     visibility = ["//visibility:public"],
     deps = [

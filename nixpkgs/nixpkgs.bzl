@@ -24,7 +24,6 @@ load(
     "is_supported_platform",
     "label_string",
 )
-load(":private/constraints.bzl", "ensure_constraints")
 
 # aliases for backwards compatibility prior to `bzlmod`
 nixpkgs_git_repository = _nixpkgs_git_repository

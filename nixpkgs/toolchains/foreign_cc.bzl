@@ -1,5 +1,5 @@
 load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
-load("//nixpkgs:private/constraints.bzl", "ensure_constraints")
+load("//core:util.bzl", "ensure_constraints")
 
 _foreign_cc_nix_build = """
 load("@rules_foreign_cc//toolchains/native_tools:native_tools_toolchain.bzl", "native_tool_toolchain")
