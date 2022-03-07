@@ -1,4 +1,4 @@
-load("//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("//nixpkgs:private/constraints.bzl", "ensure_constraints")
 
 # Adapted from rules_rust toolchain BUILD:

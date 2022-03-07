@@ -10,352 +10,26 @@ load(
     "write_builtin_include_directory_paths",
 )
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load(":private/location_expansion.bzl", "expand_location")
+load(
+    "//core:nixpkgs.bzl",
+    _nixpkgs_git_repository = "nixpkgs_git_repository",
+    _nixpkgs_local_repository = "nixpkgs_local_repository",
+    _nixpkgs_package = "nixpkgs_package",
+)
+load(
+    "//core:util.bzl",
+    "ensure_constraints",
+    "execute_or_fail",
+    "find_children",
+    "is_supported_platform",
+    "label_string",
+)
 load(":private/constraints.bzl", "ensure_constraints")
 
-def _nixpkgs_git_repository_impl(repository_ctx):
-    repository_ctx.file(
-        "BUILD",
-        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])',
-    )
-
-    # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
-    # label for default.nix.
-    repository_ctx.symlink("default.nix", repository_ctx.name)
-
-    repository_ctx.download_and_extract(
-        url = "%s/archive/%s.tar.gz" % (repository_ctx.attr.remote, repository_ctx.attr.revision),
-        stripPrefix = "nixpkgs-" + repository_ctx.attr.revision,
-        sha256 = repository_ctx.attr.sha256,
-    )
-
-nixpkgs_git_repository = repository_rule(
-    implementation = _nixpkgs_git_repository_impl,
-    attrs = {
-        "revision": attr.string(
-            mandatory = True,
-            doc = "Git commit hash or tag identifying the version of Nixpkgs to use.",
-        ),
-        "remote": attr.string(
-            default = "https://github.com/NixOS/nixpkgs",
-            doc = "The URI of the remote Git repository. This must be a HTTP URL. There is currently no support for authentication. Defaults to [upstream nixpkgs](https://github.com/NixOS/nixpkgs).",
-        ),
-        "sha256": attr.string(doc = "The SHA256 used to verify the integrity of the repository."),
-    },
-    doc = """\
-Name a specific revision of Nixpkgs on GitHub or a local checkout.
-""",
-)
-
-def _nixpkgs_local_repository_impl(repository_ctx):
-    if not bool(repository_ctx.attr.nix_file) != \
-       bool(repository_ctx.attr.nix_file_content):
-        fail("Specify one of 'nix_file' or 'nix_file_content' (but not both).")
-    if repository_ctx.attr.nix_file_content:
-        repository_ctx.file(
-            path = "default.nix",
-            content = repository_ctx.attr.nix_file_content,
-            executable = False,
-        )
-        target = repository_ctx.path("default.nix")
-    else:
-        target = _cp(repository_ctx, repository_ctx.attr.nix_file)
-
-    repository_files = [target]
-    for dep in repository_ctx.attr.nix_file_deps:
-        dest = _cp(repository_ctx, dep)
-        repository_files.append(dest)
-
-    # Export all specified Nix files to make them dependencies of a
-    # nixpkgs_package rule.
-    export_files = "exports_files({})".format(repository_files)
-    repository_ctx.file("BUILD", content = export_files)
-
-    # Create a file listing all Nix files of this repository. This
-    # file is used by the nixpgks_package rule to register all Nix
-    # files.
-    repository_ctx.file("nix-file-deps", content = "\n".join(repository_files))
-
-    # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
-    # label for the target Nix file.
-    repository_ctx.symlink(target, repository_ctx.name)
-
-nixpkgs_local_repository = repository_rule(
-    implementation = _nixpkgs_local_repository_impl,
-    attrs = {
-        "nix_file": attr.label(
-            allow_single_file = [".nix"],
-            doc = "A file containing an expression for a Nix derivation.",
-        ),
-        "nix_file_deps": attr.label_list(
-            doc = "Dependencies of `nix_file` if any.",
-        ),
-        "nix_file_content": attr.string(
-            doc = "An expression for a Nix derivation.",
-        ),
-    },
-    doc = """\
-Create an external repository representing the content of Nixpkgs, based on a Nix expression stored locally or provided inline. One of `nix_file` or `nix_file_content` must be provided.
-""",
-)
-
-def _is_supported_platform(repository_ctx):
-    return repository_ctx.which("nix-build") != None
-
-def _nixpkgs_package_impl(repository_ctx):
-    repository = repository_ctx.attr.repository
-    repositories = repository_ctx.attr.repositories
-
-    # Is nix supported on this platform?
-    not_supported = not _is_supported_platform(repository_ctx)
-
-    # Should we fail if Nix is not supported?
-    fail_not_supported = repository_ctx.attr.fail_not_supported
-
-    if repository and repositories or not repository and not repositories:
-        fail("Specify one of 'repository' or 'repositories' (but not both).")
-    elif repository:
-        repositories = {repository_ctx.attr.repository: "nixpkgs"}
-
-    # If true, a BUILD file will be created from a template if it does not
-    # exits.
-    # However this will happen AFTER the nix-build command.
-    create_build_file_if_needed = False
-    if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
-        fail("Specify one of 'build_file' or 'build_file_content', but not both.")
-    elif repository_ctx.attr.build_file:
-        repository_ctx.symlink(repository_ctx.attr.build_file, "BUILD")
-    elif repository_ctx.attr.build_file_content:
-        repository_ctx.file("BUILD", content = repository_ctx.attr.build_file_content)
-    else:
-        # No user supplied build file, we may create the default one.
-        create_build_file_if_needed = True
-
-    strFailureImplicitNixpkgs = (
-        "One of 'repositories', 'nix_file' or 'nix_file_content' must be provided. " +
-        "The NIX_PATH environment variable is not inherited."
-    )
-
-    expr_args = []
-    if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
-        fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
-    elif repository_ctx.attr.nix_file:
-        nix_file = _cp(repository_ctx, repository_ctx.attr.nix_file)
-        expr_args = [repository_ctx.path(nix_file)]
-    elif repository_ctx.attr.nix_file_content:
-        expr_args = ["-E", repository_ctx.attr.nix_file_content]
-    elif not repositories:
-        fail(strFailureImplicitNixpkgs)
-    else:
-        expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
-
-    nix_file_deps = {}
-    for dep in repository_ctx.attr.nix_file_deps:
-        nix_file_deps[dep] = _cp(repository_ctx, dep)
-
-    expr_args.extend([
-        "-A",
-        repository_ctx.attr.attribute_path if repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content else repository_ctx.attr.attribute_path or repository_ctx.attr.name,
-        # Creating an out link prevents nix from garbage collecting the store path.
-        # nixpkgs uses `nix-support/` for such house-keeping files, so we mirror them
-        # and use `bazel-support/`, under the assumption that no nix package has
-        # a file named `bazel-support` in its root.
-        # A `bazel clean` deletes the symlink and thus nix is free to garbage collect
-        # the store path.
-        "--out-link",
-        "bazel-support/nix-out-link",
-    ])
-
-    expr_args.extend([
-        expand_location(
-            repository_ctx = repository_ctx,
-            string = opt,
-            labels = nix_file_deps,
-            attr = "nixopts",
-        )
-        for opt in repository_ctx.attr.nixopts
-    ])
-
-    for repo in repositories.keys():
-        path = str(repository_ctx.path(repo).dirname) + "/nix-file-deps"
-        if repository_ctx.path(path).exists:
-            content = repository_ctx.read(path)
-            for f in content.splitlines():
-                # Hack: this is to register all Nix files as dependencies
-                # of this rule (see issue #113)
-                repository_ctx.path(repo.relative(":{}".format(f)))
-
-    # If repositories is not set, leave empty so nix will fail
-    # unless a pinned nixpkgs is set in the `nix_file` attribute.
-    nix_path = [
-        "{}={}".format(prefix, repository_ctx.path(repo))
-        for (repo, prefix) in repositories.items()
-    ]
-    if not (repositories or repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content):
-        fail(strFailureImplicitNixpkgs)
-
-    for dir in nix_path:
-        expr_args.extend(["-I", dir])
-
-    if not_supported and fail_not_supported:
-        fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
-    elif not_supported:
-        return
-    else:
-        nix_build_path = _executable_path(
-            repository_ctx,
-            "nix-build",
-            extra_msg = "See: https://nixos.org/nix/",
-        )
-        nix_build = [nix_build_path] + expr_args
-
-        # Large enough integer that Bazel can still parse. We don't have
-        # access to MAX_INT and 0 is not a valid timeout so this is as good
-        # as we can do. The value shouldn't be too large to avoid errors on
-        # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
-        timeout = 8640000
-        repository_ctx.report_progress("Building Nix derivation")
-        exec_result = _execute_or_fail(
-            repository_ctx,
-            nix_build,
-            failure_message = "Cannot build Nix attribute '{}'.".format(
-                repository_ctx.attr.attribute_path,
-            ),
-            quiet = repository_ctx.attr.quiet,
-            timeout = timeout,
-        )
-        output_path = exec_result.stdout.splitlines()[-1]
-
-        # ensure that the output is a directory
-        test_path = repository_ctx.which("test")
-        _execute_or_fail(
-            repository_ctx,
-            [test_path, "-d", output_path],
-            failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
-                repository_ctx.name,
-            ),
-        )
-
-        # Build a forest of symlinks (like new_local_package() does) to the
-        # Nix store.
-        for target in _find_children(repository_ctx, output_path):
-            basename = target.rpartition("/")[-1]
-            repository_ctx.symlink(target, basename)
-
-        # Create a default BUILD file only if it does not exists and is not
-        # provided by `build_file` or `build_file_content`.
-        if create_build_file_if_needed:
-            p = repository_ctx.path("BUILD")
-            if not p.exists:
-                repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
-
-_nixpkgs_package = repository_rule(
-    implementation = _nixpkgs_package_impl,
-    attrs = {
-        "attribute_path": attr.string(),
-        "nix_file": attr.label(allow_single_file = [".nix"]),
-        "nix_file_deps": attr.label_list(),
-        "nix_file_content": attr.string(),
-        "repositories": attr.label_keyed_string_dict(),
-        "repository": attr.label(),
-        "build_file": attr.label(),
-        "build_file_content": attr.string(),
-        "nixopts": attr.string_list(),
-        "quiet": attr.bool(),
-        "fail_not_supported": attr.bool(default = True, doc = """
-            If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
-                                        """),
-    },
-)
-
-def nixpkgs_package(
-        name,
-        attribute_path = "",
-        nix_file = None,
-        nix_file_deps = [],
-        nix_file_content = "",
-        repository = None,
-        repositories = {},
-        build_file = None,
-        build_file_content = "",
-        nixopts = [],
-        quiet = False,
-        fail_not_supported = True,
-        **kwargs):
-    """Make the content of a Nixpkgs package available in the Bazel workspace.
-
-    If `repositories` is not specified, you must provide a nixpkgs clone in `nix_file` or `nix_file_content`.
-
-    Args:
-      name: A unique name for this repository.
-      attribute_path: Select an attribute from the top-level Nix expression being evaluated. The attribute path is a sequence of attribute names separated by dots.
-      nix_file: A file containing an expression for a Nix derivation.
-      nix_file_deps: Dependencies of `nix_file` if any.
-      nix_file_content: An expression for a Nix derivation.
-      repository: A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`
-      repositories: A dictionary mapping `NIX_PATH` entries to repository labels.
-
-        Setting it to
-        ```
-        repositories = { "myrepo" : "//:myrepo" }
-        ```
-        for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
-
-        Specify one of `repository` or `repositories`.
-      build_file: The file to use as the BUILD file for this repository.
-
-        Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
-
-        For common use cases we provide filegroups that expose certain files as targets:
-
-        <dl>
-          <dt><code>:bin</code></dt>
-          <dd>Everything in the <code>bin/</code> directory.</dd>
-          <dt><code>:lib</code></dt>
-          <dd>All <code>.so</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
-          <dt><code>:include</code></dt>
-          <dd>All <code>.h</code> files that can be found in subdirectories of <code>bin/</code>.</dd>
-        </dl>
-
-        If you need different files from the nix package, you can reference them like this:
-        ```
-        package(default_visibility = [ "//visibility:public" ])
-        filegroup(
-            name = "our-docs",
-            srcs = glob(["share/doc/ourpackage/**/*"]),
-        )
-        ```
-        See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
-      build_file_content: Like `build_file`, but a string of the contents instead of a file name.
-      nixopts: Extra flags to pass when calling Nix.
-      quiet: Whether to hide the output of the Nix command.
-      fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
-    """
-    kwargs.update(
-        name = name,
-        attribute_path = attribute_path,
-        nix_file = nix_file,
-        nix_file_deps = nix_file_deps,
-        nix_file_content = nix_file_content,
-        repository = repository,
-        repositories = repositories,
-        build_file = build_file,
-        build_file_content = build_file_content,
-        nixopts = nixopts,
-        quiet = quiet,
-        fail_not_supported = fail_not_supported,
-    )
-
-    # Because of https://github.com/bazelbuild/bazel/issues/7989 we can't
-    # directly pass a dict from strings to labels to the rule (which we'd like
-    # for the `repositories` arguments), but we can pass a dict from labels to
-    # strings. So we swap the keys and the values (assuming they all are
-    # distinct).
-    if "repositories" in kwargs:
-        inversed_repositories = {value: key for (key, value) in kwargs["repositories"].items()}
-        kwargs["repositories"] = inversed_repositories
-
-    _nixpkgs_package(**kwargs)
+# aliases for backwards compatibility prior to `bzlmod`
+nixpkgs_git_repository = _nixpkgs_git_repository
+nixpkgs_local_repository = _nixpkgs_local_repository
+nixpkgs_package = _nixpkgs_package
 
 def _parse_cc_toolchain_info(content, filename):
     """Parses the `CC_TOOLCHAIN_INFO` file generated by Nix.
@@ -475,7 +149,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         ]
         repository_ctx.file(
             "module.modulemap",
-            _execute_or_fail(
+            execute_or_fail(
                 repository_ctx,
                 generate_system_module_map + info.cxx_builtin_include_directories,
                 "Failed to generate system module map.",
@@ -742,7 +416,7 @@ def _readlink(repository_ctx, path):
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
-    if not _is_supported_platform(repository_ctx):
+    if not is_supported_platform(repository_ctx):
         cc_autoconf_impl(repository_ctx)
         return
 
@@ -754,14 +428,14 @@ def nixpkgs_cc_autoconf_impl(repository_ctx):
     workspace_file_path = repository_ctx.path(
         Label("@nixpkgs_cc_toolchain//:WORKSPACE"),
     )
-    workspace_root = _execute_or_fail(
+    workspace_root = execute_or_fail(
         repository_ctx,
         ["dirname", workspace_file_path],
     ).stdout.rstrip()
 
     # Make a list of all available tools in the Nix derivation. Override
     # the Bazel autoconfiguration with the tools we found.
-    bin_contents = _find_children(repository_ctx, workspace_root + "/bin")
+    bin_contents = find_children(repository_ctx, workspace_root + "/bin")
     overriden_tools = {
         tool: _readlink(repository_ctx, entry)
         for entry in bin_contents
@@ -1114,8 +788,8 @@ toolchain(
     target_compatible_with = {target_constraints},
 )
 """.format(
-        python2_runtime = _label_string(repository_ctx.attr.python2_runtime),
-        python3_runtime = _label_string(repository_ctx.attr.python3_runtime),
+        python2_runtime = label_string(repository_ctx.attr.python2_runtime),
+        python3_runtime = label_string(repository_ctx.attr.python3_runtime),
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
     ))
@@ -1407,95 +1081,3 @@ def nixpkgs_sh_posix_configure(
     native.register_toolchains(
         "@{}//:nixpkgs_sh_posix_toolchain".format(name + "_toolchain"),
     )
-
-def _execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kwargs):
-    """Call repository_ctx.execute() and fail if non-zero return code."""
-    result = repository_ctx.execute(arguments, *args, **kwargs)
-    if result.return_code:
-        outputs = dict(
-            failure_message = failure_message,
-            arguments = arguments,
-            return_code = result.return_code,
-            stderr = result.stderr,
-        )
-        fail("""
-{failure_message}
-Command: {arguments}
-Return code: {return_code}
-Error output:
-{stderr}
-""".format(**outputs))
-    return result
-
-def _find_children(repository_ctx, target_dir):
-    find_args = [
-        _executable_path(repository_ctx, "find"),
-        "-L",
-        target_dir,
-        "-maxdepth",
-        "1",
-        # otherwise the directory is printed as well
-        "-mindepth",
-        "1",
-        # filenames can contain \n
-        "-print0",
-    ]
-    exec_result = _execute_or_fail(repository_ctx, find_args)
-    return exec_result.stdout.rstrip("\000").split("\000")
-
-def _executable_path(repository_ctx, exe_name, extra_msg = ""):
-    """Try to find the executable, fail with an error."""
-    path = repository_ctx.which(exe_name)
-    if path == None:
-        fail("Could not find the `{}` executable in PATH.{}\n"
-            .format(exe_name, " " + extra_msg if extra_msg else ""))
-    return path
-
-def _cp(repository_ctx, src, dest = None):
-    """Copy the given file into the external repository root.
-
-    Args:
-      repository_ctx: The repository context of the current repository rule.
-      src: The source file. Must be a Label if dest is None.
-      dest: Optional, The target path within the current repository root.
-        By default the relative path to the repository root is preserved.
-
-    Returns:
-      The dest value
-    """
-    if dest == None:
-        if type(src) != "Label":
-            fail("src must be a Label if dest is not specified explicitly.")
-        dest = "/".join([
-            component
-            for component in [src.workspace_root, src.package, src.name]
-            if component
-        ])
-
-    # Copy the file
-    repository_ctx.file(
-        repository_ctx.path(dest),
-        repository_ctx.read(repository_ctx.path(src)),
-        executable = False,
-        legacy_utf8 = False,
-    )
-
-    # Copy the executable bit of the source
-    # This is important to ensure that copied binaries are executable.
-    # Windows may not have chmod in path and doesn't have executable bits anyway.
-    if get_cpu_value(repository_ctx) != "x64_windows":
-        repository_ctx.execute([
-            repository_ctx.which("chmod"),
-            "--reference",
-            repository_ctx.path(src),
-            repository_ctx.path(dest),
-        ])
-
-    return dest
-
-def _label_string(label):
-    """Convert the given (optional) Label to a string."""
-    if not label:
-        return "None"
-    else:
-        return '"%s"' % label
