@@ -1,5 +1,5 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
-load("//core:util.bzl", "ensure_constraints")
+load("@rules_nixpkgs_core//:util.bzl", "ensure_constraints")
 
 # Adapted from rules_rust toolchain BUILD:
 # https://github.com/bazelbuild/rules_rust/blob/fd436df9e2d4ac1b234ca5e969e34a4cb5891910/rust/private/repository_utils.bzl#L17-L46

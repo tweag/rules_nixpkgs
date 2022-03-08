@@ -1,7 +1,7 @@
 """Rules for importing a Go toolchain from Nixpkgs.
 """
 
-load("//core:nixpkgs.bzl", "nixpkgs_package")
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 load("@io_bazel_rules_go//go/private:platforms.bzl", "PLATFORMS")
 

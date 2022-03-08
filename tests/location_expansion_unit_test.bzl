@@ -1,6 +1,6 @@
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load(
-    "//core:util.bzl",
+    "@rules_nixpkgs_core//:util.bzl",
     "parse_expand_location",
     "resolve_label",
 )

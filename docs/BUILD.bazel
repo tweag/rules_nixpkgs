@@ -20,13 +20,13 @@ stardoc(
 stardoc(
     name = "core",
     out = "core.md",
-    input = "//core:nixpkgs.bzl",
+    input = "@rules_nixpkgs_core//:nixpkgs.bzl",
     symbol_names = [
         "nixpkgs_git_repository",
         "nixpkgs_local_repository",
         "nixpkgs_package",
     ],
-    deps = ["//core"],
+    deps = ["@rules_nixpkgs_core//:core"],
 )
 
 stardoc(

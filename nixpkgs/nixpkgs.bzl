@@ -11,13 +11,13 @@ load(
 )
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(
-    "//core:nixpkgs.bzl",
+    "@rules_nixpkgs_core//:nixpkgs.bzl",
     _nixpkgs_git_repository = "nixpkgs_git_repository",
     _nixpkgs_local_repository = "nixpkgs_local_repository",
     _nixpkgs_package = "nixpkgs_package",
 )
 load(
-    "//core:util.bzl",
+    "@rules_nixpkgs_core//:util.bzl",
     "ensure_constraints",
     "execute_or_fail",
     "find_children",

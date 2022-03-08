@@ -19,7 +19,8 @@ rules_java_dependencies()
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
-rules_nixpkgs_dependencies()
+# Remove `local=...`
+rules_nixpkgs_dependencies(local="../../..")
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
 

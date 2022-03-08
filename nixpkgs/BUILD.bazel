@@ -40,8 +40,7 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//core:nixpkgs.bzl",
-        "//core:util.bzl",
+        "@rules_nixpkgs_core//:core",
         ":bazel_tools",
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
