@@ -49,6 +49,12 @@ def rules_nixpkgs_dependencies(local = None):
             url = url,
             strip_prefix = "toolchains/cc",
         )
+        maybe(
+            http_archive,
+            "rules_nixpkgs_java",
+            url = url,
+            strip_prefix = "toolchains/java",
+        )
     else:
         native.local_repository(
             name = "rules_nixpkgs_core",
@@ -58,3 +64,8 @@ def rules_nixpkgs_dependencies(local = None):
             name = "rules_nixpkgs_cc",
             path = local + "/toolchains/cc",
         )
+        native.local_repository(
+            name = "rules_nixpkgs_java",
+            path = local + "/toolchains/java",
+        )
+

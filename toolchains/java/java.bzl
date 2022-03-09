@@ -66,7 +66,7 @@ def _nixpkgs_java_toolchain_impl(repository_ctx):
         "BUILD.bazel",
         executable = False,
         content = """\
-load("@io_tweag_rules_nixpkgs//toolchains/java:local_java_repository.bzl", "local_java_runtime")
+load("@rules_nixpkgs_java//:local_java_repository.bzl", "local_java_runtime")
 local_java_runtime(
    name = "{name}",
    version = "{version}",

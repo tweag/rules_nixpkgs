@@ -22,7 +22,7 @@ load(
     _nixpkgs_python_configure = "nixpkgs_python_configure",
 )
 load(
-    "//toolchains/java:java.bzl",
+    "@rules_nixpkgs_java//:java.bzl",
     _nixpkgs_java_configure = "nixpkgs_java_configure",
 )
 load(
