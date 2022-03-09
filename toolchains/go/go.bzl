@@ -233,8 +233,8 @@ def nixpkgs_go_configure(
         quiet = False):
     """Use go toolchain from Nixpkgs.
 
-    By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS),
-    there is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
+    By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS).
+    There is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
     This command allows to setup a hermetic go sdk from Nixpkgs, which should be considered as best practice.
     Cross toolchains are declared and registered for each entry in the `PLATFORMS` constant in `rules_go`.
 
