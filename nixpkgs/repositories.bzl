@@ -33,17 +33,28 @@ def rules_nixpkgs_dependencies(local = None):
         url = "https://github.com/bazelbuild/rules_java/releases/download/4.0.0/rules_java-4.0.0.tar.gz",
         sha256 = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe",
     )
+    url =  "https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.8.1.tar.gz"
     if not local:
+       # XXX: no way to use `sha256` here, but if this surrounding repo comes
+        # from that URL, Bazel should hit the cache for the sub-workspaces
         maybe(
             http_archive,
             "rules_nixpkgs_core",
-            # XXX: no way to use `sha256` here, but if this surrounding repo comes
-            # from that URL, Bazel should hit the cache for the sub-workspace
-            url = "https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.8.1.tar.gz",
+            url = url,
             strip_prefix = "core",
+        )
+        maybe(
+            http_archive,
+            "rules_nixpkgs_cc",
+            url = url,
+            strip_prefix = "toolchains/cc",
         )
     else:
         native.local_repository(
             name = "rules_nixpkgs_core",
             path = local + "/core",
+        )
+        native.local_repository(
+            name = "rules_nixpkgs_cc",
+            path = local + "/toolchains/cc",
         )

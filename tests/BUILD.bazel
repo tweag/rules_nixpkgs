@@ -142,6 +142,7 @@ sh_test(
     data = [
         "//nixpkgs:srcs",
         "//tests/invalid_nixpkgs_package:srcs",
+        "@rules_nixpkgs_cc//:cc.bzl",
         "@nix-unstable//:bin",
     ] + select({
         "@platforms//os:linux": ["@busybox_static//:bin"],

@@ -41,8 +41,9 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         "@rules_nixpkgs_core//:core",
-        "//toolchains/python:python.bzl",
+        "@rules_nixpkgs_cc//:cc.bzl",
         "//toolchains/java:java.bzl",
+        "//toolchains/python:python.bzl",
         ":bazel_tools",
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
