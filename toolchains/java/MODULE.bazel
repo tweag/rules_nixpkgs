@@ -1,0 +1,6 @@
+module(
+    name = "rules_nixpkgs_java",
+    version = "0.8.1",
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "0.8.1")

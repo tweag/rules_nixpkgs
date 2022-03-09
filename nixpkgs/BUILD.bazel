@@ -42,6 +42,7 @@ bzl_library(
     deps = [
         "@rules_nixpkgs_core//:core",
         "//toolchains/python:python.bzl",
+        "//toolchains/java:java.bzl",
         ":bazel_tools",
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
