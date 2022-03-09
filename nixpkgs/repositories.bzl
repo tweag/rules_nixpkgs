@@ -33,39 +33,17 @@ def rules_nixpkgs_dependencies(local = None):
         url = "https://github.com/bazelbuild/rules_java/releases/download/4.0.0/rules_java-4.0.0.tar.gz",
         sha256 = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe",
     )
-    url =  "https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.8.1.tar.gz"
-    if not local:
-       # XXX: no way to use `sha256` here, but if this surrounding repo comes
-        # from that URL, Bazel should hit the cache for the sub-workspaces
-        maybe(
-            http_archive,
-            "rules_nixpkgs_core",
-            url = url,
-            strip_prefix = "core",
-        )
-        maybe(
-            http_archive,
-            "rules_nixpkgs_cc",
-            url = url,
-            strip_prefix = "toolchains/cc",
-        )
-        maybe(
-            http_archive,
-            "rules_nixpkgs_java",
-            url = url,
-            strip_prefix = "toolchains/java",
-        )
-    else:
-        native.local_repository(
-            name = "rules_nixpkgs_core",
-            path = local + "/core",
-        )
-        native.local_repository(
-            name = "rules_nixpkgs_cc",
-            path = local + "/toolchains/cc",
-        )
-        native.local_repository(
-            name = "rules_nixpkgs_java",
-            path = local + "/toolchains/java",
-        )
 
+    url = "https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.8.1.tar.gz"
+    for repo, prefix in [
+        ("rules_nixpkgs_core", "core"),
+        ("rules_nixpkgs_cc", "toolchains/cc"),
+        ("rules_nixpkgs_java", "toolchains/java"),
+        ("rules_nixpkgs_python", "toolchains/python"),
+    ]:
+        if not local:
+            # XXX: no way to use `sha256` here, but if this surrounding repo comes
+            # from that URL, Bazel should hit the cache for the sub-workspaces
+            maybe(http_archive, repo, url = url, strip_prefix = prefix)
+        else:
+            maybe(native.local_repository, repo, path = "{}/{}".format(local, prefix))

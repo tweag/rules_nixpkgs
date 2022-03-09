@@ -6,6 +6,12 @@ exports_files([
     "nixpkgs.bzl",
 ])
 
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
 bzl_library(
     name = "bazel_tools",
     srcs = [

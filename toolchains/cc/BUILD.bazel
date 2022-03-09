@@ -5,3 +5,9 @@ exports_files([
     "foreign_cc.bzl",
     "cc.nix",
 ])
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
