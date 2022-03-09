@@ -7,6 +7,8 @@ dependencies on rules_go for those who don't need go toolchain.
 `@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl`.**
 """
 
+# alias to Bazel module `toolchains/go`
+
 load(
     "//toolchains/go:go.bzl",
     _nixpkgs_go_configure = "nixpkgs_go_configure",
