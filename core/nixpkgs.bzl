@@ -239,7 +239,7 @@ def _nixpkgs_package_impl(repository_ctx):
         if create_build_file_if_needed:
             p = repository_ctx.path("BUILD")
             if not p.exists:
-                repository_ctx.template("BUILD", Label("@io_tweag_rules_nixpkgs//nixpkgs:BUILD.pkg"))
+                repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
