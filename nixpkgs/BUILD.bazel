@@ -44,6 +44,7 @@ bzl_library(
         "@rules_nixpkgs_cc//:cc.bzl",
         "@rules_nixpkgs_java//:java.bzl",
         "@rules_nixpkgs_python//:python.bzl",
+        "@rules_nixpkgs_posix//:posix.bzl",
         ":bazel_tools",
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",

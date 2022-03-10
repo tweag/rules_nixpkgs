@@ -146,6 +146,7 @@ sh_test(
         "@rules_nixpkgs_cc//:srcs",
         "@rules_nixpkgs_java//:srcs",
         "@rules_nixpkgs_python//:srcs",
+        "@rules_nixpkgs_posix//:srcs",
         "@nix-unstable//:bin",
     ] + select({
         "@platforms//os:linux": ["@busybox_static//:bin"],

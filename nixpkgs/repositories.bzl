@@ -40,6 +40,7 @@ def rules_nixpkgs_dependencies(local = None):
         ("rules_nixpkgs_cc", "toolchains/cc"),
         ("rules_nixpkgs_java", "toolchains/java"),
         ("rules_nixpkgs_python", "toolchains/python"),
+        ("rules_nixpkgs_posix", "toolchains/posix"),
     ]:
         if not local:
             # XXX: no way to use `sha256` here, but if this surrounding repo comes
