@@ -18,7 +18,7 @@ load(
     "is_supported_platform",
 )
 load(
-    "//toolchains/python:python.bzl",
+    "@rules_nixpkgs_python//:python.bzl",
     _nixpkgs_python_configure = "nixpkgs_python_configure",
 )
 load(
