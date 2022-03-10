@@ -118,7 +118,7 @@ def ensure_constraints(repository_ctx):
     else:
         target_constraints = list(repository_ctx.attr.target_constraints)
         exec_constraints = list(repository_ctx.attr.exec_constraints)
-    exec_constraints.append("@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix")
+    exec_constraints.append("@rules_nixpkgs_core//constraints:support_nix")
     return exec_constraints, target_constraints
 
 def parse_expand_location(string):

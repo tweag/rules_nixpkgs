@@ -1,6 +1,5 @@
-platform(
+alias(
     name = "host",
-    constraint_values = ["@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix"],
-    parents = ["@local_config_platform//:host"],
+    actual = "@rules_nixpkgs_core//platforms:host",
     visibility = ["//visibility:public"],
 )
