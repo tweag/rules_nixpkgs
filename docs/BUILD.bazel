@@ -1,4 +1,4 @@
-load("stardoc.bzl", "stardoc")
+load("stardoc.bzl", "compare_files", "copy_files", "stardoc")
 
 stardoc(
     name = "nixpkgs",
@@ -93,19 +93,24 @@ genrule(
     toolchains = ["@rules_sh//sh/posix:make_variables"],
 )
 
-sh_test(
+compare_files(
     name = "check-readme",
-    srcs = ["check-readme.sh"],
     data = [
-        "README.md",
-        "//:README.md",
+        ("README.md", "//:README.md"),
+        ("core/README.md", "@rules_nixpkgs_core//:README.md"),
     ],
-    deps = ["@bazel_tools//tools/bash/runfiles"],
+    error_message = """
+    The project README is not up-to-date.
+    Please update it using the following command.
+
+    bazel run //docs:update-readme
+    """,
 )
 
-sh_binary(
+copy_files(
     name = "update-readme",
-    srcs = ["update-readme.sh"],
-    data = ["README.md", "core/README.md"],
-    deps = ["@bazel_tools//tools/bash/runfiles"],
+    data = [
+        "README.md",
+        "core/README.md",
+    ],
 )
