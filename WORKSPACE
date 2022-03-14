@@ -281,3 +281,17 @@ nixpkgs_go_configure(repository = "@nixpkgs")
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
 
 go_rules_dependencies()
+
+load("//experimental:docker.bzl", "nixpkgs_docker_image")
+
+# Usage:
+#   - building: `bazel build @docker_image//:image`
+#   - streaming: `bazel run @docker_image//:stream | gzip --fast | skopeo copy docker-archive:/dev/stdin docker://some.registry/docker_image:latest`
+nixpkgs_docker_image(
+    name = "docker_image",
+    srcs = [
+        "@hello//nixpkg",
+        "@nixpkgs_config_cc_info//nixpkg",
+    ],
+    repositories = {"nixpkgs": "@nixpkgs"},
+)
