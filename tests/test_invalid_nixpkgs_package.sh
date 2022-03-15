@@ -5,17 +5,17 @@ ln -s tests/invalid_nixpkgs_package/workspace.bazel WORKSPACE
 ln -s tests/invalid_nixpkgs_package/nested-build.bazel BUILD
 ln -s tests/invalid_nixpkgs_package/default.nix default.nix
 
-# We need to provide a nixpkgs to create an output store path which is
+# We need to provide a `nixpkgs` to create an output store path which is
 # a folder (because nixpkgs_package requires the output store path to
 # be a directory).
 #
-# We use the absolute path of the static busybox mkdir tool in the
-# builder script of the hello derivation. Since building this
-# derivation doesn't rely on nixpkgs, we can easily relocate the
-# /nix/store path in the Bazel sandbox.
+# We use the absolute path of the static `coreutils` `mkdir` tool in the
+# builder script of the `hello` derivation. Since building this
+# derivation doesn't rely on `nixpkgs`, we can easily relocate the
+# `/nix/store` path in the Bazel sandbox.
 sed "s;COREUTILS-ABS-PATH;${PWD}/external/coreutils_static/bin/;g" -i default.nix
 
-# Bring a specific version of nix which can be executed in the Bazel
+# Bring a specific version of Nix which can be executed in the Bazel
 # linux sandbox.
 export PATH=$PWD/external/nix-unstable/bin:$PATH
 
@@ -28,17 +28,17 @@ export NIX_LOG_DIR=${TEST_TMPDIR}/nix/var/log/nix
 export NIX_CONF_DIR=${TEST_TMPDIR}/nix/etc/nix
 
 # First, we build a script outputing "hello world 1". This message
-# string comes from the file message.nix which is a dependency of the
-# nixpkgs_package rule.
+# string comes from the file `message.nix` which is a dependency of the
+# `nixpkgs_package` rule.
 echo '"hello world 1"' > message.nix
 bazel build //:hello-output
 if [[ $(cat bazel-bin/hello-output.txt) != "hello world 1" ]]; then
     exit 1
 fi
 
-# Then, we override the content of the message.nix file to ensure Bazel
-# rebuilds the :hello-output target when a Nix files is modified. The
-# hello.nix file now builds a derivation creating a file with content
+# Then, we override the content of the `message.nix` file to ensure Bazel
+# rebuilds the `:hello-output` target when a Nix files is modified. The
+# `hello.nix` file now builds a derivation creating a file with content
 # "hello world 2".
 echo '"hello world 2"' > message.nix
 bazel build //:hello-output

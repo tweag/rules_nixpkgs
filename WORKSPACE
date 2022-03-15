@@ -172,7 +172,7 @@ nixpkgs_package(
 )
 
 # This is used to run Nix in a sandboxed Bazel test. See the test
-# run-test-invalid-nixpkgs-package.
+# `run-test-invalid-nixpkgs-package`.
 nixpkgs_package(
     name = "coreutils_static",
     attribute_path = "pkgsStatic.coreutils",
