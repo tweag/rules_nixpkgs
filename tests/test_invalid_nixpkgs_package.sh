@@ -13,7 +13,7 @@ ln -s tests/invalid_nixpkgs_package/default.nix default.nix
 # builder script of the hello derivation. Since building this
 # derivation doesn't rely on nixpkgs, we can easily relocate the
 # /nix/store path in the Bazel sandbox.
-sed "s;BUSYBOX-ABS-PATH;${PWD}/external/busybox_static/bin/;g" -i default.nix
+sed "s;COREUTILS-ABS-PATH;${PWD}/external/coreutils_static/bin/;g" -i default.nix
 
 # Bring a specific version of nix which can be executed in the Bazel
 # linux sandbox.
