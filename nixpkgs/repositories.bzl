@@ -1,13 +1,12 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-def rules_nixpkgs_dependencies(local = None):
+def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
     """Load repositories required by rules_nixpkgs.
 
     Args:
-        local: path to local `rules_nixpkgs` repository.
-               use for testing and CI.
-               TODO: remove when migration to `bzlmod` is complete.
+        rules_nixpkgs_name: name under which this repository is known in your workspace
     """
     maybe(
         http_archive,
@@ -34,17 +33,57 @@ def rules_nixpkgs_dependencies(local = None):
         sha256 = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe",
     )
 
-    url = "https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.8.1.tar.gz"
-    for repo, prefix in [
+    # the following complication is due to migrating to `bzlmod`.
+    # fetch extracted submodules as external repositories from an existing source tree, based on the import type.
+    rules_nixpkgs = native.existing_rule(rules_nixpkgs_name)
+    if not rules_nixpkgs:
+        errormsg = [
+            "External repository `rules_nixpkgs` not found as `{}`.".format(rules_nixpkgs_name),
+            "Specify `rules_nixpkgs_dependencies(rules_nixpkgs_name=<name>)`",
+            "with `<name>` as used for importing `rules_nixpkgs`.",
+        ]
+        fail("\n".join(errormsg))
+    kind = rules_nixpkgs.get("kind")
+    for name, prefix in [
         ("rules_nixpkgs_core", "core"),
         ("rules_nixpkgs_cc", "toolchains/cc"),
         ("rules_nixpkgs_java", "toolchains/java"),
         ("rules_nixpkgs_python", "toolchains/python"),
         ("rules_nixpkgs_posix", "toolchains/posix"),
     ]:
-        if not local:
-            # XXX: no way to use `sha256` here, but if this surrounding repo comes
-            # from that URL, Bazel should hit the cache for the sub-workspaces
-            maybe(http_archive, repo, url = url, strip_prefix = prefix)
+        # case analysis in inner loop to reduce code duplication
+        if kind == "local_repository":
+            path = rules_nixpkgs.get("path")
+            maybe(native.local_repository, name, path = "{}/{}".format(path, prefix))
+        elif kind == "http_archive":
+            maybe(
+                http_archive,
+                name,
+                strip_prefix = prefix,
+                # there may be more attributes needed. please submit a pull request to support your use case.
+                url = rules_nixpkgs.get("url"),
+                urls = rules_nixpkgs.get("urls"),
+                sha256 = rules_nixpkgs.get("sha256"),
+            )
+        elif kind == "git_repository":
+            maybe(
+                git_repository,
+                name,
+                strip_prefix = prefix,
+                # there may be more attributes needed. please submit a pull request to support your use case.
+                remote = rules_nixpkgs.get("remote"),
+                commit = rules_nixpkgs.get("commit"),
+                branch = rules_nixpkgs.get("branch"),
+                tag = rules_nixpkgs.get("tag"),
+                shallow_since = rules_nixpkgs.get("shallow_since"),
+            )
         else:
-            maybe(native.local_repository, repo, path = "{}/{}".format(local, prefix))
+            errormsg = [
+                "Could not find any import type for `rules_nixpkgs`.",
+                "This should not happen. If you encounter this using the latest release",
+                "of `rules_nixpkgs`, please file an issue describing your use case:",
+                "https://github.com/tweag/rules_nixpkgs/issues",
+                "or submit a pull request with corrections:",
+                "https://github.com/tweag/rules_nixpkgs/pulls",
+            ]
+            fail("\n".join(errormsg))

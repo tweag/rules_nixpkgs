@@ -20,8 +20,7 @@ http_archive(
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
-# Remove `local=...`
-rules_nixpkgs_dependencies(local="../../..")
+rules_nixpkgs_dependencies()
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
 
