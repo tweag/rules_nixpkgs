@@ -52,7 +52,7 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "
 load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure") # optional
 ```
 
-If you use `rules_nixpkgs` to configure a toolchain then you will also need to
+If you use `rules_nixpkgs` to configure a toolchain, then you will also need to
 configure the build platform to include the
 `@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix` constraint. For
 example by adding the following to `.bazelrc`:
@@ -1394,6 +1394,7 @@ optional.
 
 
 
+
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
 Rules for importing a Go toolchain from Nixpkgs.
@@ -1416,8 +1417,8 @@ nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a h
 
 Use go toolchain from Nixpkgs.
 
-By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS),
-there is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
+By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS).
+There is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
 This command allows to setup a hermetic go sdk from Nixpkgs, which should be considered as best practice.
 Cross toolchains are declared and registered for each entry in the `PLATFORMS` constant in `rules_go`.
 
@@ -1625,3 +1626,31 @@ Whether to hide the output of the Nix command.
 
 
 
+
+## Migration from older releases
+
+### `path` Attribute (removed in 0.3)
+
+`path` was an attribute from the early days of `rules_nixpkgs`, and
+its ability to reference arbitrary paths is a danger to build hermeticity.
+
+Replace it with either `nixpkgs_git_repository` if you need
+a specific version of `nixpkgs`. If you absolutely *must* depend on a
+local folder, use Bazel’s
+[`local_repository` workspace rule](https://docs.bazel.build/versions/master/be/workspace.html#local_repository).
+Both approaches work well with the `repositories` attribute of `nixpkgs_package`.
+
+```bzl
+local_repository(
+  name = "local-nixpkgs",
+  path = "/path/to/nixpkgs",
+)
+
+nixpkgs_package(
+  name = "somepackage",
+  repositories = {
+    "nixpkgs": "@local-nixpkgs//:default.nix",
+  },
+  …
+)
+```

@@ -2,6 +2,20 @@ workspace(name = "io_tweag_rules_nixpkgs")
 
 load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
+# fetch external repositories from runfiles directory. this does not work
+# otherwise, as the test runs in a sandbox and is not aware of the actual
+# directory where the original code lives
+[local_repository(
+    name = repo,
+    path = "external/{}".format(repo),
+) for repo in [
+    "rules_nixpkgs_core",
+    "rules_nixpkgs_cc",
+    "rules_nixpkgs_java",
+    "rules_nixpkgs_python",
+    "rules_nixpkgs_posix",
+]]
+
 rules_nixpkgs_dependencies()
 
 load(
@@ -13,12 +27,19 @@ load(
 nixpkgs_local_repository(
     name = "nixpkgs",
     nix_file = "//:default.nix",
-    nix_file_deps = [ "//:message.nix" ],
+    nix_file_deps = ["//:message.nix"],
 )
 
 nixpkgs_package(
     name = "hello",
     attribute_path = "hello",
+    nixopts = [
+        "--option",
+        "sandbox",
+        "false",
+        "--option",
+        "binary-caches",
+        "",
+    ],
     repository = "@nixpkgs",
-    nixopts = [ "--option", "sandbox", "false", "--option", "binary-caches", "" ]
 )

@@ -52,7 +52,7 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "
 load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure") # optional
 ```
 
-If you use `rules_nixpkgs` to configure a toolchain then you will also need to
+If you use `rules_nixpkgs` to configure a toolchain, then you will also need to
 configure the build platform to include the
 `@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix` constraint. For
 example by adding the following to `.bazelrc`:
@@ -82,16 +82,16 @@ nixpkgs_package(
 
 {{toolchains_go}}
 
-## Migration
+## Migration from older releases
 
-### `path` Attribute
+### `path` Attribute (removed in 0.3)
 
 `path` was an attribute from the early days of `rules_nixpkgs`, and
-its ability to reference arbitrary paths a danger to build hermeticity.
+its ability to reference arbitrary paths is a danger to build hermeticity.
 
 Replace it with either `nixpkgs_git_repository` if you need
 a specific version of `nixpkgs`. If you absolutely *must* depend on a
-local folder, use bazel’s
+local folder, use Bazel’s
 [`local_repository` workspace rule](https://docs.bazel.build/versions/master/be/workspace.html#local_repository).
 Both approaches work well with the `repositories` attribute of `nixpkgs_package`.
 

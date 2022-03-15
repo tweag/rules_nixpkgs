@@ -14,7 +14,7 @@
 
 """Rules for importing and registering a local JDK."""
 
-load(":toolchains/java/default_java_toolchain.bzl", "JVM8_TOOLCHAIN_CONFIGURATION", "default_java_toolchain")
+load("@rules_nixpkgs_java//:default_java_toolchain.bzl", "JVM8_TOOLCHAIN_CONFIGURATION", "default_java_toolchain")
 
 def _detect_java_version(repository_ctx, java_bin):
     properties_out = repository_ctx.execute([java_bin, "-XshowSettings:properties"]).stderr

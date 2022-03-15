@@ -37,11 +37,14 @@ bzl_library(
     name = "nixpkgs",
     srcs = [
         "nixpkgs.bzl",
-        "private/constraints.bzl",
-        "private/location_expansion.bzl",
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "@rules_nixpkgs_core//:core",
+        "@rules_nixpkgs_cc//:cc.bzl",
+        "@rules_nixpkgs_java//:java.bzl",
+        "@rules_nixpkgs_python//:python.bzl",
+        "@rules_nixpkgs_posix//:posix.bzl",
         ":bazel_tools",
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
@@ -59,6 +62,7 @@ bzl_library(
     deps = [
         ":bazel_tools",
         ":nixpkgs",
+        "//toolchains/go:go.bzl",
         "@io_bazel_rules_go//go:deps",
     ],
 )

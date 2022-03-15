@@ -1,0 +1,2 @@
+# only temporary for compatibility with `WORKSPACE` setup
+# TODO: remove when migration to `bzlmod` is complete

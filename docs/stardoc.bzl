@@ -21,3 +21,29 @@ def stardoc(
         rule_template = rule_template,
         **kwargs
     )
+
+def copy_files(name, data):
+    """copy list of files to workspace root"""
+    native.sh_binary(
+        name = name,
+        srcs = ["copy-files.sh"],
+        args = ["$(location {}) {}".format(f, f) for f in data],
+        data = data,
+    )
+
+def compare_files(name, data, error_message=""):
+    """
+    compare pairs of files for content equality.
+    print error message if a pair does not match.
+    """
+
+    # flatten pairs, as there is no meaningful way to work with anything but
+    # strings in `bash`
+    data = [f for pair in data for f in pair]
+    native.sh_test(
+        name = name,
+        srcs = ["compare-files.sh"],
+        args = ["$(location {})".format(f) for f in data],
+        data = data,
+        env = {"errormsg" : error_message},
+    )

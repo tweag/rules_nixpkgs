@@ -1,0 +1,6 @@
+platform(
+    name = "host",
+    constraint_values = ["@rules_nixpkgs_core//constraints:support_nix"],
+    parents = ["@local_config_platform//:host"],
+    visibility = ["//visibility:public"],
+)

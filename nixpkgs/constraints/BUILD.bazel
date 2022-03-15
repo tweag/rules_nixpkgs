@@ -1,10 +1,13 @@
 package(default_visibility = ["//visibility:public"])
 
-constraint_setting(name = "nix")
+alias(
+    name = "nix",
+    actual = "@rules_nixpkgs_core//constraints:nix",
+)
 
-constraint_value(
+alias(
     name = "support_nix",
-    constraint_setting = ":nix",
+    actual = "@rules_nixpkgs_core//constraints:support_nix",
 )
 
 constraint_value(

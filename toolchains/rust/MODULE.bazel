@@ -1,0 +1,11 @@
+module(
+    name = "rules_nixpkgs_rust",
+    version = "0.8.1",
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "0.8.1")
+# TODO: there is no BCR entry for `rules_rust` yet, and you will have to add a
+# local registry entry to map a commit to a module "version". the caller will
+# also have to know this and point `--registry` at the file from right revision
+# on GitHub!
+# bazel_dep(name = "rules_rust", version = "9dadbcd1136f7d4f3f2e7c0790531be0fdcccc535dec42a4c5a6f2df7380e3e3")

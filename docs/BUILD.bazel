@@ -1,4 +1,4 @@
-load("stardoc.bzl", "stardoc")
+load("stardoc.bzl", "compare_files", "copy_files", "stardoc")
 
 stardoc(
     name = "nixpkgs",
@@ -15,6 +15,28 @@ stardoc(
         "nixpkgs_sh_posix_configure",
     ],
     deps = ["//nixpkgs"],
+)
+
+stardoc(
+    name = "core",
+    out = "core.md",
+    input = "@rules_nixpkgs_core//:nixpkgs.bzl",
+    symbol_names = [
+        "nixpkgs_git_repository",
+        "nixpkgs_local_repository",
+        "nixpkgs_package",
+    ],
+    deps = ["@rules_nixpkgs_core//:core"],
+)
+
+stardoc(
+    name = "java",
+    out = "toolchains/java.md",
+    input = "@rules_nixpkgs_java//:java.bzl",
+    symbol_names = [
+        "nixpkgs_java_configure",
+    ],
+    deps = ["@rules_nixpkgs_java//:java"],
 )
 
 stardoc(
@@ -42,11 +64,13 @@ genrule(
       if (/{{nixpkgs}}/) {
           RS="\\0";
           getline content <"$(execpath nixpkgs.md)";
-          print content
+          print content;
+          RS="\\n";
       } else if (/{{toolchains_go}}/) {
           RS="\\0";
           getline content <"$(execpath toolchains/go.md)";
-          print content
+          print content;
+          RS="\\n";
       } else {
           print
       }
@@ -55,19 +79,92 @@ genrule(
     toolchains = ["@rules_sh//sh/posix:make_variables"],
 )
 
-sh_test(
-    name = "check-readme",
-    srcs = ["check-readme.sh"],
-    data = [
-        "README.md",
-        "//:README.md",
+[
+    genrule(
+        name = "readme_{}".format(rule),
+        srcs = [
+            "README_{}.md.tpl".format(rule),
+            "toolchains/{}.md".format(rule),
+        ],
+        outs = ["toolchains/{}/README.md".format(rule)],
+        # sorry for this mess. Bazel `str.format()` does not allow nested `{}`
+        # pairs and `awk` is sensitive to line breaks.
+        # TODO: consider alternative: leave reference for the end and just
+        # append the generated string with `cat`.
+        cmd = """$(POSIX_AWK) \\
+    <$(execpath README_{}.md.tpl) \\
+    >$(OUTS) \\""".format(rule) + """
+    '{
+        if (/{{""" + "{}".format(rule) + """}}/) {
+            RS="\\0";
+            getline content <"$(execpath """ + "toolchains/{}.md)".format(rule) + """";
+            print content;
+            RS="\\n";
+        } else {
+            print
+        }
+    }'
+    """,
+        toolchains = ["@rules_sh//sh/posix:make_variables"],
+    )
+    # TODO: add other toolchains once the sub-repositories are appropriately
+    # prepared xor extract a macro for rules to generate and check documentation
+    # into `rules_nixpkgs_core`, then call it here for all sub-repositories
+    # NOTE: don't forget to add to `copy_files` and `compare_files` (good reason to extract a macro)
+    for rule in ["java"]
+]
+
+genrule(
+    name = "readme_core",
+    srcs = [
+        "README_core.md.tpl",
+        "core.md",
     ],
-    deps = ["@bazel_tools//tools/bash/runfiles"],
+    outs = ["core/README.md"],
+    cmd = """$(POSIX_AWK) \\
+  <$(execpath README_core.md.tpl) \\
+  >$(OUTS) \\
+  '{
+      if (/{{core}}/) {
+          RS="\\0";
+          getline content <"$(execpath core.md)";
+          print content;
+          RS="\\n";
+      } else {
+          print
+      }
+  }'
+""",
+    toolchains = ["@rules_sh//sh/posix:make_variables"],
 )
 
-sh_binary(
+compare_files(
+    name = "check-readme",
+    data = [
+        ("README.md", "//:README.md"),
+        ("core/README.md", "@rules_nixpkgs_core//:README.md"),
+    ] + [(
+        "toolchains/{}/README.md".format(rule),
+        "@rules_nixpkgs_{}//:README.md".format(rule),
+    # TODO: add other toolchains once the sub-repositories are appropriately
+    # prepared xor extract a macro for rules to generate and check documentation
+    # into `rules_nixpkgs_core`, then call it here for all sub-repositories
+    ) for rule in ["java"]],
+    error_message = """
+    The project README is not up-to-date.
+    Please update it using the following command.
+
+    bazel run //docs:update-readme
+    """,
+)
+
+copy_files(
     name = "update-readme",
-    srcs = ["update-readme.sh"],
-    data = ["README.md"],
-    deps = ["@bazel_tools//tools/bash/runfiles"],
+    data = [
+        "README.md",
+        "core/README.md",
+    # TODO: add other toolchains once the sub-repositories are appropriately
+    # prepared xor extract a macro for rules to generate and check documentation
+    # into `rules_nixpkgs_core`, then call it here for all sub-repositories
+    ] + ["toolchains/{}/README.md".format(rule) for rule in ["java"]],
 )
