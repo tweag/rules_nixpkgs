@@ -1,12 +1,12 @@
 { ... }:
 let
   message = import ./message.nix;
-  # BUSYBOX-ABS-PATH is replaced by the absolute path of a static
-  # busybox before calling the bazel build command
+  # `COREUTILS-ABS-PATH` is replaced by the absolute path of a static
+  # `coreutils` before calling `bazel build`
   script = ''
-    BUSYBOX-ABS-PATH/mkdir -p $out/bin
+    COREUTILS-ABS-PATH/mkdir -p $out/bin
     echo echo ${message} > $out/bin/hello
-    BUSYBOX-ABS-PATH/chmod a+x $out/bin/hello
+    COREUTILS-ABS-PATH/chmod a+x $out/bin/hello
   '';
 in
 {
