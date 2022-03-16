@@ -14,11 +14,11 @@ pull_request_rules:
       - "label=merge-queue"
     actions:
       queue:
-       
+        name: default
   - name: remove from merge-queue after merge
     conditions:
       - merged
     actions:
       label:
         remove:
-          - "merge-queue" name: default
+          - "merge-queue"
