@@ -44,6 +44,11 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
         ]
         fail("\n".join(errormsg))
     kind = rules_nixpkgs.get("kind")
+
+    strip_prefix = rules_nixpkgs.get("strip_prefix", "")
+    if strip_prefix:
+        strip_prefix += "/"
+
     for name, prefix in [
         ("rules_nixpkgs_core", "core"),
         ("rules_nixpkgs_cc", "toolchains/cc"),
@@ -59,7 +64,7 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
             maybe(
                 http_archive,
                 name,
-                strip_prefix = prefix,
+                strip_prefix = strip_prefix + prefix,
                 # there may be more attributes needed. please submit a pull request to support your use case.
                 url = rules_nixpkgs.get("url"),
                 urls = rules_nixpkgs.get("urls"),
@@ -69,7 +74,7 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
             maybe(
                 git_repository,
                 name,
-                strip_prefix = prefix,
+                strip_prefix = strip_prefix + prefix,
                 # there may be more attributes needed. please submit a pull request to support your use case.
                 remote = rules_nixpkgs.get("remote"),
                 commit = rules_nixpkgs.get("commit"),
