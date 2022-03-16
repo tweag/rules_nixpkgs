@@ -1,3 +1,33 @@
+"""<!-- Edit this docstring and run `bazel run //docs:update-readme` to change this repository's `README.md`. -->
+
+# Nixpkgs rules for Bazel
+
+[![Build status](https://badge.buildkite.com/79bd0a8aa1e47a92e0254ca3afe5f439776e6d389cfbde9d8c.svg?branch=master)](https://buildkite.com/tweag-1/rules-nixpkgs)
+
+Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
+external dependencies (like system packages) into [Bazel][bazel]
+hermetically. If the version of any dependency changes, Bazel will
+correctly rebuild targets, and only those targets that use the
+external dependencies that changed.
+
+Links:
+* [Nix + Bazel = fully reproducible, incremental
+  builds][blog-bazel-nix] (blog post)
+* [Nix + Bazel][youtube-bazel-nix] (lightning talk)
+
+[nix]: https://nixos.org/nix
+[nixpkgs]: https://github.com/NixOS/nixpkgs
+[bazel]: https://bazel.build
+[blog-bazel-nix]: https://www.tweag.io/posts/2018-03-15-bazel-nix.html
+[youtube-bazel-nix]: https://www.youtube.com/watch?v=hDdDUrty1Gw
+
+## Rules
+
+* [nixpkgs_git_repository](#nixpkgs_git_repository)
+* [nixpkgs_local_repository](#nixpkgs_local_repository)
+* [nixpkgs_package](#nixpkgs_package)
+"""
+
 load(
     ":util.bzl",
     "cp",
