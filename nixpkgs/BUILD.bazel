@@ -40,7 +40,7 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "@rules_nixpkgs_core//:core",
+        "@rules_nixpkgs_core//:nixpkgs",
         "@rules_nixpkgs_cc//:cc.bzl",
         "@rules_nixpkgs_java//:java.bzl",
         "@rules_nixpkgs_python//:python.bzl",

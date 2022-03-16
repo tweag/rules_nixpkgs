@@ -1,4 +1,4 @@
-load("stardoc.bzl", "compare_files", "copy_files", "stardoc")
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "compare_files", "copy_files", "stardoc")
 
 stardoc(
     name = "nixpkgs",
@@ -26,7 +26,7 @@ stardoc(
         "nixpkgs_local_repository",
         "nixpkgs_package",
     ],
-    deps = ["@rules_nixpkgs_core//:core"],
+    deps = ["@rules_nixpkgs_core//:nixpkgs"],
 )
 
 stardoc(
