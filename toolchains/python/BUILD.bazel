@@ -1,11 +1,21 @@
-package(default_visibility = ["//visibility:public"])
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
 
-exports_files([
-    "python.bzl",
-])
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
+)
+
+generate(
+    name = "README.md",
+    input = "//:python.bzl",
+    symbol_names = [
+        "nixpkgs_python_configure",
+    ],
+    deps = [
+        "@bazel_skylib//lib:versions",
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
 )
