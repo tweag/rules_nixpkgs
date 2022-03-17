@@ -1,3 +1,5 @@
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
@@ -10,4 +12,19 @@ filegroup(
     name = "srcs",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
+)
+
+generate(
+    name = "README.md",
+    input = "//:cc.bzl",
+    symbol_names = [
+        "nixpkgs_cc_configure",
+    ],
+    deps = [
+        "@bazel_skylib//lib:new_sets",
+        "@bazel_skylib//lib:paths",
+        "@bazel_skylib//lib:sets",
+        "@bazel_skylib//lib:versions",
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
 )
