@@ -1,5 +1,18 @@
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
+
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "rust.bzl",
-])
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+generate(
+    name = "README.md",
+    input = "//:rust.bzl",
+    symbol_names = [
+        "nixpkgs_rust_configure",
+    ],
+    deps = ["@rules_nixpkgs_core//:nixpkgs"],
+)

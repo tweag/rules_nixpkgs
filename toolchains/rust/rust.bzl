@@ -1,3 +1,12 @@
+"""<!-- Edit this docstring and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+Rules for importing a Rust toolchain from Nixpkgs.
+
+# Rules
+
+* [nixpkgs_rust_configure](#nixpkgs_rust_configure)
+"""
+
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@rules_nixpkgs_core//:util.bzl", "ensure_constraints")
 
