@@ -54,6 +54,7 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
         ("rules_nixpkgs_cc", "toolchains/cc"),
         ("rules_nixpkgs_java", "toolchains/java"),
         ("rules_nixpkgs_python", "toolchains/python"),
+        ("rules_nixpkgs_go", "toolchains/go"),
         ("rules_nixpkgs_posix", "toolchains/posix"),
     ]:
         # case analysis in inner loop to reduce code duplication
