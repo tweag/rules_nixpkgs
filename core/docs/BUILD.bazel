@@ -1,35 +1,5 @@
-load("stardoc.bzl", "compare_files", "copy_files", "stardoc")
-
 exports_files([
     "stardoc.bzl",
     "copy-files.sh",
     "compare-files.sh",
 ] + glob(["templates/*"]))
-
-stardoc(
-    name = "readme",
-    out = "README.md",
-    input = "//:nixpkgs.bzl",
-    symbol_names = [
-        "nixpkgs_git_repository",
-        "nixpkgs_local_repository",
-        "nixpkgs_package",
-    ],
-    deps = ["//:nixpkgs"],
-)
-
-compare_files(
-    name = "check-readme",
-    data = [("README.md", "//:README.md")],
-    error_message = """
-    The project README is not up-to-date.
-    Please update it using the following command:
-
-    bazel run //docs:update-readme
-    """,
-)
-
-copy_files(
-    name = "update-readme",
-    data = ["README.md"],
-)
