@@ -1,4 +1,4 @@
-"""<!-- Edit this docstring and run `bazel run //docs:update-readme` to change this repository's `README.md`. -->
+"""<!-- Edit this docstring and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
 
 # Nixpkgs rules for Bazel
 

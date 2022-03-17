@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//docs:stardoc.bzl", "compare_files", "copy_files", "stardoc")
+load("//docs:stardoc.bzl", "generate")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -13,6 +13,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# boilerplate for `bazel_tools`
 bzl_library(
     name = "bazel_tools",
     srcs = [
@@ -33,9 +34,8 @@ bzl_library(
     ],
 )
 
-stardoc(
-    name = "readme",
-    out = "_README.md",
+generate(
+    name = "README.md",
     input = "//:nixpkgs.bzl",
     symbol_names = [
         "nixpkgs_git_repository",
@@ -43,20 +43,4 @@ stardoc(
         "nixpkgs_package",
     ],
     deps = ["//:nixpkgs"],
-)
-
-compare_files(
-    name = "check-readme",
-    data = [("_README.md", "README.md")],
-    error_message = """
-    The project README is not up-to-date.
-    Please update it using the following command:
-
-    bazel run //docs:update-readme
-    """,
-)
-
-copy_files(
-    name = "update-readme",
-    data = [("_README.md", "README.md")],
 )

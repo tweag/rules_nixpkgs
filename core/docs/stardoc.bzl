@@ -1,5 +1,35 @@
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", _stardoc = "stardoc")
 
+def generate(
+        name,
+        input,
+        error_message = None,
+        **kwargs):
+    """
+    create rules for generating documentation, copying a file into the source
+    tree containing it, and testing that the copying has actually happened
+    (since the copy rule must be run manually).
+    """
+    if not error_message:
+        error_message = [
+            "{} is not up to date.",
+            "Please update it using the following command:",
+            "",
+            "bazel run //{}:update-{}",
+        ]
+        error_message = "\n".join(error_message).format(name, native.package_name(), name)
+    out = "_{}".format(name)
+    stardoc("__{}".format(name), out, input, **kwargs)
+    copy_files(
+        name = "update-{}".format(name),
+        data = [(out, name)],
+    )
+    compare_files(
+        name = "check-{}".format(name),
+        data = [(out, name)],
+        error_message = error_message,
+    )
+
 def stardoc(
         name,
         out,
