@@ -2,10 +2,6 @@ load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "java.bzl",
-])
-
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),

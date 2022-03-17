@@ -3,10 +3,6 @@ load("//docs:stardoc.bzl", "generate")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "nixpkgs.bzl",
-])
-
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
