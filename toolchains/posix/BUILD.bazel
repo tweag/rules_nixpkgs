@@ -1,11 +1,20 @@
-package(default_visibility = ["//visibility:public"])
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
 
-exports_files([
-    "posix.bzl",
-])
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
+)
+
+generate(
+    name = "README.md",
+    input = "//:posix.bzl",
+    symbol_names = [
+        "nixpkgs_sh_posix_configure",
+    ],
+    deps = [
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
 )
