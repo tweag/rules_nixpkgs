@@ -54,12 +54,11 @@ def stardoc(
 
 def copy_files(name, data):
     """copy list of files to workspace root"""
-    data = [f for pair in data for f in pair]
     native.sh_binary(
         name = name,
         srcs = ["@rules_nixpkgs_core//docs:copy-files.sh"],
-        args = ["$(location {})".format(f) for f in data],
-        data = data,
+        args = ["$(location {}) {}".format(a, b) for a, b in data],
+        data = [f for pair in data for f in pair],
     )
 
 def compare_files(name, data, error_message = ""):

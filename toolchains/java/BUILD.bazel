@@ -1,4 +1,3 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
 
 package(default_visibility = ["//visibility:public"])
@@ -13,27 +12,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-# boilerplate for `bazel_tools`
-bzl_library(
-    name = "bazel_tools",
-    srcs = ["@bazel_tools//tools:bzl_srcs"],
-)
-
-bzl_library(
-    name = "java",
-    srcs = [":srcs"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":bazel_tools",
-        "@rules_nixpkgs_core//:nixpkgs",
-    ],
-)
-
 generate(
     name = "README.md",
     input = "//:java.bzl",
     symbol_names = [
         "nixpkgs_java_configure",
     ],
-    deps = ["//:java"],
+    deps = ["@rules_nixpkgs_core//:nixpkgs"],
 )
