@@ -62,7 +62,7 @@ def copy_files(name, data):
         data = data,
     )
 
-def compare_files(name, data, error_message=""):
+def compare_files(name, data, error_message = ""):
     """
     compare pairs of files for content equality.
     print error message if a pair does not match.
@@ -76,5 +76,5 @@ def compare_files(name, data, error_message=""):
         srcs = ["@rules_nixpkgs_core//docs:compare-files.sh"],
         args = ["$(location {})".format(f) for f in data],
         data = data,
-        env = {"errormsg" : error_message},
+        env = {"errormsg": error_message},
     )
