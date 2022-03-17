@@ -47,9 +47,11 @@ bzl_library(
         "@bazel_skylib//lib:versions",
         "@rules_nixpkgs_cc//:cc.bzl",
         "@rules_nixpkgs_core//:nixpkgs",
+        "@rules_nixpkgs_go//:go.bzl",
         "@rules_nixpkgs_java//:java.bzl",
         "@rules_nixpkgs_posix//:posix.bzl",
         "@rules_nixpkgs_python//:python.bzl",
+        "@rules_nixpkgs_rust//:rust.bzl",
     ],
 )
 
