@@ -58,7 +58,7 @@ def copy_files(name, data):
         name = name,
         srcs = ["@rules_nixpkgs_core//docs:copy-files.sh"],
         args = ["$(location {}) {}".format(a, b) for a, b in data],
-        data = [f for pair in data for f in pair],
+        data = [a for a, b in data],
     )
 
 def compare_files(name, data, error_message = ""):
