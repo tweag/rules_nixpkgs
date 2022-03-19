@@ -61,7 +61,7 @@ pkgs.buildEnv {{
 
         load("@rules_rust//rust:toolchain.bzl", "rust_stdlib_filegroup")
         rust_stdlib_filegroup(
-            name = "rust_lib",
+            name = "rust_std",
             srcs = glob(
                 [
                     "lib/rustlib/*/lib/*.rlib",
@@ -86,7 +86,7 @@ pkgs.buildEnv {{
         rust_toolchain(
             name = "rust_nix_impl",
             rust_doc = ":rust_doc",
-            rust_lib = ":rust_lib",
+            rust_std = ":rust_std",
             rustc = ":rustc",
             rustfmt = ":rustfmt",
             cargo = ":cargo",
