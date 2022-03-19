@@ -31,6 +31,12 @@ pkgs.buildEnv {{
         )
 
         filegroup(
+            name = "cargo",
+            srcs = ["bin/cargo"],
+            visibility = ["//visibility:public"],
+        )
+
+        filegroup(
             name = "clippy_driver",
             srcs = ["bin/clippy-driver"],
             visibility = ["//visibility:public"],
