@@ -10,7 +10,7 @@ filegroup(
 
 generate(
     name = "README.md",
-    input = "//:go.bzl",
+    inputs = ["//:go.bzl"],
     symbol_names = [
         "nixpkgs_go_configure",
     ],

@@ -10,7 +10,7 @@ filegroup(
 
 generate(
     name = "README.md",
-    input = "//:posix.bzl",
+    inputs = ["//:posix.bzl"],
     symbol_names = [
         "nixpkgs_sh_posix_configure",
     ],

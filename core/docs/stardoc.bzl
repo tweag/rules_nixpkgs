@@ -1,15 +1,64 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", _stardoc = "stardoc")
 
 def generate(
         name,
-        input,
+        inputs,
         error_message = None,
+        deps = [],
         **kwargs):
     """
-    create rules for generating documentation, copying a file into the source
-    tree containing it, and testing that the copying has actually happened
-    (since the copy rule must be run manually).
+    full-service documentation rendering
+
+    - make a Bazel library from `inputs`
+    - create rules for
+        - generating library documentation
+        - copying a file into the source tree containing it
+        - testing that the copying has actually happened
+          (since the copy rule must be run manually)
+
+    NOTE: library name is derived from first file in `inputs`, without extensions.
+
+    Args:
+        name: target file name for rendered documentation.
+        inputs: file names for Bazel library and documentation
+        error_message: custom error message to print if rendered documentation is not up to date.
+        deps: library dependencies of the `inputs` provided.
+        **kwargs: arguments for `stardoc`, most notably `symbol_names` to generate documentation for.
     """
+
+    # necessary boilerplate: to build a Bazel library, we always need to include
+    # `bazel_tools` as a dependency.
+    # since we will combine toolchain libraries with the core library, but only
+    # need `bazel_tools` dependency once, only create if not already there.
+    if not native.existing_rule("bazel_tools"):
+        bzl_library(
+            name = "bazel_tools",
+            srcs = [
+                "@bazel_tools//tools:bzl_srcs",
+            ],
+        )
+
+    # massage first input file name into nice rule name
+    lib = Label(absolute_label(inputs[0])).name.split(".")[0]
+    bzl_library(
+        name = lib,
+        srcs = inputs,
+        visibility = ["//visibility:public"],
+        deps = [":bazel_tools"] + deps,
+    )
+
+    # generate documentation into transient file
+    out = "_{}".format(name)
+    stardoc("__{}".format(name), out, inputs[0], deps = [lib], **kwargs)
+
+    # create rule to copy documentation into source tree
+    # has to be run manually! set up a commit hook for convenience?
+    copy_files(
+        name = "update-{}".format(name),
+        data = [(out, name)],
+    )
+
     if not error_message:
         error_message = [
             "{} is not up to date.",
@@ -18,15 +67,12 @@ def generate(
             "bazel run //{}:update-{}",
         ]
         error_message = "\n".join(error_message).format(name, native.package_name(), name)
-    out = "_{}".format(name)
-    stardoc("__{}".format(name), out, input, **kwargs)
-    copy_files(
-        name = "update-{}".format(name),
-        data = [(out, name)],
-    )
+
+    # create test that source tree is up to date with rendered documentation
     compare_files(
         name = "check-{}".format(name),
-        data = [(out, name)],
+        # expect target file at top level of current workspace, see `copy_files`
+        data = [(out, to_root(name))],
         error_message = error_message,
     )
 
@@ -77,3 +123,14 @@ def compare_files(name, data, error_message = ""):
         data = data,
         env = {"errormsg": error_message},
     )
+
+def to_root(label):
+    return "//:" + Label(absolute_label(label)).name
+
+def absolute_label(label):
+    # adapted from https://stackoverflow.com/a/66705640/18406610
+    if label.startswith("@") or label.startswith("/"):
+        return label
+    if label.startswith(":"):
+        return native.repository_name() + "//" + native.package_name() + label
+    return native.repository_name() + "//" + native.package_name() + ":" + label

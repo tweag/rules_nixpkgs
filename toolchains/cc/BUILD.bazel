@@ -10,7 +10,7 @@ filegroup(
 
 generate(
     name = "README.md",
-    input = "//:cc.bzl",
+    inputs = ["//:cc.bzl"],
     symbol_names = [
         "nixpkgs_cc_configure",
     ],

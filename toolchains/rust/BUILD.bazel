@@ -10,7 +10,7 @@ filegroup(
 
 generate(
     name = "README.md",
-    input = "//:rust.bzl",
+    inputs = ["//:rust.bzl"],
     symbol_names = [
         "nixpkgs_rust_configure",
     ],

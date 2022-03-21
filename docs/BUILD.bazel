@@ -1,9 +1,8 @@
-load("@rules_nixpkgs_core//docs:stardoc.bzl", "compare_files", "copy_files", "stardoc")
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
 
-stardoc(
-    name = "nixpkgs",
-    out = "nixpkgs.md",
-    input = "//nixpkgs:nixpkgs.bzl",
+generate(
+    name = "README.md",
+    inputs = ["//nixpkgs:nixpkgs.bzl"],
     symbol_names = [
         "nixpkgs_git_repository",
         "nixpkgs_local_repository",
@@ -12,102 +11,31 @@ stardoc(
         "nixpkgs_cc_configure_deprecated",
         "nixpkgs_java_configure",
         "nixpkgs_python_configure",
+        "nixpkgs_rust_configure",
+        "nixpkgs_go_configure",
         "nixpkgs_sh_posix_configure",
     ],
-    deps = ["//nixpkgs"],
-)
-
-stardoc(
-    name = "core",
-    out = "core.md",
-    input = "@rules_nixpkgs_core//:nixpkgs.bzl",
-    symbol_names = [
-        "nixpkgs_git_repository",
-        "nixpkgs_local_repository",
-        "nixpkgs_package",
+    deps = [
+        "@bazel_skylib//lib:new_sets",
+        "@bazel_skylib//lib:paths",
+        "@bazel_skylib//lib:sets",
+        "@bazel_skylib//lib:versions",
+        "@rules_nixpkgs_cc//:cc",
+        "@rules_nixpkgs_core//:nixpkgs",
+        "@rules_nixpkgs_go//:go",
+        "@rules_nixpkgs_java//:java",
+        "@rules_nixpkgs_posix//:posix",
+        "@rules_nixpkgs_python//:python",
+        "@rules_nixpkgs_rust//:rust",
     ],
-    deps = ["@rules_nixpkgs_core//:nixpkgs"],
 )
 
-stardoc(
-    name = "go",
-    out = "toolchains/go.md",
-    input = "//nixpkgs:toolchains/go.bzl",
-    symbol_names = [
-        "nixpkgs_go_configure",
-    ],
-    deps = ["//nixpkgs:toolchains_go"],
-)
-
-genrule(
-    name = "readme",
-    srcs = [
-        "README.md.tpl",
-        "nixpkgs.md",
-        "toolchains/go.md",
-    ],
-    outs = ["README.md"],
-    cmd = """$(POSIX_AWK) \\
-  <$(execpath README.md.tpl) \\
-  >$(OUTS) \\
-  '{
-      if (/{{nixpkgs}}/) {
-          RS="\\0";
-          getline content <"$(execpath nixpkgs.md)";
-          print content;
-          RS="\\n";
-      } else if (/{{toolchains_go}}/) {
-          RS="\\0";
-          getline content <"$(execpath toolchains/go.md)";
-          print content;
-          RS="\\n";
-      } else {
-          print
-      }
-  }'
-""",
-    toolchains = ["@rules_sh//sh/posix:make_variables"],
-)
-
-genrule(
-    name = "readme_core",
-    srcs = [
-        "README_core.md.tpl",
-        "core.md",
-    ],
-    outs = ["core/README.md"],
-    cmd = """$(POSIX_AWK) \\
-  <$(execpath README_core.md.tpl) \\
-  >$(OUTS) \\
-  '{
-      if (/{{core}}/) {
-          RS="\\0";
-          getline content <"$(execpath core.md)";
-          print content;
-          RS="\\n";
-      } else {
-          print
-      }
-  }'
-""",
-    toolchains = ["@rules_sh//sh/posix:make_variables"],
-)
-
-compare_files(
-    name = "check-readme",
-    data = [
-        ("README.md", "//:README.md"),
-        ("core/README.md", "@rules_nixpkgs_core//:README.md"),
-    ],
-    error_message = """
-    The project README is not up-to-date.
-    Please update it using the following command.
-
-    bazel run //docs:update-readme
-    """,
-)
-
-copy_files(
+alias(
     name = "update-readme",
-    data = [("README.md", "core/README.md")],
+    actual = "update-README.md",
+)
+
+alias(
+    name = "check-readme",
+    actual = "check-README.md",
 )

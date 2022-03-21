@@ -10,7 +10,7 @@ filegroup(
 
 generate(
     name = "README.md",
-    input = "//:python.bzl",
+    inputs = ["//:python.bzl"],
     symbol_names = [
         "nixpkgs_python_configure",
     ],

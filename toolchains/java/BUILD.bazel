@@ -10,7 +10,7 @@ filegroup(
 
 generate(
     name = "README.md",
-    input = "//:java.bzl",
+    inputs = ["//:java.bzl"],
     symbol_names = [
         "nixpkgs_java_configure",
     ],
