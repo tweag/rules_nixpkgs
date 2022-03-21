@@ -105,6 +105,9 @@ def copy_files(name, data):
         srcs = ["@rules_nixpkgs_core//docs:copy-files.sh"],
         args = ["$(location {}) {}".format(a, b) for a, b in data],
         data = [a for a, b in data],
+        # pass `cp` from `coreutils`, so that it is not something arbitrary
+        env = {"POSIX_CP": "$(POSIX_CP)"},
+        toolchains = ["@rules_sh//sh/posix:make_variables"],
     )
 
 def compare_files(name, data, error_message = ""):
