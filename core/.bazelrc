@@ -1,8 +1,5 @@
 build --host_platform=@rules_nixpkgs_core//platforms:host
 
-# NOTE: all of the following is copy-pasted from `/.bazelrc` and necessary to
-# make this repository work compatibly in isolation.
-
 build --crosstool_top=@nixpkgs_config_cc//:toolchain
 # Using toolchain resolution can lead to spurious dependencies on
 # `@local_config_cc//:builtin_include_directory_paths`. This needs to be
