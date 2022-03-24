@@ -1,67 +1,23 @@
-# NOTE: only temporary for compatibility with `WORKSPACE` setup!
+# NOTE: temporary boilerplate for compatibility with `WORKSPACE` setup!
 # TODO: remove when migration to `bzlmod` is complete
 
-# NOTE: all of the following is copy-pasted from `/WORKSPACE` and reduced
-# to the necessary to make this repository work compatibly in isolation.
+### generic dependencies for rendering documentation
 
-# TODO: remove dependency on cumulative repository to be sure there is no
-# hidden entanglement left. use individual toolchains instead.
 local_repository(
     name = "io_tweag_rules_nixpkgs",
     path = "..",
 )
 
-local_repository(
-    name = "rules_nixpkgs_java",
-    path = "../toolchains/java",
-)
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()
 
-load("//:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_local_repository")
-load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
-load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
+load("@rules_nixpkgs_core//docs:dependencies_1.bzl", "docs_dependencies_1")
 
-http_archive(
-    name = "io_bazel_stardoc",
-    sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
-    strip_prefix = "stardoc-0.4.0",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-        "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-    ],
-)
+docs_dependencies_1()
 
-load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
+load("@rules_nixpkgs_core//docs:dependencies_2.bzl", "docs_dependencies_2")
 
-stardoc_repositories()
+docs_dependencies_2()
 
-nixpkgs_git_repository(
-    name = "remote_nixpkgs",
-    remote = "https://github.com/NixOS/nixpkgs",
-    revision = "21.11",
-    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
-)
-
-nixpkgs_local_repository(
-    name = "nixpkgs",
-    nix_file = "@io_tweag_rules_nixpkgs//:nixpkgs.nix",
-    nix_file_deps = ["@io_tweag_rules_nixpkgs//:nixpkgs.json"],
-)
-
-nixpkgs_cc_configure(
-    name = "nixpkgs_config_cc",
-    repository = "@remote_nixpkgs",
-)
-
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies")
-
-rules_java_dependencies()
-
-nixpkgs_java_configure(
-    attribute_path = "jdk8.home",
-    repository = "@remote_nixpkgs",
-)
+### end generic dependencies for rendering documentation
