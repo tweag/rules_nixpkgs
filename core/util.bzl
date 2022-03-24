@@ -110,15 +110,15 @@ def ensure_constraints(repository_ctx):
       exec_constraints, The generated list of exec constraints
       target_constraints, The generated list of target constraints
     """
-    cpu = get_cpu_value(repository_ctx)
+    cpu_value = get_cpu_value(repository_ctx)
     cpu = {
         "darwin": "@platforms//cpu:x86_64",
         "darwin_arm64": "@platforms//cpu:arm64",
-    }.get(cpu, "@platforms//cpu:x86_64")
+    }.get(cpu_value, "@platforms//cpu:x86_64")
     os = {
         "darwin": "@platforms//os:osx",
         "darwin_arm64": "@platforms//os:osx",
-    }.get(cpu, "@platforms//os:linux")
+    }.get(cpu_value, "@platforms//os:linux")
     if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
         target_constraints = [cpu, os]
         exec_constraints = target_constraints
