@@ -12,6 +12,12 @@ load(
     "get_cpu_value",
 )
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
+load(
+    "@rules_nixpkgs_core//:util.bzl",
+    "default_constraints",
+    "ensure_constraints",
+    "ensure_constraints_pure",
+)
 
 def nixpkgs_sh_posix_config(name, packages, **kwargs):
     nixpkgs_package(
@@ -101,24 +107,22 @@ create_posix_toolchain()
 # should run.
 
 def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, _ = ensure_constraints_pure(
+        default_constraints = default_constraints(repository_ctx),
+    )
     repository_ctx.file("BUILD", executable = False, content = """
 toolchain(
     name = "nixpkgs_sh_posix_toolchain",
     toolchain = "@{workspace}//:nixpkgs_sh_posix",
     toolchain_type = "@rules_sh//sh/posix:toolchain_type",
-    exec_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-        "@rules_nixpkgs_core//constraints:support_nix",
-    ],
+    exec_compatible_with = {exec_constraints},
     # Leaving the target constraints empty matter for cross-compilation.
     # See Note [Target constraints for POSIX tools]
     target_compatible_with = [],
 )
     """.format(
         workspace = repository_ctx.attr.workspace,
-        os = {"darwin": "osx"}.get(cpu, "linux"),
+        exec_constraints = exec_constraints,
     ))
 
 _nixpkgs_sh_posix_toolchain = repository_rule(
