@@ -19,10 +19,14 @@ bzl_library(
         "@rules_nixpkgs_cc//:cc",
         "@rules_nixpkgs_core//:bazel_tools",
         "@rules_nixpkgs_core//:nixpkgs",
-        "@rules_nixpkgs_go//:go",
         "@rules_nixpkgs_java//:java",
         "@rules_nixpkgs_posix//:posix",
         "@rules_nixpkgs_python//:python",
         "@rules_nixpkgs_rust//:rust",
     ],
+)
+
+alias(
+    name = "toolchains_go",
+    actual = "@rules_nixpkgs_go//:go",
 )
