@@ -10,6 +10,8 @@ filegroup(
 
 # necessary boilerplate: to build a Bazel library, we always need to include
 # `bazel_tools` as a dependency.
+# `@bazel_tools//tools` does not define a `bzl_library` itself, instead we
+# have to define our own using the `@bazel_tools//tools:bzl_srcs` filegroup.
 # https://github.com/bazelbuild/skydoc/issues/166
 # https://github.com/bazelbuild/stardoc/issues/38#issuecomment-568909109
 bzl_library(

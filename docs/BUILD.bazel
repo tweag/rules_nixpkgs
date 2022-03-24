@@ -12,7 +12,6 @@ generate_documentation(
         "nixpkgs_java_configure",
         "nixpkgs_python_configure",
         "nixpkgs_rust_configure",
-        "nixpkgs_go_configure",
         "nixpkgs_sh_posix_configure",
     ],
     deps = [

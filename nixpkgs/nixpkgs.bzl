@@ -30,7 +30,7 @@ Links:
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_java_configure](#nixpkgs_java_configure)
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
-* [nixpkgs_go_configure](#nixpkgs_go_configure)
+* [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
 * [nixpkgs_rust_configure](#nixpkgs_rust_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
 
@@ -135,6 +135,10 @@ load(
     _nixpkgs_cc_configure = "nixpkgs_cc_configure",
 )
 load(
+    "@rules_nixpkgs_rust//:rust.bzl",
+    _nixpkgs_rust_configure = "nixpkgs_rust_configure",
+)
+load(
     "@rules_nixpkgs_posix//:posix.bzl",
     _nixpkgs_sh_posix_configure = "nixpkgs_sh_posix_configure",
 )
@@ -146,6 +150,7 @@ nixpkgs_package = _nixpkgs_package
 nixpkgs_python_configure = _nixpkgs_python_configure
 nixpkgs_java_configure = _nixpkgs_java_configure
 nixpkgs_cc_configure = _nixpkgs_cc_configure
+nixpkgs_rust_configure = _nixpkgs_rust_configure
 nixpkgs_sh_posix_configure = _nixpkgs_sh_posix_configure
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
