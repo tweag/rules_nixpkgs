@@ -140,7 +140,7 @@ def _nixpkgs_package_impl(repository_ctx):
         repositories = {repository_ctx.attr.repository: "nixpkgs"}
 
     # If true, a BUILD file will be created from a template if it does not
-    # exits.
+    # exist.
     # However this will happen AFTER the nix-build command.
     create_build_file_if_needed = False
     if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
