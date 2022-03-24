@@ -109,6 +109,7 @@ create_posix_toolchain()
 def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
     exec_constraints, _ = ensure_constraints_pure(
         default_constraints = default_constraints(repository_ctx),
+        exec_constraints = repository_ctx.attr.exec_constraints,
     )
     repository_ctx.file("BUILD", executable = False, content = """
 toolchain(
@@ -129,12 +130,14 @@ _nixpkgs_sh_posix_toolchain = repository_rule(
     _nixpkgs_sh_posix_toolchain_impl,
     attrs = {
         "workspace": attr.string(),
+        "exec_constraints": attr.string_list(),
     },
 )
 
 def nixpkgs_sh_posix_configure(
         name = "nixpkgs_sh_posix_config",
         packages = ["stdenv.initialPath"],
+        exec_constraints = None,
         **kwargs):
     """Create a POSIX toolchain from nixpkgs.
 
@@ -148,6 +151,7 @@ def nixpkgs_sh_posix_configure(
     Args:
       name: Name prefix for the generated repositories.
       packages: List of Nix attribute paths to draw Unix tools from.
+      exec_constraints: Constraints for the execution platform.
       nix_file_deps: See nixpkgs_package.
       repositories: See nixpkgs_package.
       repository: See nixpkgs_package.
@@ -157,6 +161,7 @@ def nixpkgs_sh_posix_configure(
     nixpkgs_sh_posix_config(
         name = name,
         packages = packages,
+        exec_constraints = exec_constraints,
         **kwargs
     )
 
