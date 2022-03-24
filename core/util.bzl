@@ -99,7 +99,8 @@ def find_children(repository_ctx, target_dir):
 def ensure_constraints(repository_ctx):
     """Build exec and target constraints for repository rules.
 
-    If these are user-provided, then they are passed through. Otherwise we build for x86_64 on the current OS.
+    If these are user-provided, then they are passed through.
+    Otherwise we build for the current CPU on the current OS, one of darwin-x86_64, darwin-arm64, or the default linux-x86_64.
     In either case, exec_constraints always contain the support_nix constraint, so the toolchain can be rejected on non-Nix environments.
 
     Args:
@@ -110,10 +111,16 @@ def ensure_constraints(repository_ctx):
       target_constraints, The generated list of target constraints
     """
     cpu = get_cpu_value(repository_ctx)
-    os = {"darwin": "osx"}.get(cpu, "linux")
+    cpu = {
+        "darwin": "@platforms//cpu:x86_64",
+        "darwin_arm64": "@platforms//cpu:arm64",
+    }.get(cpu, "@platforms//cpu:x86_64")
+    os = {
+        "darwin": "@platforms//os:osx",
+        "darwin_arm64": "@platforms//os:osx",
+    }.get(cpu, "@platforms//os:linux")
     if not repository_ctx.attr.target_constraints and not repository_ctx.attr.exec_constraints:
-        target_constraints = ["@platforms//cpu:x86_64"]
-        target_constraints.append("@platforms//os:{}".format(os))
+        target_constraints = [cpu, os]
         exec_constraints = target_constraints
     else:
         target_constraints = list(repository_ctx.attr.target_constraints)

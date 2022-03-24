@@ -109,7 +109,7 @@ def _parse_cc_toolchain_info(content, filename):
 
 def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
-    darwin = cpu_value == "darwin"
+    darwin = cpu_value == "darwin" or cpu_value == "darwin_arm64"
 
     cc_toolchain_info_file = repository_ctx.path(repository_ctx.attr.cc_toolchain_info)
     if not cc_toolchain_info_file.exists and not repository_ctx.attr.fail_not_supported:
