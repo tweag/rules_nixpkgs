@@ -1,56 +1,29 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", _stardoc = "stardoc")
 
-def generate(
+def generate_documentation(
         name,
-        inputs,
+        input,
         error_message = None,
-        deps = [],
         **kwargs):
     """
-    full-service documentation rendering
+    rules for rendering library documentation
 
-    - make a Bazel library from `inputs`
-    - create rules for
-        - generating library documentation
-        - copying a file into the source tree containing it
-        - testing that the copying has actually happened
-          (since the copy rule must be run manually)
-
-    NOTE: library name is derived from first file in `inputs`, without extensions.
+    creates rules for
+    - generating library documentation
+    - copying a file into the source tree containing it
+    - testing that the copying has actually happened
+        (since the copy rule must be run manually)
 
     Args:
         name: target file name for rendered documentation.
-        inputs: file names for Bazel library and documentation
+        input: file name to render documentation from
         error_message: custom error message to print if rendered documentation is not up to date.
-        deps: library dependencies of the `inputs` provided.
         **kwargs: arguments for `stardoc`, most notably `symbol_names` to generate documentation for.
     """
 
-    # necessary boilerplate: to build a Bazel library, we always need to include
-    # `bazel_tools` as a dependency.
-    # since we will combine toolchain libraries with the core library, but only
-    # need `bazel_tools` dependency once, only create if not already there.
-    if not native.existing_rule("bazel_tools"):
-        bzl_library(
-            name = "bazel_tools",
-            srcs = [
-                "@bazel_tools//tools:bzl_srcs",
-            ],
-        )
-
-    # massage first input file name into nice rule name
-    lib = Label(absolute_label(inputs[0])).name.split(".")[0]
-    bzl_library(
-        name = lib,
-        srcs = inputs,
-        visibility = ["//visibility:public"],
-        deps = [":bazel_tools"] + deps,
-    )
-
     # generate documentation into transient file
     out = "_{}".format(name)
-    stardoc("__{}".format(name), out, inputs[0], deps = [lib], **kwargs)
+    stardoc("__{}".format(name), out, input, **kwargs)
 
     # create rule to copy documentation into source tree
     # has to be run manually! set up a commit hook for convenience?

@@ -1,4 +1,4 @@
-load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -8,12 +8,9 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-generate(
-    name = "README.md",
-    inputs = ["//:posix.bzl"],
-    symbol_names = [
-        "nixpkgs_sh_posix_configure",
-    ],
+bzl_library(
+    name = "posix",
+    srcs = ["//:posix.bzl"],
     deps = [
         "@rules_nixpkgs_core//:nixpkgs",
     ],

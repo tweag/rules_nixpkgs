@@ -1,4 +1,4 @@
-load("//docs:stardoc.bzl", "generate")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -8,16 +8,25 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-generate(
-    name = "README.md",
-    inputs = [
+# necessary boilerplate: to build a Bazel library, we always need to include
+# `bazel_tools` as a dependency.
+# https://github.com/bazelbuild/skydoc/issues/166
+# https://github.com/bazelbuild/stardoc/issues/38#issuecomment-568909109
+bzl_library(
+    name = "bazel_tools",
+    srcs = [
+        "@bazel_tools//tools:bzl_srcs",
+    ],
+)
+
+bzl_library(
+    name = "nixpkgs",
+    srcs = [
         "nixpkgs.bzl",
         "util.bzl",
     ],
-    symbol_names = [
-        "nixpkgs_git_repository",
-        "nixpkgs_local_repository",
-        "nixpkgs_package",
+    deps = [
+        ":bazel_tools",
+        "@bazel_skylib//lib:paths",
     ],
-    deps = ["@bazel_skylib//lib:paths"],
 )
