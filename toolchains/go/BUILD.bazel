@@ -1,5 +1,18 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "go.bzl",
-])
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "go",
+    srcs = ["//:go.bzl"],
+    deps = [
+        "@io_bazel_rules_go//go:deps",
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
+)

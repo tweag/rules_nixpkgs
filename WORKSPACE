@@ -8,8 +8,8 @@ rules_nixpkgs_dependencies()
 load(
     "//nixpkgs:nixpkgs.bzl",
     "nixpkgs_cc_configure",
-    "nixpkgs_java_configure",
     "nixpkgs_git_repository",
+    "nixpkgs_java_configure",
     "nixpkgs_local_repository",
     "nixpkgs_package",
     "nixpkgs_python_configure",
@@ -265,6 +265,6 @@ load(
 
 nixpkgs_go_configure(repository = "@nixpkgs")
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
 
 go_rules_dependencies()

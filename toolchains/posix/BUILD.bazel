@@ -1,11 +1,17 @@
-package(default_visibility = ["//visibility:public"])
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-exports_files([
-    "posix.bzl",
-])
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "posix",
+    srcs = ["//:posix.bzl"],
+    deps = [
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
 )

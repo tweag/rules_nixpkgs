@@ -1,0 +1,8 @@
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate_documentation")
+
+generate_documentation(
+    name = "README.md",
+    input = "//:java.bzl",
+    symbol_names = ["nixpkgs_java_configure"],
+    deps = ["//:java"],
+)

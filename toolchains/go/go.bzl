@@ -1,4 +1,10 @@
-"""Rules for importing a Go toolchain from Nixpkgs.
+"""<!-- Edit the docstring in `toolchains/go/go.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+Rules for importing a Go toolchain from Nixpkgs.
+
+## Rules
+
+* [nixpkgs_go_configure](#nixpkgs_go_configure)
 """
 
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")

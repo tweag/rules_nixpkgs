@@ -1,0 +1,8 @@
+load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate_documentation")
+
+generate_documentation(
+    name = "README.md",
+    input = "//:python.bzl",
+    symbol_names = ["nixpkgs_python_configure"],
+    deps = ["//:python"],
+)

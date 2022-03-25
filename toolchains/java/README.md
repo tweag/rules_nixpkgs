@@ -1,11 +1,15 @@
-# Nixpkgs for Java with Bazel
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+<!-- Edit the docstring in `toolchains/java/java.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+# Rules for importing a Java toolchain from Nixpkgs
 
 ## Rules
 
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+* [nixpkgs_java_configure](#nixpkgs_java_configure)
 
-Rules for importing a Java toolchain from Nixpkgs.
 
+# Reference documentation
 
 <a id="#nixpkgs_java_configure"></a>
 
@@ -303,6 +307,5 @@ Constraints for the target platform.
 </tr>
 </tbody>
 </table>
-
 
 

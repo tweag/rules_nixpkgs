@@ -1,4 +1,10 @@
-"""Rules for importing a Java toolchain from Nixpkgs.
+"""<!-- Edit the docstring in `toolchains/java/java.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+# Rules for importing a Java toolchain from Nixpkgs
+
+## Rules
+
+* [nixpkgs_java_configure](#nixpkgs_java_configure)
 """
 
 load(

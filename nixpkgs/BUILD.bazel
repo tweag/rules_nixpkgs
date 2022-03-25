@@ -2,67 +2,31 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "nixpkgs.bzl",
-])
-
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
 )
 
-# @bazel_tools//tools does not define a bzl_library itself, instead we are
-# supposed to define our own using the @bazel_tools//tools:bzl_srcs filegroup.
-# See https://github.com/bazelbuild/skydoc/issues/166
-bzl_library(
-    name = "bazel_tools",
-    srcs = [
-        "@bazel_tools//tools:bzl_srcs",
-    ],
-)
-
-bzl_library(
-    name = "repositories",
-    srcs = [
-        "repositories.bzl",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":bazel_tools",
-    ],
-)
-
 bzl_library(
     name = "nixpkgs",
-    srcs = [
-        "nixpkgs.bzl",
-    ],
-    visibility = ["//visibility:public"],
+    srcs = ["nixpkgs.bzl"],
     deps = [
-        "@rules_nixpkgs_core//:core",
-        "@rules_nixpkgs_cc//:cc.bzl",
-        "@rules_nixpkgs_java//:java.bzl",
-        "@rules_nixpkgs_python//:python.bzl",
-        "@rules_nixpkgs_posix//:posix.bzl",
-        ":bazel_tools",
         "@bazel_skylib//lib:new_sets",
         "@bazel_skylib//lib:paths",
         "@bazel_skylib//lib:sets",
         "@bazel_skylib//lib:versions",
+        "@rules_nixpkgs_cc//:cc",
+        "@rules_nixpkgs_core//:bazel_tools",
+        "@rules_nixpkgs_core//:nixpkgs",
+        "@rules_nixpkgs_java//:java",
+        "@rules_nixpkgs_posix//:posix",
+        "@rules_nixpkgs_python//:python",
+        "@rules_nixpkgs_rust//:rust",
     ],
 )
 
-bzl_library(
+alias(
     name = "toolchains_go",
-    srcs = [
-        "toolchains/go.bzl",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":bazel_tools",
-        ":nixpkgs",
-        "//toolchains/go:go.bzl",
-        "@io_bazel_rules_go//go:deps",
-    ],
+    actual = "@rules_nixpkgs_go//:go",
 )

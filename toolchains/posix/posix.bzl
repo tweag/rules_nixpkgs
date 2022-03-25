@@ -1,3 +1,12 @@
+"""<!-- Edit the docstring in `toolchains/posix/posix.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+Rules for importing a POSIX toolchain from Nixpkgs.
+
+# Rules
+
+* [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
+"""
+
 load(
     "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
     "get_cpu_value",

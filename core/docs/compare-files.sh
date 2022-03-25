@@ -4,6 +4,7 @@ set -euo pipefail
 # print error message (set in `$errormsg` environment variable) and exit if any
 # pair does not have equal contents.
 while (($#)); do
+  # impurity: our special setup requires that the second file is at the top level of a workspace.
   if ! cmp -s "$1" "$2"; then
     echo "$errormsg"
     exit 1

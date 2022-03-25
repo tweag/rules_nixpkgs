@@ -1,13 +1,22 @@
-package(default_visibility = ["//visibility:public"])
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-exports_files([
-    "cc.bzl",
-    "foreign_cc.bzl",
-    "cc.nix",
-])
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "cc",
+    srcs = ["cc.bzl"],
+    deps = [
+        "@bazel_skylib//lib:new_sets",
+        "@bazel_skylib//lib:paths",
+        "@bazel_skylib//lib:sets",
+        "@bazel_skylib//lib:versions",
+        "@rules_nixpkgs_core//:bazel_tools",
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
 )

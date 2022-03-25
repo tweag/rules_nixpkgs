@@ -1,4 +1,10 @@
-"""Rules for importing a Python toolchain from Nixpkgs.
+"""<!-- Edit the docstring in `toolchains/python/python.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+Rules for importing a Python toolchain from Nixpkgs.
+
+# Rules
+
+* [nixpkgs_python_configure](#nixpkgs_python_configure)
 """
 
 load("@bazel_skylib//lib:versions.bzl", "versions")

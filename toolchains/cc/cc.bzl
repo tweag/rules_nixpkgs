@@ -1,4 +1,10 @@
-"""Rules for importing a C++ toolchain from Nixpkgs.
+"""<!-- Edit the docstring in `toolchains/cc/cc.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+
+Rules for importing a C++ toolchain from Nixpkgs.
+
+## Rules
+
+* [nixpkgs_cc_configure](#nixpkgs_cc_configure)
 """
 
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")

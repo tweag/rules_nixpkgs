@@ -1,4 +1,6 @@
-<!-- Edit docs/README.md.tpl and run `bazel run //docs:update-readme` to change the project README. -->
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+<!-- Edit the docstring in `nixpkgs/nixpkgs.bzl` and run `bazel run //docs:update-readme` to change the project README. -->
 
 # Nixpkgs rules for Bazel
 
@@ -30,8 +32,9 @@ Links:
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_java_configure](#nixpkgs_java_configure)
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
+* [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
+* [nixpkgs_rust_configure](#nixpkgs_rust_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
-* [nixpkgs_go_configure](#nixpkgs_go_configure)
 
 ## Setup
 
@@ -76,11 +79,35 @@ nixpkgs_package(
 )
 ```
 
-## Rules
+## Migration from older releases
 
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+### `path` Attribute (removed in 0.3)
 
-Rules for importing Nixpkgs packages.
+`path` was an attribute from the early days of `rules_nixpkgs`, and
+its ability to reference arbitrary paths is a danger to build hermeticity.
+
+Replace it with either `nixpkgs_git_repository` if you need
+a specific version of `nixpkgs`. If you absolutely *must* depend on a
+local folder, use Bazel's
+[`local_repository` workspace rule](https://docs.bazel.build/versions/master/be/workspace.html#local_repository).
+Both approaches work well with the `repositories` attribute of `nixpkgs_package`.
+
+```bzl
+local_repository(
+  name = "local-nixpkgs",
+  path = "/path/to/nixpkgs",
+)
+
+nixpkgs_package(
+  name = "somepackage",
+  repositories = {
+    "nixpkgs": "@local-nixpkgs//:default.nix",
+  },
+)
+```
+
+
+# Reference documentation
 
 <a id="#nixpkgs_git_repository"></a>
 
@@ -1327,6 +1354,138 @@ Constraints for the target platform.
 </table>
 
 
+<a id="#nixpkgs_rust_configure"></a>
+
+### nixpkgs_rust_configure
+
+<pre>
+nixpkgs_rust_configure(<a href="#nixpkgs_rust_configure-name">name</a>, <a href="#nixpkgs_rust_configure-default_edition">default_edition</a>, <a href="#nixpkgs_rust_configure-repository">repository</a>, <a href="#nixpkgs_rust_configure-repositories">repositories</a>, <a href="#nixpkgs_rust_configure-nix_file">nix_file</a>, <a href="#nixpkgs_rust_configure-nix_file_deps">nix_file_deps</a>,
+                       <a href="#nixpkgs_rust_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_rust_configure-nixopts">nixopts</a>, <a href="#nixpkgs_rust_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_rust_configure-quiet">quiet</a>, <a href="#nixpkgs_rust_configure-exec_constraints">exec_constraints</a>,
+                       <a href="#nixpkgs_rust_configure-target_constraints">target_constraints</a>)
+</pre>
+
+
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_rust_configure-name">
+<td><code>name</code></td>
+<td>
+
+optional.
+default is <code>"nixpkgs_rust"</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-default_edition">
+<td><code>default_edition</code></td>
+<td>
+
+optional.
+default is <code>"2018"</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-repository">
+<td><code>repository</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-repositories">
+<td><code>repositories</code></td>
+<td>
+
+optional.
+default is <code>{}</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-nix_file">
+<td><code>nix_file</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-nix_file_deps">
+<td><code>nix_file_deps</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-nix_file_content">
+<td><code>nix_file_content</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-nixopts">
+<td><code>nixopts</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-fail_not_supported">
+<td><code>fail_not_supported</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-quiet">
+<td><code>quiet</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-exec_constraints">
+<td><code>exec_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+</td>
+</tr>
+<tr id="nixpkgs_rust_configure-target_constraints">
+<td><code>target_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
 <a id="#nixpkgs_sh_posix_configure"></a>
 
 ### nixpkgs_sh_posix_configure
@@ -1393,264 +1552,3 @@ optional.
 </table>
 
 
-
-
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
-
-Rules for importing a Go toolchain from Nixpkgs.
-
-**NOTE: The following rules must be loaded from
-`@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl` to avoid unnecessary
-dependencies on rules_go for those who don't need go toolchain.
-`io_bazel_rules_go` must be available for loading before loading of
-`@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl`.**
-
-
-<a id="#nixpkgs_go_configure"></a>
-
-### nixpkgs_go_configure
-
-<pre>
-nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>,
-                     <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>)
-</pre>
-
-Use go toolchain from Nixpkgs.
-
-By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS).
-There is a way to tell rules_go to look into environment and find local go binary which is not hermetic.
-This command allows to setup a hermetic go sdk from Nixpkgs, which should be considered as best practice.
-Cross toolchains are declared and registered for each entry in the `PLATFORMS` constant in `rules_go`.
-
-Note that the nix package must provide a full go sdk at the root of the package instead of in `$out/share/go`,
-and also provide an empty normal file named `ROOT` at the root of package.
-
-#### Example
-
-  ```bzl
-  nixpkgs_go_configure(repository = "@nixpkgs//:default.nix")
-  ```
-
-  Example (optional nix support when go is a transitive dependency):
-
-  ```bzl
-  # .bazel-lib/nixos-support.bzl
-  def _has_nix(ctx):
-      return ctx.which("nix-build") != None
-
-  def _gen_imports_impl(ctx):
-      ctx.file("BUILD", "")
-
-      imports_for_nix = """
-          load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure")
-
-          def fix_go():
-              nixpkgs_go_configure(repository = "@nixpkgs")
-      """
-      imports_for_non_nix = """
-          def fix_go():
-              # if go isn't transitive you'll need to add call to go_register_toolchains here
-              pass
-      """
-
-      if _has_nix(ctx):
-          ctx.file("imports.bzl", imports_for_nix)
-      else:
-          ctx.file("imports.bzl", imports_for_non_nix)
-
-  _gen_imports = repository_rule(
-      implementation = _gen_imports_impl,
-      attrs = dict(),
-  )
-
-  def gen_imports():
-      _gen_imports(
-          name = "nixos_support",
-      )
-
-  # WORKSPACE
-
-  // ...
-  http_archive(name = "io_tweag_rules_nixpkgs", ...)
-  // ...
-  local_repository(
-      name = "bazel_lib",
-      path = ".bazel-lib",
-  )
-  load("@bazel_lib//:nixos-support.bzl", "gen_imports")
-  gen_imports()
-  load("@nixos_support//:imports.bzl", "fix_go")
-  fix_go()
-  ```
-
-
-#### Parameters
-
-<table class="params-table">
-<colgroup>
-<col class="col-param" />
-<col class="col-description" />
-</colgroup>
-<tbody>
-<tr id="nixpkgs_go_configure-sdk_name">
-<td><code>sdk_name</code></td>
-<td>
-
-optional.
-default is <code>"go_sdk"</code>
-
-<p>
-
-Go sdk name to pass to rules_go
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-repository">
-<td><code>repository</code></td>
-<td>
-
-optional.
-default is <code>None</code>
-
-<p>
-
-A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-repositories">
-<td><code>repositories</code></td>
-<td>
-
-optional.
-default is <code>{}</code>
-
-<p>
-
-A dictionary mapping `NIX_PATH` entries to repository labels.
-
-  Setting it to
-  ```
-  repositories = { "myrepo" : "//:myrepo" }
-  ```
-  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
-
-  Specify one of `path` or `repositories`.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-nix_file">
-<td><code>nix_file</code></td>
-<td>
-
-optional.
-default is <code>None</code>
-
-<p>
-
-An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-nix_file_deps">
-<td><code>nix_file_deps</code></td>
-<td>
-
-optional.
-default is <code>None</code>
-
-<p>
-
-Dependencies of `nix_file` if any.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-nix_file_content">
-<td><code>nix_file_content</code></td>
-<td>
-
-optional.
-default is <code>None</code>
-
-<p>
-
-An expression for a Nix environment derivation.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-nixopts">
-<td><code>nixopts</code></td>
-<td>
-
-optional.
-default is <code>[]</code>
-
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-fail_not_supported">
-<td><code>fail_not_supported</code></td>
-<td>
-
-optional.
-default is <code>True</code>
-
-<p>
-
-See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_go_configure-quiet">
-<td><code>quiet</code></td>
-<td>
-
-optional.
-default is <code>False</code>
-
-<p>
-
-Whether to hide the output of the Nix command.
-
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-
-
-
-## Migration from older releases
-
-### `path` Attribute (removed in 0.3)
-
-`path` was an attribute from the early days of `rules_nixpkgs`, and
-its ability to reference arbitrary paths is a danger to build hermeticity.
-
-Replace it with either `nixpkgs_git_repository` if you need
-a specific version of `nixpkgs`. If you absolutely *must* depend on a
-local folder, use Bazel’s
-[`local_repository` workspace rule](https://docs.bazel.build/versions/master/be/workspace.html#local_repository).
-Both approaches work well with the `repositories` attribute of `nixpkgs_package`.
-
-```bzl
-local_repository(
-  name = "local-nixpkgs",
-  path = "/path/to/nixpkgs",
-)
-
-nixpkgs_package(
-  name = "somepackage",
-  repositories = {
-    "nixpkgs": "@local-nixpkgs//:default.nix",
-  },
-  …
-)
-```

@@ -1,5 +1,17 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "rust.bzl",
-])
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "rust",
+    srcs = ["//:rust.bzl"],
+    deps = [
+        "@rules_nixpkgs_core//:nixpkgs",
+    ],
+)
