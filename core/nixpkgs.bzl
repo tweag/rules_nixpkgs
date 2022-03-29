@@ -77,12 +77,12 @@ def _nixpkgs_local_repository_impl(repository_ctx):
        bool(repository_ctx.attr.nix_file_content):
         fail("Specify one of 'nix_file' or 'nix_file_content' (but not both).")
     if repository_ctx.attr.nix_file_content:
+        target = "default.nix"
         repository_ctx.file(
-            path = "default.nix",
+            target,
             content = repository_ctx.attr.nix_file_content,
             executable = False,
         )
-        target = repository_ctx.path("default.nix")
     else:
         target = cp(repository_ctx, repository_ctx.attr.nix_file)
 
