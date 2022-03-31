@@ -18,8 +18,8 @@ def docs_dependencies_2():
 
     nixpkgs_local_repository(
         name = "nixpkgs",
-        nix_file = "@io_tweag_rules_nixpkgs//:nixpkgs.nix",
-        nix_file_deps = ["@io_tweag_rules_nixpkgs//:nixpkgs.json"],
+        nix_file = "@rules_nixpkgs_core//:nixpkgs.nix",
+        nix_file_deps = ["@rules_nixpkgs_core//:nixpkgs.json"],
     )
 
     nixpkgs_cc_configure(
