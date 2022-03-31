@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+
+package(default_testonly = 1)
+
+# Test nixpkgs_go_configure()
+go_binary(
+    name = "go-test",
+    srcs = ["go-test.go"],
+)

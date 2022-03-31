@@ -1,42 +1,27 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+# For documentation
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies()
 
-load(
-    "//nixpkgs:nixpkgs.bzl",
-    "nixpkgs_cc_configure",
-    "nixpkgs_git_repository",
-    "nixpkgs_java_configure",
-    "nixpkgs_local_repository",
-    "nixpkgs_package",
-    "nixpkgs_python_configure",
-    "nixpkgs_sh_posix_configure",
-)
+load("@rules_nixpkgs_core//docs:dependencies_1.bzl", "docs_dependencies_1")
 
-# For documentation
+docs_dependencies_1()
 
-http_archive(
-    name = "io_bazel_stardoc",
-    sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
-    strip_prefix = "stardoc-0.4.0",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-        "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-    ],
-)
+load("@rules_nixpkgs_core//docs:dependencies_2.bzl", "docs_dependencies_2")
 
-load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
-
-stardoc_repositories()
+docs_dependencies_2()
 
 # For tests
 
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-
-bazel_skylib_workspace()
+load(
+    "//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_git_repository",
+    "nixpkgs_local_repository",
+    "nixpkgs_package",
+)
 
 nixpkgs_local_repository(
     name = "nixpkgs",
@@ -67,51 +52,7 @@ nixpkgs_package(
     repository = "@nixpkgs",
 )
 
-nixpkgs_cc_configure(
-    # Use a different name to be able to distinguish this toolchain from the
-    # builtin one in the tests.
-    name = "nixpkgs_config_cc",
-    repository = "@remote_nixpkgs",
-)
-
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies")
-
-rules_java_dependencies()
-
-nixpkgs_java_configure(
-    attribute_path = "jdk8.home",
-    repository = "@remote_nixpkgs",
-)
-
-nixpkgs_python_configure(
-    python2_attribute_path = "python2",
-    repository = "@remote_nixpkgs",
-)
-
-nixpkgs_package(
-    name = "nixpkgs_python_configure_test",
-    nix_file = "//tests:python-test.nix",
-    repository = "@remote_nixpkgs",
-)
-
-http_archive(
-    name = "rules_sh",
-    sha256 = "83a065ba6469135a35786eb741e17d50f360ca92ab2897857475ab17c0d29931",
-    strip_prefix = "rules_sh-0.2.0",
-    urls = ["https://github.com/tweag/rules_sh/archive/v0.2.0.tar.gz"],
-)
-
-load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
-
-rules_sh_dependencies()
-
-nixpkgs_sh_posix_configure(repository = "@nixpkgs")
-
-load("@rules_sh//sh:posix.bzl", "sh_posix_configure")
-
-sh_posix_configure()
-
-# go toolchain test
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_go",

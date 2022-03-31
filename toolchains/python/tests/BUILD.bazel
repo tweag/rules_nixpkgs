@@ -1,0 +1,8 @@
+# Test nixpkgs_python_configure() by running some Python code.
+test_suite(
+    name = "python-test",
+    tests = [
+        "@nixpkgs_python_configure_test//:python2-test",
+        "@nixpkgs_python_configure_test//:python3-test",
+    ],
+)

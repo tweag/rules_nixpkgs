@@ -1,1 +1,42 @@
-../cc/WORKSPACE
+# NOTE: temporary boilerplate for compatibility with `WORKSPACE` setup!
+# TODO: remove when migration to `bzlmod` is complete
+
+### generic dependencies for rendering documentation
+
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../..",
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
+rules_nixpkgs_dependencies()
+
+load("@rules_nixpkgs_core//docs:dependencies_1.bzl", "docs_dependencies_1")
+
+docs_dependencies_1()
+
+load("@rules_nixpkgs_core//docs:dependencies_2.bzl", "docs_dependencies_2")
+
+docs_dependencies_2()
+
+### end generic dependencies for rendering documentation
+
+### dependencies for tests
+
+load("//:python.bzl", "nixpkgs_python_configure")
+
+nixpkgs_python_configure(
+    python2_attribute_path = "python2",
+    repository = "@nixpkgs",  # `@nixpkgs` reused from `docs_dependencies_2`
+)
+
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
+
+nixpkgs_package(
+    name = "nixpkgs_python_configure_test",
+    nix_file = "//tests:python-test.nix",
+    repository = "@nixpkgs",
+)
+
+### end dependencies for tests

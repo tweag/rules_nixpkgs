@@ -23,6 +23,7 @@ docs_dependencies_2()
 ### end generic dependencies for rendering documentation
 
 ### dependencies for tests
+
 load(
     "//:nixpkgs.bzl",
     "nixpkgs_git_repository",

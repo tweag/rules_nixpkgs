@@ -1,0 +1,16 @@
+load("@rules_java//java:defs.bzl", "java_test")
+load(":java-test.bzl", "java_runtime_test")
+
+package(default_testonly = 1)
+
+# Test nixpkgs_java_configure() by building some Java code.
+java_test(
+    name = "java-test",
+    srcs = ["JavaTest.java"],
+    test_class = "JavaTest",
+)
+
+# Test that nixpkgs_java_runtime is selected.
+java_runtime_test(
+    name = "java-runtime",
+)
