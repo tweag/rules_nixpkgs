@@ -26,8 +26,23 @@ jobs:
       - name: Build & test
         run: |
           nix-shell --pure --run '
-            set -euo pipefail
-            bazel test //...
+            set -euo pipefail 
+            dirs=(
+              .
+              core
+              toolchains/go
+              toolchains/java
+              toolchains/cc
+              toolchains/python
+              toolchains/posix
+              toolchains/rust
+            )
+            for dir in "${dirs[@]}"
+            do
+              pushd $dir
+                bazel test //...
+              popd
+            done
           '
   test-examples:
     name: Build & Test - Examples
