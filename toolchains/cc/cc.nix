@@ -182,7 +182,13 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
       )
     )
     LINK_LIBS=(
-      -lstdc++
+      ${
+        # Use pkgs.stdenv.isDarwin as a marker instead of cc.isClang because
+        # we might have usecases with stdenv with clang and libstdc++.
+        # On Darwin libstdc++ is not available, so it's safe to assume that
+        # everybody use libc++ from LLVM.
+        if pkgs.stdenv.isDarwin then "-lc++" else "-lstdc++"
+      }
       -lm
     )
     OPT_COMPILE_FLAGS=(
