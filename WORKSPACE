@@ -51,6 +51,13 @@ nixpkgs_local_repository(
     nix_file_deps = ["//:nixpkgs.json"],
 )
 
+# same as @nixpkgs but using the `nix_file_content` parameter
+nixpkgs_local_repository(
+    name = "nixpkgs_content",
+    nix_file_content = "import ./nixpkgs.nix",
+    nix_file_deps = ["//:nixpkgs.nix", "//:nixpkgs.json"],
+)
+
 # This is the commit introducing a Nix version working in the Bazel
 # sandbox
 nixpkgs_git_repository(
@@ -70,6 +77,12 @@ nixpkgs_package(
     name = "nixpkgs-git-repository-test",
     attribute_path = "hello",
     repositories = {"nixpkgs": "@remote_nixpkgs"},
+)
+
+nixpkgs_package(
+    name = "nixpkgs-local-repository-test",
+    nix_file_content = "with import <nixpkgs> {}; hello",
+    repositories = {"nixpkgs": "@nixpkgs_content"},
 )
 
 nixpkgs_package(

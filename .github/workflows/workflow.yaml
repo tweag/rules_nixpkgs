@@ -87,7 +87,7 @@ jobs:
           for dir in "${with_nix[@]}"; do
               cd "$dir"
               echo
-              echo Running $(head -n1 README.md) with Nix
+              echo "::group::Running $(head -n1 README.md) with Nix"
               nix-shell --command 'bazel run --config=nix :hello'
               # TODO: all toolchains should run without Nixpkgs
               cd ..
@@ -95,7 +95,7 @@ jobs:
           for dir in "${without_nix[@]}"; do
               cd "$dir"
               echo
-              echo Running $(head -n1 README.md) without Nix
+              echo "::group::Running $(head -n1 README.md) without Nix"
               bazel run :hello
               cd ..
           done
