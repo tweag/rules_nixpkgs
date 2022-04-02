@@ -19,11 +19,7 @@ def cp(repository_ctx, src, dest = None):
     if dest == None:
         if type(src) != "Label":
             fail("src must be a Label if dest is not specified explicitly.")
-        dest = "/".join([
-            component
-            for component in [src.workspace_root, src.package, src.name]
-            if component
-        ])
+        dest = label_to_path(src)
 
     # Copy the file
     repository_ctx.file(
@@ -64,6 +60,14 @@ Error output:
 {stderr}
 """.format(**outputs))
     return result
+
+def label_to_path(label, prefix=None):
+    prefix = [prefix] if prefix else []
+    return "/".join(prefix + [
+        component
+        for component in [label.workspace_root, label.package, label.name]
+        if component
+    ])
 
 def label_string(label):
     """Convert the given (optional) Label to a string."""

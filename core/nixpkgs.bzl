@@ -36,6 +36,7 @@ load(
     "expand_location",
     "find_children",
     "is_supported_platform",
+    "label_to_path",
 )
 
 def _nixpkgs_git_repository_impl(repository_ctx):
@@ -124,9 +125,25 @@ Create an external repository representing the content of Nixpkgs, based on a Ni
 """,
 )
 
+def _nixopts_args(nixopts):
+    result = {}
+    arg_opt, arg_name = None, None
+    for opt in nixopts:
+        if opt == "--arg" or opt == "--argstr":
+            arg_opt, arg_name = opt, None
+        elif arg_opt:
+            if arg_name == None:
+                arg_name = opt
+            else:
+                arg_val = opt if arg_opt == "--arg" else "''%s''" % opt
+                result[arg_name] = arg_val
+                arg_opt, arg_name = None, None
+    return result
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
+    attribute_path = repository_ctx.attr.attribute_path
 
     # Is nix supported on this platform?
     not_supported = not is_supported_platform(repository_ctx)
@@ -162,22 +179,56 @@ def _nixpkgs_package_impl(repository_ctx):
     if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
     elif repository_ctx.attr.nix_file:
-        nix_file = cp(repository_ctx, repository_ctx.attr.nix_file)
-        expr_args = [repository_ctx.path(nix_file)]
+        src = repository_ctx.attr.nix_file
+        cp(repository_ctx, src, label_to_path(src, prefix="nixpkg/src"))
+        default_nix_substs = {
+            "%{def}":"import %s" % label_to_path(src, prefix="./src"),
+            "%{maybe_sel}":(".%s" % attribute_path) if attribute_path else "",
+        }
     elif repository_ctx.attr.nix_file_content:
-        expr_args = ["-E", repository_ctx.attr.nix_file_content]
+        default_nix_substs = {
+            "%{def}":repository_ctx.attr.nix_file_content,
+            "%{maybe_sel}":(".%s" % attribute_path) if attribute_path else "",
+        }
     elif not repositories:
         fail(strFailureImplicitNixpkgs)
     else:
-        expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
+        default_nix_substs = {
+            "%{def}":"import <nixpkgs> { config = {}; overlays = []; }",
+            "%{maybe_sel}":".%s" % (attribute_path or repository_ctx.attr.name),
+        }
 
     nix_file_deps = {}
     for dep in repository_ctx.attr.nix_file_deps:
-        nix_file_deps[dep] = cp(repository_ctx, dep)
+        nix_file_deps[dep] = cp(repository_ctx, dep, label_to_path(dep, prefix="nixpkg/src"))
+
+    nixopts = [
+        expand_location(
+            repository_ctx = repository_ctx,
+            string = opt,
+            labels = nix_file_deps,
+            attr = "nixopts",
+        )
+        for opt in repository_ctx.attr.nixopts
+    ]
+    nixopts_args = _nixopts_args(nixopts)
+    default_nix_substs["%{args_with_defaults}"] = ", ".join([
+        "%s ? %s" % kv
+        for kv in nixopts_args.items()
+    ])
+    default_nix_substs["%{args}"] = " ".join(nixopts_args.keys())
+
+    repository_ctx.template(
+        "nixpkg/default.nix",
+        Label("@rules_nixpkgs_core//:default.nix.tpl"),
+        substitutions = default_nix_substs,
+        executable = False,
+    )
+
+    repository_ctx.file("nixpkg/BUILD", 'filegroup(name="nixpkg", srcs=glob(["**/*"], exclude=["BUILD"]))')
 
     expr_args.extend([
-        "-A",
-        repository_ctx.attr.attribute_path if repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content else repository_ctx.attr.attribute_path or repository_ctx.attr.name,
+        repository_ctx.path("nixpkg/default.nix"),
         # Creating an out link prevents nix from garbage collecting the store path.
         # nixpkgs uses `nix-support/` for such house-keeping files, so we mirror them
         # and use `bazel-support/`, under the assumption that no nix package has
@@ -188,15 +239,7 @@ def _nixpkgs_package_impl(repository_ctx):
         "bazel-support/nix-out-link",
     ])
 
-    expr_args.extend([
-        expand_location(
-            repository_ctx = repository_ctx,
-            string = opt,
-            labels = nix_file_deps,
-            attr = "nixopts",
-        )
-        for opt in repository_ctx.attr.nixopts
-    ])
+    expr_args.extend(nixopts)
 
     for repo in repositories.keys():
         path = str(repository_ctx.path(repo).dirname) + "/nix-file-deps"
