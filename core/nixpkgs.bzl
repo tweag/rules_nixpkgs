@@ -40,14 +40,19 @@ load(
 )
 
 def _nixpkgs_git_repository_impl(repository_ctx):
-    repository_ctx.file(
+    repository_ctx.template(
         "BUILD",
-        content = 'filegroup(name = "srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])',
+        Label("@rules_nixpkgs_core//:BUILD.repo"),
+        substitutions = {
+            "%{srcs}": 'glob(["**"], exclude = ["BUILD"])',
+        },
+        executable = False,
     )
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for default.nix.
-    repository_ctx.symlink("default.nix", repository_ctx.name)
+    repository_ctx.file(repository_ctx.name, content = "import ./default.nix")
+
 
     repository_ctx.download_and_extract(
         url = "%s/archive/%s.tar.gz" % (repository_ctx.attr.remote, repository_ctx.attr.revision),
@@ -74,37 +79,48 @@ Name a specific revision of Nixpkgs on GitHub or a local checkout.
 )
 
 def _nixpkgs_local_repository_impl(repository_ctx):
+    top_level_nix_file = repository_ctx.name
+    repository_files = [top_level_nix_file]
+
     if not bool(repository_ctx.attr.nix_file) != \
        bool(repository_ctx.attr.nix_file_content):
         fail("Specify one of 'nix_file' or 'nix_file_content' (but not both).")
     if repository_ctx.attr.nix_file_content:
-        target = "default.nix"
+        target = "srcs/default.nix"
         repository_ctx.file(
             target,
-            content = repository_ctx.attr.nix_file_content,
+            repository_ctx.attr.nix_file_content,
             executable = False,
         )
     else:
-        target = cp(repository_ctx, repository_ctx.attr.nix_file)
+        nix_file = repository_ctx.attr.nix_file
+        target = cp(repository_ctx, nix_file, label_to_path(nix_file, prefix="srcs"))
 
-    repository_files = [target]
+    repository_ctx.file(
+        top_level_nix_file,
+        content = "import %s" % target,
+        executable = False,
+    )
+    repository_files.append(target)
+
     for dep in repository_ctx.attr.nix_file_deps:
-        dest = cp(repository_ctx, dep)
+        dest = cp(repository_ctx, dep, label_to_path(dep, prefix="srcs"))
         repository_files.append(dest)
 
-    # Export all specified Nix files to make them dependencies of a
-    # nixpkgs_package rule.
-    export_files = "exports_files({})".format(repository_files)
-    repository_ctx.file("BUILD", content = export_files)
+    repository_ctx.template(
+        "BUILD",
+        Label("@rules_nixpkgs_core//:BUILD.repo"),
+        substitutions = {
+            "%{srcs}": 'glob([%s, "srcs/**"])' % repr(top_level_nix_file),
+        },
+        executable = False,
+    )
 
     # Create a file listing all Nix files of this repository. This
     # file is used by the nixpgks_package rule to register all Nix
     # files.
     repository_ctx.file("nix-file-deps", content = "\n".join(repository_files))
 
-    # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
-    # label for the target Nix file.
-    repository_ctx.symlink(target, repository_ctx.name)
 
 nixpkgs_local_repository = repository_rule(
     implementation = _nixpkgs_local_repository_impl,
