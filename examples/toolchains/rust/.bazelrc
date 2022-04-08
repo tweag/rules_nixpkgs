@@ -1,1 +1,1 @@
-build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host --incompatible_enable_cc_toolchain_resolution
