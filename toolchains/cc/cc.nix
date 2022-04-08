@@ -32,6 +32,7 @@ let
           -F${pkgs.darwin.apple_sdk.frameworks.CoreServices}/Library/Frameworks \
           -F${pkgs.darwin.apple_sdk.frameworks.Security}/Library/Frameworks \
           -F${pkgs.darwin.apple_sdk.frameworks.Foundation}/Library/Frameworks \
+          -L${pkgs.libiconv}/lib \
           -L${pkgs.darwin.libobjc}/lib"
       '';
   cc =
