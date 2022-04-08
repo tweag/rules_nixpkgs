@@ -1,0 +1,19 @@
+load(":cc-test.bzl", "cc_toolchain_test")
+
+package(default_testonly = 1)
+
+# Test nixpkgs_cc_configure() by building some CC code.
+cc_binary(
+    name = "cc-test",
+    srcs = ["cc-test.cc"],
+)
+
+cc_binary(
+    name = "c-test",
+    srcs = ["c-test.c"],
+)
+
+# Test that nixpkgs_cc_configure is selected.
+cc_toolchain_test(
+    name = "cc-toolchain",
+)
