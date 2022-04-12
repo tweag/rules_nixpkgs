@@ -161,7 +161,6 @@ in
         -fno-omit-frame-pointer
       )
       CXX_FLAGS=(
-        -x c++
         -std=c++0x
       )
       LINK_FLAGS=(
