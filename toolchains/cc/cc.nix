@@ -15,6 +15,9 @@ let
     pkgs.runCommand "bazel-nixpkgs-cc-wrapper"
       {
         buildInputs = [ pkgs.makeWrapper ];
+        passthru = {
+          isClang = pkgs.stdenv.cc.isClang;
+        };
       }
       ''
         mkdir -p $out/bin
@@ -41,17 +44,31 @@ let
     else if ccType == "ccTypeExpression" then
       ccExpr
     else
-      pkgs.buildEnv {
-        name = "bazel-nixpkgs-cc";
-        # XXX: `gcov` is missing in `/bin`.
-        #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-        paths =
-          if pkgs.stdenv.isDarwin then
-            [ (pkgs.overrideCC pkgs.stdenv darwinCC).cc pkgs.darwin.binutils ]
-          else
-            [ pkgs.stdenv.cc pkgs.binutils ];
-        pathsToLink = [ "/bin" ];
-      }
+      pkgs.buildEnv (
+        let
+          paths =
+            if pkgs.stdenv.isDarwin then
+              {
+                cc = (pkgs.overrideCC pkgs.stdenv darwinCC).cc;
+                binutils = pkgs.darwin.binutils;
+              }
+            else
+              {
+                cc = pkgs.stdenv.cc;
+                binutils = pkgs.binutils;
+              };
+        in
+        {
+          name = "bazel-nixpkgs-cc";
+          # XXX: `gcov` is missing in `/bin`.
+          #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
+          paths = [ paths.cc paths.binutils ];
+          pathsToLink = [ "/bin" ];
+          passthru = {
+            isClang = paths.cc.isClang;
+          };
+        }
+      )
   ;
 in
 pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
@@ -261,9 +278,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
       )
     )
     IS_CLANG=(
-      $(
-        ${cc}/bin/cc -v 2>&1 | grep -q clang && echo True || echo False
-      )
+      ${if cc.isClang then "True" else "False"}
     )
 
     # Write CC_TOOLCHAIN_INFO
