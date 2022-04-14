@@ -23,7 +23,7 @@ Links:
 [blog-bazel-nix]: https://www.tweag.io/posts/2018-03-15-bazel-nix.html
 [youtube-bazel-nix]: https://www.youtube.com/watch?v=hDdDUrty1Gw
 
-See [examples](/examples) for how to use `rules_nixpkgs` with different toolchains.
+See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with different toolchains.
 
 ## Rules
 
