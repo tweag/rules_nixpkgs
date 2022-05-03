@@ -32,7 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 
 - The implementation of `nixpkgs_cc_configure` has been replaced by a more
-  hermetic version that no longer uses Bazel's builtin autodection toolchain
+  hermetic version that no longer uses Bazel's builtin autodetection toolchain
   under the hood. The previous behavior is now available under the name
   `nixpkgs_cc_configure_deprecated`, if required.
   See [#128][#128].
