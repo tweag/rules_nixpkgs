@@ -1493,7 +1493,7 @@ default is <code>None</code>
 ### nixpkgs_sh_posix_configure
 
 <pre>
-nixpkgs_sh_posix_configure(<a href="#nixpkgs_sh_posix_configure-name">name</a>, <a href="#nixpkgs_sh_posix_configure-packages">packages</a>, <a href="#nixpkgs_sh_posix_configure-kwargs">kwargs</a>)
+nixpkgs_sh_posix_configure(<a href="#nixpkgs_sh_posix_configure-name">name</a>, <a href="#nixpkgs_sh_posix_configure-packages">packages</a>, <a href="#nixpkgs_sh_posix_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_sh_posix_configure-kwargs">kwargs</a>)
 </pre>
 
 Create a POSIX toolchain from nixpkgs.
@@ -1538,6 +1538,20 @@ default is <code>["stdenv.initialPath"]</code>
 <p>
 
 List of Nix attribute paths to draw Unix tools from.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_sh_posix_configure-exec_constraints">
+<td><code>exec_constraints</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Constraints for the execution platform.
 
 </p>
 </td>

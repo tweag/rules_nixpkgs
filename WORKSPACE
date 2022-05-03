@@ -29,19 +29,10 @@ nixpkgs_local_repository(
     nix_file_deps = ["@rules_nixpkgs_core//:nixpkgs.json"],
 )
 
-# This is the commit introducing a Nix version working in the Bazel
-# sandbox
-nixpkgs_git_repository(
-    name = "remote_nixpkgs_for_nix_unstable",
-    remote = "https://github.com/NixOS/nixpkgs",
-    revision = "15d1011615d16a8b731adf28e2cfc33481102780",
-    sha256 = "8b1161a249d50effea1f240c34a81832a88c8d5d274314ae6225fd78bd62dfb9",
-)
-
 nixpkgs_package(
-    name = "nix-unstable",
-    attribute_path = "nixUnstable",
-    repositories = {"nixpkgs": "@remote_nixpkgs_for_nix_unstable"},
+    name = "nix_2_4",
+    attribute_path = "nix_2_4",
+    repositories = {"nixpkgs": "@nixpkgs"},
 )
 
 # This is used to run Nix in a sandboxed Bazel test. See the test

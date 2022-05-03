@@ -17,7 +17,7 @@ sed "s;COREUTILS-ABS-PATH;${PWD}/external/coreutils_static/bin/;g" -i default.ni
 
 # Bring a specific version of Nix which can be executed in the Bazel
 # linux sandbox.
-export PATH=$PWD/external/nix-unstable/bin:$PATH
+export PATH=$PWD/external/nix_2_4/bin:$PATH
 
 # This is a create all directories required to run Nix locally.
 mkdir -p ${TEST_TMPDIR}/nix/{store,var/nix,etc/nix}

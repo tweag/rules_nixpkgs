@@ -1,5 +1,5 @@
 let
-  # nixpkgs-unstable as of 2021-02-19
+  # nixpkgs 21.11
   spec = builtins.fromJSON (builtins.readFile ./nixpkgs.json);
   nixpkgs = fetchTarball {
     url = "https://github.com/${spec.owner}/${spec.repo}/archive/${spec.rev}.tar.gz";

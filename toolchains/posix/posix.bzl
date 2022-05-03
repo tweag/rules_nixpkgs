@@ -12,6 +12,12 @@ load(
     "get_cpu_value",
 )
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
+load(
+    "@rules_nixpkgs_core//:util.bzl",
+    "default_constraints",
+    "ensure_constraints",
+    "ensure_constraints_pure",
+)
 
 def nixpkgs_sh_posix_config(name, packages, **kwargs):
     nixpkgs_package(
@@ -101,36 +107,37 @@ create_posix_toolchain()
 # should run.
 
 def _nixpkgs_sh_posix_toolchain_impl(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
+    exec_constraints, _ = ensure_constraints_pure(
+        default_constraints = default_constraints(repository_ctx),
+        exec_constraints = repository_ctx.attr.exec_constraints,
+    )
     repository_ctx.file("BUILD", executable = False, content = """
 toolchain(
     name = "nixpkgs_sh_posix_toolchain",
     toolchain = "@{workspace}//:nixpkgs_sh_posix",
     toolchain_type = "@rules_sh//sh/posix:toolchain_type",
-    exec_compatible_with = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:{os}",
-        "@rules_nixpkgs_core//constraints:support_nix",
-    ],
+    exec_compatible_with = {exec_constraints},
     # Leaving the target constraints empty matter for cross-compilation.
     # See Note [Target constraints for POSIX tools]
     target_compatible_with = [],
 )
     """.format(
         workspace = repository_ctx.attr.workspace,
-        os = {"darwin": "osx"}.get(cpu, "linux"),
+        exec_constraints = exec_constraints,
     ))
 
 _nixpkgs_sh_posix_toolchain = repository_rule(
     _nixpkgs_sh_posix_toolchain_impl,
     attrs = {
         "workspace": attr.string(),
+        "exec_constraints": attr.string_list(),
     },
 )
 
 def nixpkgs_sh_posix_configure(
         name = "nixpkgs_sh_posix_config",
         packages = ["stdenv.initialPath"],
+        exec_constraints = None,
         **kwargs):
     """Create a POSIX toolchain from nixpkgs.
 
@@ -144,6 +151,7 @@ def nixpkgs_sh_posix_configure(
     Args:
       name: Name prefix for the generated repositories.
       packages: List of Nix attribute paths to draw Unix tools from.
+      exec_constraints: Constraints for the execution platform.
       nix_file_deps: See nixpkgs_package.
       repositories: See nixpkgs_package.
       repository: See nixpkgs_package.
@@ -153,6 +161,7 @@ def nixpkgs_sh_posix_configure(
     nixpkgs_sh_posix_config(
         name = name,
         packages = packages,
+        exec_constraints = exec_constraints,
         **kwargs
     )
 
