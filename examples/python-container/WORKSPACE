@@ -1,0 +1,66 @@
+workspace(name = "bazel-nix-python-container")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+######################
+# Tweag Nix Support
+######################
+http_archive(
+    name = "io_tweag_rules_nixpkgs",
+    sha256 = "7aee35c95251c1751e765f7da09c3bb096d41e6d6dca3c72544781a5573be4aa",
+    strip_prefix = "rules_nixpkgs-0.8.0",
+    urls = ["https://github.com/tweag/rules_nixpkgs/archive/v0.8.0.tar.gz"],
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+rules_nixpkgs_dependencies()
+
+# Define nixpkgs version 21.11
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
+nixpkgs_git_repository(
+    name = "nixpkgs",
+    revision = "21.11",
+    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
+)
+
+# Configure python
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_python_configure")
+nixpkgs_python_configure(
+    python3_attribute_path = "python39.withPackages(ps: [ ps.flask ])",
+    repository = "@nixpkgs",
+)
+
+#########
+# Docker
+#########
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "27d53c1d646fc9537a70427ad7b034734d08a9c38924cc6357cc973fed300820",
+    strip_prefix = "rules_docker-0.24.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.24.0/rules_docker-v0.24.0.tar.gz"],
+)
+
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories",)
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+container_deps()
+
+load("@io_bazel_rules_docker//repositories:py_repositories.bzl", "py_deps")
+py_deps()
+
+load("@io_bazel_rules_docker//python3:image.bzl", py3_image_repos = "repositories")
+py3_image_repos()
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
+nixpkgs_package(
+    name = "raw_python39_base_image",
+    build_file_content = """
+package(default_visibility = [ "//visibility:public" ])
+exports_files(["image"])
+    """,
+    nix_file = "//:python39_base_image.nix",
+    repository = "@nixpkgs//:default.nix",
+)
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_load" )
+container_load(name = "python39_base_image", file = "@raw_python39_base_image//:image")
