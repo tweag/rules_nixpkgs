@@ -9,12 +9,12 @@ in
 }:
 
 let
-
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.wrapCCWith rec {
       cc = pkgs.stdenv.cc;
+      bintools = cc.bintools;
       extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
         echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
         echo "-isystem ${pkgs.llvmPackages.libcxx}/include/c++/v1" >> $out/nix-support/cc-cflags
@@ -37,20 +37,19 @@ let
           paths =
             if pkgs.stdenv.isDarwin then
               {
-                cc = (pkgs.overrideCC pkgs.stdenv darwinCC).cc;
-                binutils = pkgs.darwin.binutils;
+                inherit (darwinCC) cc bintools;
               }
             else
               {
                 cc = pkgs.stdenv.cc;
-                binutils = pkgs.binutils;
+                bintools = pkgs.binutils;
               };
         in
         {
           name = "bazel-nixpkgs-cc";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-          paths = [ paths.cc paths.binutils ];
+          paths = [ paths.cc paths.bintools ];
           pathsToLink = [ "/bin" ];
           passthru = {
             isClang = paths.cc.isClang;
