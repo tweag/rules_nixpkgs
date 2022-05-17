@@ -9,35 +9,23 @@ in
 }:
 
 let
+
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
-    pkgs.runCommand "bazel-nixpkgs-cc-wrapper"
-      {
-        buildInputs = [ pkgs.makeWrapper ];
-        passthru = {
-          isClang = pkgs.stdenv.cc.isClang;
-        };
-      }
-      ''
-        mkdir -p $out/bin
-
-        for i in ${pkgs.stdenv.cc}/bin/*; do
-          ln -sf $i $out/bin
-        done
-
-        # Override cc
-        rm -f $out/bin/cc $out/bin/clang $out/bin/clang++
-        makeWrapper ${pkgs.stdenv.cc}/bin/cc $out/bin/cc --add-flags \
-          "-Wno-unused-command-line-argument \
-          -isystem ${pkgs.llvmPackages.libcxx}/include/c++/v1 \
-          -F${pkgs.darwin.apple_sdk.frameworks.CoreFoundation}/Library/Frameworks \
-          -F${pkgs.darwin.apple_sdk.frameworks.CoreServices}/Library/Frameworks \
-          -F${pkgs.darwin.apple_sdk.frameworks.Security}/Library/Frameworks \
-          -F${pkgs.darwin.apple_sdk.frameworks.Foundation}/Library/Frameworks \
-          -L${pkgs.libiconv}/lib \
-          -L${pkgs.darwin.libobjc}/lib"
+    pkgs.wrapCCWith rec {
+      cc = pkgs.stdenv.cc;
+      extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
+        echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
+        echo "-isystem ${pkgs.llvmPackages.libcxx}/include/c++/v1" >> $out/nix-support/cc-cflags
+        echo "-F${CoreFoundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${CoreServices}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${Security}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-ldflags
+        echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-ldflags
       '';
+    };
   cc =
     if ccType == "ccTypeAttribute" then
       pkgs.lib.attrByPath (pkgs.lib.splitString "." ccAttrPath) null ccAttrSet
