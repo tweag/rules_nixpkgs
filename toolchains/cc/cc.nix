@@ -34,25 +34,16 @@ let
     else
       pkgs.buildEnv (
         let
-          paths =
-            if pkgs.stdenv.isDarwin then
-              {
-                inherit (darwinCC) cc bintools;
-              }
-            else
-              {
-                cc = pkgs.stdenv.cc;
-                bintools = pkgs.binutils;
-              };
+          cc = if pkgs.stdenv.isDarwin then darwinCC else pkgs.stdenv.cc;
         in
         {
           name = "bazel-nixpkgs-cc";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-          paths = [ paths.cc paths.bintools ];
+          paths = [ cc cc.bintools ];
           pathsToLink = [ "/bin" ];
           passthru = {
-            isClang = paths.cc.isClang;
+            isClang = cc.isClang;
           };
         }
       )
