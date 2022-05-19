@@ -9,12 +9,26 @@ in
 }:
 
 let
+  # The original `postLinkSignHook` from nixpkgs assumes `codesign_allocate` is
+  # in the PATH which is not the case when using our cc_wrapper. Set
+  # `CODESIGN_ALLOCATE` to an absolute path here and override the hook for
+  # `darwinCC` below.
+  postLinkSignHook =
+    with pkgs; writeTextFile {
+      name = "post-link-sign-hook";
+      executable = true;
+
+      text = ''
+        CODESIGN_ALLOCATE=${darwin.cctools}/bin/codesign_allocate \
+          ${darwin.sigtool}/bin/codesign -f -s - "$linkerOutput"
+      '';
+    };
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.wrapCCWith rec {
       cc = pkgs.stdenv.cc;
-      bintools = cc.bintools;
+      bintools = cc.bintools.override { inherit postLinkSignHook; };
       extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
         echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
         echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
