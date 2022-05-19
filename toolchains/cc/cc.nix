@@ -9,35 +9,40 @@ in
 }:
 
 let
+  # The original `postLinkSignHook` from nixpkgs assumes `codesign_allocate` is
+  # in the PATH which is not the case when using our cc_wrapper. Set
+  # `CODESIGN_ALLOCATE` to an absolute path here and override the hook for
+  # `darwinCC` below.
+  postLinkSignHook =
+    with pkgs; writeTextFile {
+      name = "post-link-sign-hook";
+      executable = true;
+
+      text = ''
+        CODESIGN_ALLOCATE=${darwin.cctools}/bin/codesign_allocate \
+          ${darwin.sigtool}/bin/codesign -f -s - "$linkerOutput"
+      '';
+    };
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
-    pkgs.runCommand "bazel-nixpkgs-cc-wrapper"
-      {
-        buildInputs = [ pkgs.makeWrapper ];
-        passthru = {
-          isClang = pkgs.stdenv.cc.isClang;
-        };
-      }
-      ''
-        mkdir -p $out/bin
-
-        for i in ${pkgs.stdenv.cc}/bin/*; do
-          ln -sf $i $out/bin
-        done
-
-        # Override cc
-        rm -f $out/bin/cc $out/bin/clang $out/bin/clang++
-        makeWrapper ${pkgs.stdenv.cc}/bin/cc $out/bin/cc --add-flags \
-          "-Wno-unused-command-line-argument \
-          -isystem ${pkgs.llvmPackages.libcxx}/include/c++/v1 \
-          -F${pkgs.darwin.apple_sdk.frameworks.CoreFoundation}/Library/Frameworks \
-          -F${pkgs.darwin.apple_sdk.frameworks.CoreServices}/Library/Frameworks \
-          -F${pkgs.darwin.apple_sdk.frameworks.Security}/Library/Frameworks \
-          -F${pkgs.darwin.apple_sdk.frameworks.Foundation}/Library/Frameworks \
-          -L${pkgs.libiconv}/lib \
-          -L${pkgs.darwin.libobjc}/lib"
+    pkgs.wrapCCWith rec {
+      cc = pkgs.stdenv.cc;
+      bintools = cc.bintools.override { inherit postLinkSignHook; };
+      extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
+        echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
+        echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
+        echo "-isystem ${pkgs.llvmPackages.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
+        echo "-F${CoreFoundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${CoreServices}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${Security}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
       '';
+    };
   cc =
     if ccType == "ccTypeAttribute" then
       pkgs.lib.attrByPath (pkgs.lib.splitString "." ccAttrPath) null ccAttrSet
@@ -46,26 +51,16 @@ let
     else
       pkgs.buildEnv (
         let
-          paths =
-            if pkgs.stdenv.isDarwin then
-              {
-                cc = (pkgs.overrideCC pkgs.stdenv darwinCC).cc;
-                binutils = pkgs.darwin.binutils;
-              }
-            else
-              {
-                cc = pkgs.stdenv.cc;
-                binutils = pkgs.binutils;
-              };
+          cc = if pkgs.stdenv.isDarwin then darwinCC else pkgs.stdenv.cc;
         in
         {
           name = "bazel-nixpkgs-cc";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-          paths = [ paths.cc paths.binutils ];
+          paths = [ cc cc.bintools ];
           pathsToLink = [ "/bin" ];
           passthru = {
-            isClang = paths.cc.isClang;
+            isClang = cc.isClang;
           };
         }
       )

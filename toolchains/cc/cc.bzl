@@ -302,6 +302,37 @@ def nixpkgs_cc_configure(
     You can inspect the resulting `@<name>_info//:CC_TOOLCHAIN_INFO` to see
     which tools were discovered.
 
+    If you specify the `nix_file` or `nix_file_content` argument, the CC
+    toolchain is discovered by evaluating the corresponding expression. In
+    addition, you may use the `attribute_path` argument to select an attribute
+    from the result of the expression to use as the CC toolchain (see example below).
+
+    If neither the `nix_file` nor `nix_file_content` argument is used, the
+    toolchain is discovered from the `stdenv.cc` and the `stdenv.cc.bintools`
+    attributes of the given `<nixpkgs>` repository.
+
+    ```
+    # use GCC 11
+    nixpkgs_cc_configure(
+      repository = "@nixpkgs",
+      nix_file_content = "(import <nixpkgs> {}).gcc11",
+    )
+    ```
+    ```
+    # use GCC 11 (same result as above)
+    nixpkgs_cc_configure(
+      repository = "@nixpkgs",
+      attribute_path = "gcc11",
+      nix_file_content = "import <nixpkgs> {}",
+    )
+    ```
+    ```
+    # use the `stdenv.cc` compiler (the default of the given @nixpkgs repository)
+    nixpkgs_cc_configure(
+      repository = "@nixpkgs",
+    )
+    ```
+
     This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
     **Note:**
