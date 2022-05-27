@@ -7,13 +7,13 @@ Rules for importing a Python toolchain from Nixpkgs.
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
 """
 
-load("@bazel_skylib//lib:versions.bzl", "versions")
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
     "nixpkgs_package",
 )
 load(
     "@rules_nixpkgs_core//:util.bzl",
+    "is_bazel_version_at_least",
     "ensure_constraints",
     "label_string",
 )
@@ -56,7 +56,8 @@ _nixpkgs_python_toolchain = repository_rule(
 )
 
 def _python_nix_file_content(attribute_path, bin_path, version):
-    add_shebang = versions.is_at_least("4.2.0", versions.get())
+    bazel_version_match, bazel_from_source = is_bazel_version_at_least("4.2.0")
+    add_shebang = bazel_version_match or bazel_from_source
 
     return """
 with import <nixpkgs> {{ config = {{}}; overlays = []; }};
