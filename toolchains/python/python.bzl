@@ -56,7 +56,9 @@ _nixpkgs_python_toolchain = repository_rule(
 )
 
 def _python_nix_file_content(attribute_path, bin_path, version):
-    add_shebang = versions.is_at_least("4.2.0", versions.get())
+    bazel_version = versions.get()
+    # version is an empty string for unreleased Bazel versions, assume it is >= 4.2.0
+    add_shebang = bazel_version == "" or versions.is_at_least("4.2.0", bazel_version)
 
     return """
 with import <nixpkgs> {{ config = {{}}; overlays = []; }};
