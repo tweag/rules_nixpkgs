@@ -16,6 +16,7 @@ build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 # ----------------
 common:ci --color=no
 build:ci --verbose_failures
+build:ci --build_metadata=REPO_URL=https://github.com/tweag/rules_nixpkgs.git
 test:ci --test_output=errors
 
 # Use a remote cache during CI
