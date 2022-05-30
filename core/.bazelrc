@@ -20,8 +20,8 @@ test:ci --test_output=errors
 
 # Use a remote cache during CI
 build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
-build:ci --bes_backend=grpcs://cloud.buildbuddy.io
-build:ci --remote_cache=grpcs://cloud.buildbuddy.io
+build:ci --bes_backend=grpcs://remote.buildbuddy.io
+build:ci --remote_cache=grpcs://remote.buildbuddy.io
 build:ci --remote_timeout=3600
 # Avoid failures of the form `deadline exceeded after 14999958197ns DEADLINE_EXCEEDED`.
 # See https://github.com/tweag/rules_haskell/issues/1498.
