@@ -296,20 +296,20 @@ def is_bazel_version_at_least(threshold):
         threshold: string: minimum desired version of Bazel
 
     Returns:
-        treshold_met, from_source_version: bool, bool: tuple where
-        first item states if the treshold was met, the second indicates
+        threshold_met, from_source_version: bool, bool: tuple where
+        first item states if the threshold was met, the second indicates
         if obtained bazel version is empty string (indicating from source build)
     """
-    treshold_met = False
+    threshold_met = False
     from_source_version = False
 
     bazel_version = versions.get()
     if not bazel_version:
         from_source_version = True
     else:
-        treshold_met = versions.is_at_least(threshold, bazel_version)
+        threshold_met = versions.is_at_least(threshold, bazel_version)
 
     return (
-        treshold_met,
+        threshold_met,
         from_source_version,
     )
