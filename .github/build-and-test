@@ -42,6 +42,7 @@ do
         let ++FAILED
         FAILURES+=( "$dir" )
     fi
+    bazel shutdown
     popd
 done
 
