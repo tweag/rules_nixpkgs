@@ -26,7 +26,7 @@ build:ci --remote_cache=grpcs://remote.buildbuddy.io
 build:ci --remote_timeout=3600
 # Avoid failures of the form `deadline exceeded after 14999958197ns DEADLINE_EXCEEDED`.
 # See https://github.com/tweag/rules_haskell/issues/1498.
-build:ci --keep_backend_build_event_connections_alive=false
+#build:ci --keep_backend_build_event_connections_alive=false
 
 # User Configuration
 # ------------------
