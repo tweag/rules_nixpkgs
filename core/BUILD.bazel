@@ -30,5 +30,6 @@ bzl_library(
     deps = [
         ":bazel_tools",
         "@bazel_skylib//lib:paths",
+        "@bazel_skylib//lib:versions",
     ],
 )

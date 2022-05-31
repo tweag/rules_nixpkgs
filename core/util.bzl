@@ -1,5 +1,6 @@
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//lib:versions.bzl", "versions")
 
 def is_supported_platform(repository_ctx):
     return repository_ctx.which("nix-build") != None
@@ -287,3 +288,28 @@ def expand_location(repository_ctx, string, labels, attr = None):
             fail("Internal error: Unknown location expansion command '{}'.".format(command), attr)
 
     return result
+
+def is_bazel_version_at_least(threshold):
+    """ Check if current bazel version is higer or equals to a threshold.
+
+    Args:
+        threshold: string: minimum desired version of Bazel
+
+    Returns:
+        threshold_met, from_source_version: bool, bool: tuple where
+        first item states if the threshold was met, the second indicates
+        if obtained bazel version is empty string (indicating from source build)
+    """
+    threshold_met = False
+    from_source_version = False
+
+    bazel_version = versions.get()
+    if not bazel_version:
+        from_source_version = True
+    else:
+        threshold_met = versions.is_at_least(threshold, bazel_version)
+
+    return (
+        threshold_met,
+        from_source_version,
+    )

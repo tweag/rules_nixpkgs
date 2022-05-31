@@ -15,10 +15,10 @@ load(
     "write_builtin_include_directory_paths",
 )
 load("@bazel_skylib//lib:sets.bzl", "sets")
-load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load(
     "@rules_nixpkgs_core//:util.bzl",
+    "is_bazel_version_at_least",
     "ensure_constraints",
     "execute_or_fail",
 )
@@ -134,7 +134,8 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
 
     # A module map is required for clang starting from Bazel version 3.3.0.
     # https://github.com/bazelbuild/bazel/commit/8b9f74649512ee17ac52815468bf3d7e5e71c9fa
-    needs_module_map = info.is_clang and versions.is_at_least("3.3.0", versions.get())
+    bazel_version_match, bazel_from_source  = is_bazel_version_at_least("3.3.0")
+    needs_module_map = info.is_clang and (bazel_version_match or bazel_from_source)
     if needs_module_map:
         generate_system_module_map = [
             repository_ctx.path(repository_ctx.attr._generate_system_module_map),
