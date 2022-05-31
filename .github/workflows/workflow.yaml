@@ -25,25 +25,7 @@ jobs:
           EOF
       - name: Build & test
         run: |
-          nix-shell --pure --run '
-            set -euo pipefail
-            dirs=(
-              .
-              core
-              toolchains/go
-              toolchains/java
-              toolchains/cc
-              toolchains/python
-              toolchains/posix
-              toolchains/rust
-            )
-            for dir in "${dirs[@]}"
-            do
-              pushd $dir
-                bazel test //...
-              popd
-            done
-          '
+          nix-shell --pure --keep GITHUB_REPOSITORY --run 'bash .github/build-and-test'
   test-examples:
     name: Build & Test - Examples
     strategy:
