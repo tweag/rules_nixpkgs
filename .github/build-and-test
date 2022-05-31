@@ -1,0 +1,47 @@
+#! /usr/bin/env nix-shell
+#! nix-shell ../shell.nix -i bash
+
+set -euo pipefail
+
+declare SCRIPT_DIR
+
+SCRIPT_DIR="$( realpath "${BASH_SOURCE[0]}" )"
+SCRIPT_DIR="${SCRIPT_DIR%/*}"
+
+cd "$( dirname "$SCRIPT_DIR" )"
+
+declare -i FAILED=0
+declare -a FAILURES=( )
+
+function on_exit() {
+    echo
+    if [[ "$FAILED" -gt 0 ]]; then
+        echo "error: running tests in ${FAILURES[@]} was not successful"
+        exit 1
+    elif [[ $? -eq 0 ]]; then
+        echo "all tests passed."
+    fi
+} >&2
+
+trap on_exit EXIT
+
+declare -ra dirs=(
+    .
+    core
+    toolchains/go
+    toolchains/java
+    toolchains/cc
+    toolchains/python
+    toolchains/posix
+    toolchains/rust
+)
+for dir in "${dirs[@]}"
+do
+    pushd $dir
+    if ! bazel test //... ; then
+        let ++FAILED
+        FAILURES+=( "$dir" )
+    fi
+    popd
+done
+
