@@ -1,0 +1,59 @@
+diff --git crate_universe/deps_bootstrap.bzl crate_universe/deps_bootstrap.bzl
+index 28f6d14..a2eeb3a 100644
+--- crate_universe/deps_bootstrap.bzl
++++ crate_universe/deps_bootstrap.bzl
+@@ -6,7 +6,12 @@ load("//crate_universe/private:srcs.bzl", "CARGO_BAZEL_SRCS")
+ # buildifier: disable=bzl-visibility
+ load("//rust/private:common.bzl", "rust_common")
+ 
+-def cargo_bazel_bootstrap(name = "cargo_bazel_bootstrap", rust_version = rust_common.default_version):
++def cargo_bazel_bootstrap(
++    name = "cargo_bazel_bootstrap",
++    rust_version = rust_common.default_version,
++    rust_toolchain_cargo_template = "@rust_{system}_{arch}//:bin/{tool}",
++    rust_toolchain_rustc_template = "@rust_{system}_{arch}//:bin/{tool}",
++    ):
+     """An optional repository which bootstraps `cargo-bazel` for use with `crates_repository`
+ 
+     Args:
+@@ -22,4 +27,6 @@ def cargo_bazel_bootstrap(name = "cargo_bazel_bootstrap", rust_version = rust_co
+         version = rust_version,
+         # The increased timeout helps avoid flakes in CI
+         timeout = 900,
++        rust_toolchain_cargo_template = rust_toolchain_cargo_template,
++        rust_toolchain_rustc_template = rust_toolchain_rustc_template,
+     )
+diff --git crate_universe/repositories.bzl crate_universe/repositories.bzl
+index 0dded9b..fefc00a 100644
+--- crate_universe/repositories.bzl
++++ crate_universe/repositories.bzl
+@@ -31,16 +31,27 @@ _MANIFESTS = [
+     "@rules_rust//crate_universe/tools/urls_generator:Cargo.toml",
+ ]
+ 
+-def crate_universe_dependencies(rust_version = rust_common.default_version, bootstrap = False):
++def crate_universe_dependencies(
++    rust_version = rust_common.default_version,
++    bootstrap = False,
++    rust_toolchain_cargo_template = "@rust_{system}_{arch}//:bin/{tool}",
++    rust_toolchain_rustc_template = "@rust_{system}_{arch}//:bin/{tool}",
++    ):
+     """Define dependencies of the `cargo-bazel` Rust target
+ 
+     Args:
+         rust_version (str, optional): The version of rust to use when generating dependencies.
+         bootstrap (bool, optional): If true, a `cargo_bootstrap_repository` target will be generated.
++        rust_toolchain_cargo_template (str, optional): The template to use for finding the host `cargo` binary.
++        rust_toolchain_rustc_template (str, optional): The template to use for finding the host `rustc` binary.
+     """
+     third_party_deps()
+ 
+-    cargo_bazel_bootstrap(rust_version = rust_version)
++    cargo_bazel_bootstrap(
++      rust_version = rust_version,
++         rust_toolchain_cargo_template = rust_toolchain_cargo_template,
++         rust_toolchain_rustc_template = rust_toolchain_rustc_template,
++    )
+ 
+     if USE_CRATES_REPOSITORY:
+         crates_repository(
