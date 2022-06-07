@@ -6,5 +6,6 @@ mkShell {
     bazel_4 
     git
     nix
+    zlib
   ];
 }
