@@ -1,3 +1,10 @@
 { pkgs ? import ./nixpkgs.nix { } }:
 
-pkgs.mkShell { nativeBuildInputs = [ pkgs.bazel_4 ]; }
+with pkgs;
+mkShell { 
+  nativeBuildInputs = [
+    bazel_4 
+    git
+    nix
+  ];
+}
