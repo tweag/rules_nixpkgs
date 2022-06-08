@@ -13,18 +13,18 @@ def docs_dependencies_1():
     """
     maybe(
         http_archive,
-        "io_bazel_stardoc",
-        sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
-        strip_prefix = "stardoc-0.4.0",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-            "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-        ],
-    )
-    maybe(
-        http_archive,
         "rules_sh",
         sha256 = "83a065ba6469135a35786eb741e17d50f360ca92ab2897857475ab17c0d29931",
         strip_prefix = "rules_sh-0.2.0",
         urls = ["https://github.com/tweag/rules_sh/archive/v0.2.0.tar.gz"],
+    )
+
+    maybe(
+        http_archive,
+        "io_bazel_stardoc",
+        sha256 = "aa814dae0ac400bbab2e8881f9915c6f47c49664bf087c409a15f90438d2c23e",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.5.1/stardoc-0.5.1.tar.gz",
+            "https://github.com/bazelbuild/stardoc/releases/download/0.5.1/stardoc-0.5.1.tar.gz",
+        ],
     )

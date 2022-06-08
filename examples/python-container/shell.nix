@@ -2,7 +2,7 @@
 
 pkgs.mkShell {
     nativeBuildInputs = [
-       pkgs.bazel_4
+       pkgs.bazel_5
     ];
 }
 

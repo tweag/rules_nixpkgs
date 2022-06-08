@@ -136,13 +136,13 @@ default is <code>{}</code>
 
 A dictionary mapping `NIX_PATH` entries to repository labels.
 
-  Setting it to
-  ```
-  repositories = { "myrepo" : "//:myrepo" }
-  ```
-  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+Setting it to
+```
+repositories = { "myrepo" : "//:myrepo" }
+```
+for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
 
-  Specify one of `path` or `repositories`.
+Specify one of `path` or `repositories`.
 
 </p>
 </td>

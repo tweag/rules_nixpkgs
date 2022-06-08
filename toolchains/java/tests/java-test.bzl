@@ -3,9 +3,10 @@ load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 def _java_runtime_test_impl(ctx):
     env = unittest.begin(ctx)
 
-    nixpkgs_java_runtime = ctx.attr._nixpkgs_java_runtime[platform_common.ToolchainInfo]
+    nixpkgs_java_runtime = ctx.attr._nixpkgs_java_runtime[platform_common.ToolchainInfo].java_runtime
 
     java_runtime = ctx.attr._java_runtime[java_common.JavaRuntimeInfo]
+
     asserts.equals(
         env,
         expected = nixpkgs_java_runtime.java_home,

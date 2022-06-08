@@ -7,10 +7,10 @@ build --crosstool_top=@nixpkgs_config_cc//:toolchain
 # recommended for `nixpkgs_cc_configure_hermetic`.
 # build --incompatible_enable_cc_toolchain_resolution
 
-build --javabase=@nixpkgs_java_runtime//:runtime
-build --host_javabase=@nixpkgs_java_runtime//:runtime
-build --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
-build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build --java_runtime_version=nixpkgs_java_11
+build --java_language_version=11
+build --tool_java_runtime_version=nixpkgs_java_11
+build --tool_java_language_version=11
 
 # CI Configuration
 # ----------------

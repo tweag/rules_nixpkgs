@@ -29,8 +29,9 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
     maybe(
         http_archive,
         "rules_java",
-        url = "https://github.com/bazelbuild/rules_java/releases/download/4.0.0/rules_java-4.0.0.tar.gz",
-        sha256 = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe",
+        sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
+        strip_prefix = "rules_java-5.0.0",
+        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
     )
 
     # the following complication is due to migrating to `bzlmod`.
