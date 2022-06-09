@@ -5,6 +5,7 @@ mkShell {
   nativeBuildInputs = [
     bazel_4 
     git
+    libiconv
     nix
     zlib
   ];
