@@ -41,6 +41,12 @@ let
         echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
+
+        # avoid linker warning about non-existent directory
+        # > ld: warning: directory not found for option '-L/nix/store/gsfxxazc51sx6vjdrz6cq8s19x7h5mwh-clang-wrapper-7.1.0/lib'
+        if ! [[ -d '${pkgs.lib.getLib cc}/lib' ]]; then
+          sed -i -e 's%-L${pkgs.lib.getLib cc}/lib\($\| \)%%' $out/nix-support/cc-ldflags
+        fi
       '';
     };
   cc =
