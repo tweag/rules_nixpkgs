@@ -231,17 +231,86 @@ def _nixpkgs_package_impl(repository_ctx):
             "nix-build",
             extra_msg = "See: https://nixos.org/nix/",
         )
-        nix_build = [nix_build_path] + expr_args
+
+        repository_ctx.report_progress("Building Nix derivation")
 
         # Large enough integer that Bazel can still parse. We don't have
         # access to MAX_INT and 0 is not a valid timeout so this is as good
         # as we can do. The value shouldn't be too large to avoid errors on
         # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
         timeout = 8640000
-        repository_ctx.report_progress("Building Nix derivation")
+
+        # TODO[GL]: should these be something other than env variables?
+        # it seems like it should be fine, so you can switch on the fly
+        # are there issues with this?
+        # another idea is to have config_settings, and have attributes for this in nixpkgs_package
+        # but that seems clunkier (have to modify rules, introduce some non-building related logic to rules)
+        ENV_NIX_REMOTE = 'RULES_NIXPKGS_NIX_REMOTE'
+        ENV_NIX_REMOTE_KEY_FILE = 'RULES_NIXPKGS_NIX_REMOTE_KEY_FILE'
+        ENV_NIX_REMOTE_USER = 'RULES_NIXPKGS_NIX_REMOTE_USER'
+
+        nix_host = repository_ctx.os.environ.get(ENV_NIX_REMOTE)
+        if nix_host:
+            nix_store_user = repository_ctx.os.environ.get(ENV_NIX_REMOTE_USER)
+            if not nix_store_user:
+              fail("{} must be set when running rules_nixpkgs remote nix builds.".format(ENV_NIX_REMOTE_USER))
+
+            # TODO[GL]: should we copy this to the bazel workspace?
+            # it seems nice to have it there, but since this is expected to be set up
+            # on the builder where the action is happening, that's a controlled environment already
+            # perhaps there might be issues with remote bazel builds?
+            nix_store_key_file = repository_ctx.os.environ.get(ENV_NIX_REMOTE_KEY_FILE)
+            if not nix_store_key_file:
+              fail("{} must be set when running rules_nixpkgs remote nix builds.".format(ENV_NIX_REMOTE_KEY_FILE))
+
+            nix_store = "ssh-ng://{user}@{host}?max-connections=1&ssh-key={key}".format(
+                user = nix_store_user,
+                host = nix_host,
+                key = nix_store_key_file)
+
+            repository_ctx.report_progress("Remote-building Nix derivation")
+            exec_result = execute_or_fail(
+                repository_ctx,
+                [nix_build_path, "--store", nix_store] + expr_args,
+                failure_message = "Cannot build Nix attribute '{}'.".format(
+                    repository_ctx.attr.attribute_path,
+                ),
+                quiet = repository_ctx.attr.quiet,
+                timeout = timeout,
+            )
+            output_path = exec_result.stdout.splitlines()[-1]
+
+            # TODO[GL]: use nix provided ssh?
+            ssh_path = repository_ctx.which("ssh")
+            repository_ctx.report_progress("Creating remote store root")
+            exec_result = execute_or_fail(
+                repository_ctx,
+                [ssh_path]
+                    + ["-i", nix_store_key_file]
+                    + ["{}@{}".format(nix_store_user, nix_host),
+                            "nix-store --add-root /nix/var/nix/gcroots/per-user/{user}/rules_nixpkgs_{root} -r {path}".format(
+                                    user = nix_store_user, root = output_path.split('/')[-1], path = output_path) ],
+                failure_message = "Cannot build Nix attribute '{}'.".format(
+                    repository_ctx.attr.attribute_path,
+                ),
+                quiet = repository_ctx.attr.quiet,
+                timeout = 10000,
+            )
+
+            nix_path = repository_ctx.which("nix")
+            repository_ctx.report_progress("Downloading Nix derivation")
+            exec_result = repository_ctx.execute(
+                [nix_path, "copy", "--from", nix_store, output_path],
+                quiet = repository_ctx.attr.quiet,
+                timeout = 10000,
+            )
+
+            repository_ctx.report_progress("Creating local store root")
+
+        timeout = 10000
         exec_result = execute_or_fail(
             repository_ctx,
-            nix_build,
+            [nix_build_path] + expr_args,
             failure_message = "Cannot build Nix attribute '{}'.".format(
                 repository_ctx.attr.attribute_path,
             ),
@@ -250,6 +319,7 @@ def _nixpkgs_package_impl(repository_ctx):
         )
         output_path = exec_result.stdout.splitlines()[-1]
 
+        repository_ctx.report_progress("Creating local folders")
         # ensure that the output is a directory
         test_path = repository_ctx.which("test")
         execute_or_fail(
