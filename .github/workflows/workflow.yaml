@@ -19,7 +19,8 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
-          cat >$HOME/.bazelrc <<EOF
+          cp .bazelrc.ci $HOME/.bazelrc
+          cat >>$HOME/.bazelrc <<EOF
           common --config=ci
           build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
           # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
@@ -46,7 +47,8 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
-          cat >$HOME/.bazelrc <<EOF
+          cp .bazelrc.ci $HOME/.bazelrc
+          cat >>$HOME/.bazelrc <<EOF
           common --config=ci
           build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
           # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
