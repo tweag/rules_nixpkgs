@@ -13,6 +13,9 @@ build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
 build:ci --bes_backend=grpcs://remote.buildbuddy.io
 build:ci --remote_cache=grpcs://remote.buildbuddy.io
 build:ci --remote_timeout=3600
+build:ci --experimental_remote_cache_compression
+build:ci --experimental_remote_cache_async
+build:ci --remote_download_toplevel
 # Avoid failures of the form `deadline exceeded after 14999958197ns DEADLINE_EXCEEDED`.
 # See https://github.com/tweag/rules_haskell/issues/1498.
 build:ci --keep_backend_build_event_connections_alive=false
