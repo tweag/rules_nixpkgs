@@ -155,7 +155,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
         include_dirs_for c -no-canonical-prefixes
         include_dirs_for c++ -std=c++0x -no-canonical-prefixes
       fi
-    } | sort -u))
+    } 2>&1 | sort -u))
     unset IFS
 
     # Determine list of supported compiler and linker flags.
