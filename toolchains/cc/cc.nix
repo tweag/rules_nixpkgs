@@ -96,14 +96,14 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
       if [[ -x $tool_path ]]; then
         TOOL_PATHS[$tool_name]=$tool_path
       else
+        if [[ $tool_name == gcc ]]; then
+          echo "Failed to find ${cc.targetPrefix}''${TOOLS[gcc]} in ${cc}/bin" >&2
+          exit 1
+        fi
         TOOL_PATHS[$tool_name]=${pkgs.coreutils}/bin/false
       fi
     done
     cc=''${TOOL_PATHS[gcc]}
-    if [[ -z $cc ]]; then
-      echo "Failed to find ${cc.targetPrefix}''${TOOLS[gcc]} in ${cc}/bin"
-      exit 1
-    fi
 
     # Check whether a flag is supported by the compiler.
     #
