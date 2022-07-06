@@ -21,7 +21,7 @@ Links:
 [nixpkgs]: https://github.com/NixOS/nixpkgs
 [bazel]: https://bazel.build
 [blog-bazel-nix]: https://www.tweag.io/posts/2018-03-15-bazel-nix.html
-[youtube-bazel-nix]: https://www.youtube.com/watch?v=hDdDUrty1Gw
+[youtube-bazel-nix]: https://www.youtube.com/watch?v=7-K_RmDasEg&t=2030s
 
 See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with different toolchains.
 
