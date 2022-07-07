@@ -1,5 +1,5 @@
 name: Continuous integration
-on: [push, pull_request]
+on: push
 jobs:
   test-nixpkgs:
     name: Build & Test - Nixpkgs
@@ -19,9 +19,12 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
-          cat >.bazelrc.local <<EOF
+          cp .bazelrc.ci $HOME/.bazelrc
+          cat >>$HOME/.bazelrc <<EOF
           common --config=ci
           build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
+          # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
+          common:ci --announce_rc=false
           EOF
       - name: Build & test
         run: |
@@ -44,9 +47,12 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
-          cat >.bazelrc.local <<EOF
+          cp .bazelrc.ci $HOME/.bazelrc
+          cat >>$HOME/.bazelrc <<EOF
           common --config=ci
           build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
+          # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
+          common:ci --announce_rc=false
           EOF
       - name: Build & test
         run: |

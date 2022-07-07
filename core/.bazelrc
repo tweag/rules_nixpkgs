@@ -7,25 +7,10 @@ build --crosstool_top=@nixpkgs_config_cc//:toolchain
 # recommended for `nixpkgs_cc_configure_hermetic`.
 # build --incompatible_enable_cc_toolchain_resolution
 
-build --javabase=@nixpkgs_java_runtime//:runtime
-build --host_javabase=@nixpkgs_java_runtime//:runtime
-build --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
-build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
-
-# CI Configuration
-# ----------------
-common:ci --color=no
-build:ci --verbose_failures
-test:ci --test_output=errors
-
-# Use a remote cache during CI
-build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
-build:ci --bes_backend=grpcs://remote.buildbuddy.io
-build:ci --remote_cache=grpcs://remote.buildbuddy.io
-build:ci --remote_timeout=3600
-# Avoid failures of the form `deadline exceeded after 14999958197ns DEADLINE_EXCEEDED`.
-# See https://github.com/tweag/rules_haskell/issues/1498.
-build:ci --keep_backend_build_event_connections_alive=false
+build --java_runtime_version=nixpkgs_java_11
+build --java_language_version=11
+build --tool_java_runtime_version=nixpkgs_java_11
+build --tool_java_language_version=11
 
 # User Configuration
 # ------------------
