@@ -1,4 +1,22 @@
+build:cache --remote_cache=grpcs://remote.buildbuddy.io
+build:cache --experimental_remote_cache_compression
+
+build:bes --bes_results_url=https://app.buildbuddy.io/invocation/
+build:bes --bes_backend=grpcs://remote.buildbuddy.io
+
+build:pr --config=cache
+build:pr --noremote_upload_local_results
+build:pr --disk_cache=
+build:pr --flaky_test_attempts=2
+
+build:ci --config=cache
+build:ci --config=bes
+build:ci --remote_upload_local_results
+build:ci --disk_cache=
+build:ci --flaky_test_attempts=2
+
 build --host_platform=@rules_nixpkgs_core//platforms:host
+build --platforms=@rules_nixpkgs_core//platforms:host
 
 build --crosstool_top=@nixpkgs_config_cc//:toolchain
 # Using toolchain resolution can lead to spurious dependencies on
