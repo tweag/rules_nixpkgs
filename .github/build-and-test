@@ -21,6 +21,7 @@ function on_exit() {
     elif [[ $? -eq 0 ]]; then
         echo "all tests passed."
     fi
+    bazel shutdown
 } >&2
 
 trap on_exit EXIT
@@ -42,7 +43,5 @@ do
         let ++FAILED
         FAILURES+=( "$dir" )
     fi
-    bazel shutdown
     popd
 done
-
