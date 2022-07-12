@@ -39,7 +39,7 @@ declare -ra dirs=(
 for dir in "${dirs[@]}"
 do
     pushd $dir
-    if ! bazel test --config=${BAZEL_CONFIG_FLAG:-''} //... ; then
+    if ! bazel test --config=${BAZEL_CONFIG_FLAG:-ci} //... ; then
         let ++FAILED
         FAILURES+=( "$dir" )
     fi
