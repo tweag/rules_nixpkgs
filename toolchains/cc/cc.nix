@@ -27,8 +27,8 @@ let
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.wrapCCWith rec {
-      cc = pkgs.stdenv.cc;
-      bintools = cc.bintools.override { inherit postLinkSignHook; };
+      cc = pkgs.stdenv.cc.cc;
+      bintools = pkgs.stdenv.cc.bintools.override { inherit postLinkSignHook; };
       extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
         echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
         echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
@@ -41,12 +41,6 @@ let
         echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
-
-        # avoid linker warning about non-existent directory
-        # > ld: warning: directory not found for option '-L/nix/store/gsfxxazc51sx6vjdrz6cq8s19x7h5mwh-clang-wrapper-7.1.0/lib'
-        if ! [[ -d '${pkgs.lib.getLib cc}/lib' ]]; then
-          sed -i -e 's%-L${pkgs.lib.getLib cc}/lib\($\| \)%%' $out/nix-support/cc-ldflags
-        fi
       '';
     };
   cc =
