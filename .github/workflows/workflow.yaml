@@ -30,7 +30,10 @@ jobs:
           EOF
       - name: Build & test
         run: |
-          nix-shell --pure --keep GITHUB_REPOSITORY --run 'bash .github/build-and-test'
+          nix-shell --pure \
+                    --keep GITHUB_REPOSITORY \
+                    --keep BAZEL_CONFIG_FLAG \
+                    --run 'bash .github/build-and-test'
   test-examples:
     name: Build & Test - Examples
     strategy:
