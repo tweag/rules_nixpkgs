@@ -6,6 +6,8 @@ build:bes --bes_backend=grpcs://remote.buildbuddy.io
 
 build:pr --config=cache
 build:pr --noremote_upload_local_results
+build:pr --remote_download_toplevel
+build:pr --verbose_failures
 build:pr --disk_cache=
 build:pr --flaky_test_attempts=2
 
