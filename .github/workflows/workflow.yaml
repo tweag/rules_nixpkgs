@@ -1,6 +1,8 @@
 ---
 name: Continuous integration
 on: push
+env:
+  BAZEL_CONFIG_FLAG: ci
 jobs:
   test-nixpkgs:
     name: Build & Test - Nixpkgs
@@ -19,7 +21,6 @@ jobs:
       - name: Configure
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
-          BAZEL_CONFIG_FLAG: ci
         run: |
           cp .bazelrc.ci $HOME/.bazelrc
           cat >>$HOME/.bazelrc <<EOF
