@@ -12,6 +12,8 @@ build:pr --flaky_test_attempts=2
 build:ci --config=cache
 build:ci --config=bes
 build:ci --remote_upload_local_results
+build:ci --remote_download_toplevel
+build:ci --verbose_failures
 build:ci --disk_cache=
 build:ci --flaky_test_attempts=2
 
