@@ -187,11 +187,13 @@ def _nixpkgs_package_impl(repository_ctx):
         # a file named `bazel-support` in its root.
         # A `bazel clean` deletes the symlink and thus nix is free to garbage collect
         # the store path.
-        "--out-link",
-        out_link,
     ])
 
-    expr_args.extend([
+    inst_args = expr_args + ["--add-root", out_link + '.drv']
+    expr_args += ["--out-link", out_link]
+
+    end_args = []
+    end_args.extend([
         expand_location(
             repository_ctx = repository_ctx,
             string = opt,
@@ -200,6 +202,7 @@ def _nixpkgs_package_impl(repository_ctx):
         )
         for opt in repository_ctx.attr.nixopts
     ])
+
 
     for repo in repositories.keys():
         path = str(repository_ctx.path(repo).dirname) + "/nix-file-deps"
@@ -220,7 +223,7 @@ def _nixpkgs_package_impl(repository_ctx):
         fail(strFailureImplicitNixpkgs)
 
     for dir in nix_path:
-        expr_args.extend(["-I", dir])
+        end_args.extend(["-I", dir])
 
     if not_supported and fail_not_supported:
         fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
@@ -232,7 +235,7 @@ def _nixpkgs_package_impl(repository_ctx):
             "nix-build",
             extra_msg = "See: https://nixos.org/nix/",
         )
-        nix_build = [nix_build_path] + expr_args
+        nix_build = [nix_build_path] + expr_args + end_args
 
         # Large enough integer that Bazel can still parse. We don't have
         # access to MAX_INT and 0 is not a valid timeout so this is as good
@@ -246,25 +249,35 @@ def _nixpkgs_package_impl(repository_ctx):
             failure_message = "Cannot build Nix attribute '{}'.".format(
                 repository_ctx.attr.attribute_path,
             ),
-            quiet = repository_ctx.attr.quiet,
+            quiet = False,
             timeout = timeout,
         )
-        nix_store_path = executable_path(
+        output_path = exec_result.stdout.splitlines()[-1]
+        deriv_path_o = exec_result.stdout
+
+        nix_instantiate = executable_path(
             repository_ctx,
-            "nix-store",
+            "nix-instantiate",
             extra_msg = "See: https://nixos.org/nix/",
         )
         query_result = execute_or_fail(
             repository_ctx,
-            [nix_store_path, '-qd', out_link + '.drv'],
-            failure_message = "Cannot query nix path '{}.drv'.".format(out_link),
+            [nix_instantiate] + inst_args + end_args,
+            failure_message = "Cannot instantiate nix path '{}'.".format(out_link),
             quiet = repository_ctx.attr.quiet,
             timeout = 1000,
         )
+        #drv = query_result.stdout.splitlines()[-1]
+        #execute_or_fail(
+        #    repository_ctx,
+        #    [nix_store_path, '--add-root', out_link + '.drv', '-r', drv],
+        #    failure_message = "Cannot store nix path '{}.drv -> {}'.; {}".format(out_link, drv, deriv_path_o),
+        #    quiet = repository_ctx.attr.quiet,
+        #    timeout = 1000,
+        #)
 
-        output_path = exec_result.stdout.splitlines()[-1]
-        deriv_path = query_result.stdout.splitlines()[-1]
 
+        
         # ensure that the output is a directory
         test_path = repository_ctx.which("test")
         execute_or_fail(
