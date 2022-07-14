@@ -177,6 +177,7 @@ def _nixpkgs_package_impl(repository_ctx):
     for dep in repository_ctx.attr.nix_file_deps:
         nix_file_deps[dep] = cp(repository_ctx, dep)
 
+    out_link = "bazel-support/nix-out-link"
     expr_args.extend([
         "-A",
         repository_ctx.attr.attribute_path if repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content else repository_ctx.attr.attribute_path or repository_ctx.attr.name,
@@ -187,7 +188,7 @@ def _nixpkgs_package_impl(repository_ctx):
         # A `bazel clean` deletes the symlink and thus nix is free to garbage collect
         # the store path.
         "--out-link",
-        "bazel-support/nix-out-link",
+        out_link,
     ])
 
     expr_args.extend([
@@ -248,7 +249,21 @@ def _nixpkgs_package_impl(repository_ctx):
             quiet = repository_ctx.attr.quiet,
             timeout = timeout,
         )
+        nix_store_path = executable_path(
+            repository_ctx,
+            "nix-store",
+            extra_msg = "See: https://nixos.org/nix/",
+        )
+        query_result = execute_or_fail(
+            repository_ctx,
+            [nix_store, '-qd', out_link + '.drv'],
+            failure_message = "Cannot query nix path '{}.drv'.".format(out_link),
+            quiet = repository_ctx.attr.quiet,
+            timeout = 1000,
+        )
+
         output_path = exec_result.stdout.splitlines()[-1]
+        deriv_path = query_result.stdout.splitlines()[-1]
 
         # ensure that the output is a directory
         test_path = repository_ctx.which("test")
