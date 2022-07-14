@@ -256,7 +256,7 @@ def _nixpkgs_package_impl(repository_ctx):
         )
         query_result = execute_or_fail(
             repository_ctx,
-            [nix_store, '-qd', out_link + '.drv'],
+            [nix_store_path, '-qd', out_link + '.drv'],
             failure_message = "Cannot query nix path '{}.drv'.".format(out_link),
             quiet = repository_ctx.attr.quiet,
             timeout = 1000,
