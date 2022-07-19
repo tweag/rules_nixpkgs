@@ -14,9 +14,9 @@ def docs_dependencies_1():
     maybe(
         http_archive,
         "rules_sh",
-        sha256 = "83a065ba6469135a35786eb741e17d50f360ca92ab2897857475ab17c0d29931",
-        strip_prefix = "rules_sh-0.2.0",
-        urls = ["https://github.com/tweag/rules_sh/archive/v0.2.0.tar.gz"],
+        sha256 = "d668bb32f112ead69c58bde2cae62f6b8acefe759a8c95a2d80ff6a85af5ac5e",
+        strip_prefix = "rules_sh-0.3.0",
+        urls = ["https://github.com/tweag/rules_sh/archive/v0.3.0.tar.gz"],
     )
 
     maybe(
