@@ -2,11 +2,12 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
+def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", toolchains = None):
     """Load repositories required by rules_nixpkgs.
 
     Args:
         rules_nixpkgs_name: name under which this repository is known in your workspace
+        toolchains:         list of toolchains to load, ['cc', 'java'], load all toolchains by default
     """
     maybe(
         http_archive,
@@ -50,14 +51,10 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
     if strip_prefix:
         strip_prefix += "/"
 
-    for name, prefix in [
-        ("rules_nixpkgs_core", "core"),
-        ("rules_nixpkgs_cc", "toolchains/cc"),
-        ("rules_nixpkgs_java", "toolchains/java"),
-        ("rules_nixpkgs_python", "toolchains/python"),
-        ("rules_nixpkgs_go", "toolchains/go"),
-        ("rules_nixpkgs_rust", "toolchains/rust"),
-        ("rules_nixpkgs_posix", "toolchains/posix"),
+    for name, prefix in [("rules_nixpkgs_core", "core")] + [
+        ("rules_nixpkgs_" + toolchain, "toolchains/" + toolchain)
+        for toolchain in [ 'cc', 'java', 'python', 'go', 'rust', 'posix' ]
+        if toolchains == None or toolchain in toolchains
     ]:
         # case analysis in inner loop to reduce code duplication
         if kind == "local_repository":
