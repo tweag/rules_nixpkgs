@@ -1,6 +1,8 @@
 # NOTE: temporary boilerplate for compatibility with `WORKSPACE` setup!
 # TODO: remove when migration to `bzlmod` is complete
 
+workspace(name = "rules_nixpkgs_java")
+
 ### generic dependencies for rendering documentation
 
 local_repository(
