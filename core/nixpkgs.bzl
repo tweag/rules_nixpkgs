@@ -33,6 +33,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 load(
     ":util.bzl",
     "cp",
+    "cp_many",
     "executable_path",
     "execute_or_fail",
     "expand_location",
@@ -88,10 +89,9 @@ def _nixpkgs_local_repository_impl(repository_ctx):
     else:
         target = cp(repository_ctx, repository_ctx.attr.nix_file)
 
-    repository_files = [target]
-    for dep in repository_ctx.attr.nix_file_deps:
-        dest = cp(repository_ctx, dep)
-        repository_files.append(dest)
+
+    repository_files = cp_many(repository_ctx, repository_ctx.attr.nix_file_deps)
+    repository_files.append(target)
 
     # Export all specified Nix files to make them dependencies of a
     # nixpkgs_package rule.
