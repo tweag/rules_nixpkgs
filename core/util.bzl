@@ -90,14 +90,13 @@ def cp_many(repository_ctx, srcs):
     repository_ctx.file(tar_list_filename, tar_list_content)
 
     # Invoke external shell process to copy files with tar.
-    tar_result = repository_ctx.execute(["sh", "-c", """
-        cd {output_base}
-        tar -c -T "{tar_list}" | tar -x -C "{repo_dir}"
-    """.format(
-        output_base = output_base,
-        repo_dir = repository_dir,
-        tar_list = repository_ctx.path(tar_list_filename),
-    )])
+    tar_result = repository_ctx.execute(["sh", "-c",
+        "tar -c -T '{tar_list}' | tar -x -C '{repo_dir}'".format(
+            tar_list = repository_ctx.path(tar_list_filename),
+            repo_dir = repository_dir,
+        )],
+        working_directory = output_base,
+    )
 
     if tar_result.return_code == 0:
         repository_files.extend([p for (_, p) in tar_list])
