@@ -65,7 +65,7 @@ def cp_many(repository_ctx, srcs):
     repository_files = []
 
     # Tar will run with outputBase as its working directory.
-    repository_dir = repository_ctx.execute(["pwd"]).stdout.strip("\n")
+    repository_dir = str(repository_ctx.path("."))
     output_base = repository_dir.removesuffix("external/" + repository_ctx.name)
 
     # Fallback to cp if outputBase cannot be determined.
