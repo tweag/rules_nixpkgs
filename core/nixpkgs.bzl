@@ -338,7 +338,7 @@ def nixpkgs_package(
           <dt><code>:lib</code></dt>
           <dd>All <code>.so</code>, <code>.dylib</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
           <dt><code>:include</code></dt>
-          <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>bin/</code>.</dd>
+          <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>include/</code>.</dd>
         </dl>
 
         If you need different files from the nix package, you can reference them like this:
