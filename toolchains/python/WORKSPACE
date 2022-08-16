@@ -39,4 +39,13 @@ nixpkgs_package(
     repository = "@nixpkgs",
 )
 
+# The interpreter_test rule creates a repository with a generated test.py file.
+# It takes a target label for a python interpreter, which we load from defs.bzl
+# in the python toolchain repository. The generated test.py file is run by the
+# //tests:resolve-interpreter test target. It checks the resolved interpreter
+# label matches the sys.executable path.
+load("//tests:interpreter-test.bzl", "interpreter_test")
+load("@nixpkgs_python_toolchain//:defs.bzl", "interpreter")
+interpreter_test(name = "interpreter_test", interpreter_label = interpreter)
+
 ### end dependencies for tests

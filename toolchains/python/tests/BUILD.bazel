@@ -6,3 +6,12 @@ test_suite(
         "@nixpkgs_python_configure_test//:python3-test",
     ],
 )
+
+py_test(
+    name = "resolve-interpreter",
+    main = "@interpreter_test//:test.py",
+    srcs = ["@interpreter_test//:test.py"],
+    srcs_version = "PY3",
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+)
