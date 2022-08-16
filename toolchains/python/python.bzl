@@ -21,6 +21,14 @@ load(
 def _nixpkgs_python_toolchain_impl(repository_ctx):
     exec_constraints, target_constraints = ensure_constraints(repository_ctx)
 
+    python2_runtime = ""
+    if repository_ctx.attr.python2_repo:
+        python2_runtime = repository_ctx.attr.python2_repo + ":runtime"
+
+    python3_runtime = ""
+    if repository_ctx.attr.python3_repo:
+        python3_runtime = repository_ctx.attr.python3_repo + ":runtime"
+
     repository_ctx.file("BUILD.bazel", executable = False, content = """
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 py_runtime_pair(
@@ -36,8 +44,8 @@ toolchain(
     target_compatible_with = {target_constraints},
 )
 """.format(
-        python2_runtime = label_string(repository_ctx.attr.python2_repo + ":runtime"),
-        python3_runtime = label_string(repository_ctx.attr.python3_repo + ":runtime"),
+        python2_runtime = label_string(python2_runtime),
+        python3_runtime = label_string(python3_runtime),
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
     ))
