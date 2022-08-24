@@ -36,6 +36,7 @@ load(
     "executable_path",
     "execute_or_fail",
     "expand_location",
+    "external_repository_root",
     "find_children",
     "is_supported_platform",
 )
@@ -126,13 +127,6 @@ Create an external repository representing the content of Nixpkgs, based on a Ni
 """,
 )
 
-def _external_repository_root(label):
-    return "/".join([
-        component
-        for component in [label.workspace_root, label.package, label.name]
-        if component
-    ])
-
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
@@ -179,11 +173,11 @@ def _nixpkgs_package_impl(repository_ctx):
 
     if repository_ctx.attr.nix_file:
         repository_ctx.path(repository_ctx.attr.nix_file)
-        repository_ctx.path(_external_repository_root(repository_ctx.attr.nix_file))
+        repository_ctx.path(external_repository_root(repository_ctx.attr.nix_file))
 
     for dep in repository_ctx.attr.nix_file_deps:
         repository_ctx.path(dep)
-        repository_ctx.path(_external_repository_root(dep))
+        repository_ctx.path(external_repository_root(dep))
 
     # Is nix supported on this platform?
     not_supported = not is_supported_platform(repository_ctx)

@@ -24,6 +24,13 @@ def _is_executable(repository_ctx, path):
     mode = int(stdout, 8)
     return mode & 0o100 != 0
 
+def external_repository_root(label):
+    return "/".join([
+        component
+        for component in [label.workspace_root, label.package, label.name]
+        if component
+    ])
+
 def cp(repository_ctx, src, dest = None):
     """Copy the given file into the external repository root.
 
@@ -39,11 +46,7 @@ def cp(repository_ctx, src, dest = None):
     if dest == None:
         if type(src) != "Label":
             fail("src must be a Label if dest is not specified explicitly.")
-        dest = "/".join([
-            component
-            for component in [src.workspace_root, src.package, src.name]
-            if component
-        ])
+        dest = external_repository_root(label)
 
     src_path = repository_ctx.path(src)
     dest_path = repository_ctx.path(dest)
