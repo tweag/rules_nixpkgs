@@ -25,6 +25,7 @@ def _is_executable(repository_ctx, path):
     return mode & 0o100 != 0
 
 def external_repository_root(label):
+    """Get path to repository root from label."""
     return "/".join([
         component
         for component in [label.workspace_root, label.package, label.name]
@@ -46,7 +47,7 @@ def cp(repository_ctx, src, dest = None):
     if dest == None:
         if type(src) != "Label":
             fail("src must be a Label if dest is not specified explicitly.")
-        dest = external_repository_root(label)
+        dest = external_repository_root(src)
 
     src_path = repository_ctx.path(src)
     dest_path = repository_ctx.path(dest)
