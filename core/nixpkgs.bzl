@@ -191,6 +191,11 @@ def _nixpkgs_package_impl(repository_ctx):
     # Should we fail if Nix is not supported?
     fail_not_supported = repository_ctx.attr.fail_not_supported
 
+    if not_supported and fail_not_supported:
+        fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
+    elif not_supported:
+        return
+
     # If true, a BUILD file will be created from a template if it does not
     # exist.
     # However this will happen AFTER the nix-build command.
@@ -244,57 +249,52 @@ def _nixpkgs_package_impl(repository_ctx):
         for opt in repository_ctx.attr.nixopts
     ])
 
-    if not_supported and fail_not_supported:
-        fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
-    elif not_supported:
-        return
-    else:
-        nix_build_path = executable_path(
-            repository_ctx,
-            "nix-build",
-            extra_msg = "See: https://nixos.org/nix/",
-        )
-        nix_build = [nix_build_path] + expr_args
+    nix_build_path = executable_path(
+        repository_ctx,
+        "nix-build",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+    nix_build = [nix_build_path] + expr_args
 
-        # Large enough integer that Bazel can still parse. We don't have
-        # access to MAX_INT and 0 is not a valid timeout so this is as good
-        # as we can do. The value shouldn't be too large to avoid errors on
-        # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
-        timeout = 8640000
-        repository_ctx.report_progress("Building Nix derivation")
-        exec_result = execute_or_fail(
-            repository_ctx,
-            nix_build,
-            failure_message = "Cannot build Nix attribute '{}'.".format(
-                repository_ctx.attr.attribute_path,
-            ),
-            quiet = repository_ctx.attr.quiet,
-            timeout = timeout,
-        )
-        output_path = exec_result.stdout.splitlines()[-1]
+    # Large enough integer that Bazel can still parse. We don't have
+    # access to MAX_INT and 0 is not a valid timeout so this is as good
+    # as we can do. The value shouldn't be too large to avoid errors on
+    # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
+    timeout = 8640000
+    repository_ctx.report_progress("Building Nix derivation")
+    exec_result = execute_or_fail(
+        repository_ctx,
+        nix_build,
+        failure_message = "Cannot build Nix attribute '{}'.".format(
+            repository_ctx.attr.attribute_path,
+        ),
+        quiet = repository_ctx.attr.quiet,
+        timeout = timeout,
+    )
+    output_path = exec_result.stdout.splitlines()[-1]
 
-        # ensure that the output is a directory
-        test_path = repository_ctx.which("test")
-        execute_or_fail(
-            repository_ctx,
-            [test_path, "-d", output_path],
-            failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
-                repository_ctx.name,
-            ),
-        )
+    # ensure that the output is a directory
+    test_path = repository_ctx.which("test")
+    execute_or_fail(
+        repository_ctx,
+        [test_path, "-d", output_path],
+        failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
+            repository_ctx.name,
+        ),
+    )
 
-        # Build a forest of symlinks (like new_local_package() does) to the
-        # Nix store.
-        for target in find_children(repository_ctx, output_path):
-            basename = target.rpartition("/")[-1]
-            repository_ctx.symlink(target, basename)
+    # Build a forest of symlinks (like new_local_package() does) to the
+    # Nix store.
+    for target in find_children(repository_ctx, output_path):
+        basename = target.rpartition("/")[-1]
+        repository_ctx.symlink(target, basename)
 
-        # Create a default BUILD file only if it does not exists and is not
-        # provided by `build_file` or `build_file_content`.
-        if create_build_file_if_needed:
-            p = repository_ctx.path("BUILD")
-            if not p.exists:
-                repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
+    # Create a default BUILD file only if it does not exists and is not
+    # provided by `build_file` or `build_file_content`.
+    if create_build_file_if_needed:
+        p = repository_ctx.path("BUILD")
+        if not p.exists:
+            repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
