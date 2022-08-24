@@ -170,6 +170,10 @@ def _nixpkgs_package_impl(repository_ctx):
     for dir in nix_path:
         expr_args.extend(["-I", dir])
 
+    # Workaround to bazelbuild/bazel#4533 -- to prevent this rule being restarted after running cp,
+    # resolve all dependencies of this rule before running cp
+    #
+    # Remove the following repository_ctx.path() once bazelbuild/bazel#4533 is resolved.
     if repository_ctx.attr.build_file:
         repository_ctx.path(repository_ctx.attr.build_file)
 
@@ -200,19 +204,18 @@ def _nixpkgs_package_impl(repository_ctx):
     else:
         # No user supplied build file, we may create the default one.
         create_build_file_if_needed = True
+        # Workaround to bazelbuild/bazel#4533
         repository_ctx.path("BUILD")
 
     if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
     elif repository_ctx.attr.nix_file:
         nix_file = cp(repository_ctx, repository_ctx.attr.nix_file)
-        expr_args = [repository_ctx.path(nix_file)]
+        expr_args.append(repository_ctx.path(nix_file))
     elif repository_ctx.attr.nix_file_content:
-        expr_args = ["-E", repository_ctx.attr.nix_file_content]
-    elif not repositories:
-        fail(strFailureImplicitNixpkgs)
+        expr_args.extend(["-E", repository_ctx.attr.nix_file_content])
     else:
-        expr_args = ["-E", "import <nixpkgs> { config = {}; overlays = []; }"]
+        expr_args.extend(["-E", "import <nixpkgs> { config = {}; overlays = []; }"])
 
     nix_file_deps = {}
     for dep in repository_ctx.attr.nix_file_deps:
