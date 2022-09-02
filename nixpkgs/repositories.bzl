@@ -2,6 +2,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
+_TOOLCHAINS = sorted([ 'cc', 'java', 'python', 'go', 'rust', 'posix' ])
+
 def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", toolchains = None):
     """Load repositories required by rules_nixpkgs.
 
@@ -51,9 +53,22 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
     if strip_prefix:
         strip_prefix += "/"
 
+    if toolchains != None:
+        inexistent_toolchains = [ name for name in toolchains if not name in _TOOLCHAINS ]
+        if inexistent_toolchains:
+            errormsg = [
+                "The following toolchains given in the `toolchains` argument are unknown: {}".format(
+                    ", ".join(inexistent_toolchains)
+                ),
+                "Available toolchains are: {}".format(
+                    ", ".join(_TOOLCHAINS)
+                )
+            ]
+            fail("\n".join(errormsg))
+
     for name, prefix in [("rules_nixpkgs_core", "core")] + [
         ("rules_nixpkgs_" + toolchain, "toolchains/" + toolchain)
-        for toolchain in [ 'cc', 'java', 'python', 'go', 'rust', 'posix' ]
+        for toolchain in _TOOLCHAINS
         if toolchains == None or toolchain in toolchains
     ]:
         # case analysis in inner loop to reduce code duplication
