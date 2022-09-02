@@ -7,7 +7,7 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
 
     Args:
         rules_nixpkgs_name: name under which this repository is known in your workspace
-        toolchains:         list of toolchains to load, ['cc', 'java'], load all toolchains by default
+        toolchains:         list of toolchains to load, e.g. `['cc', 'java']`, load all toolchains by default
     """
     maybe(
         http_archive,
