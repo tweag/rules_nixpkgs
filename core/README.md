@@ -357,9 +357,9 @@ For common use cases we provide filegroups that expose certain files as targets:
   <dt><code>:bin</code></dt>
   <dd>Everything in the <code>bin/</code> directory.</dd>
   <dt><code>:lib</code></dt>
-  <dd>All <code>.so</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
+  <dd>All <code>.so</code>, <code>.dylib</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
   <dt><code>:include</code></dt>
-  <dd>All <code>.h</code> files that can be found in subdirectories of <code>bin/</code>.</dd>
+  <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>include/</code>.</dd>
 </dl>
 
 If you need different files from the nix package, you can reference them like this:

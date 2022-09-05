@@ -5,6 +5,33 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 def is_supported_platform(repository_ctx):
     return repository_ctx.which("nix-build") != None
 
+def _is_executable(repository_ctx, path):
+    stat_exe = repository_ctx.which("stat")
+    if stat_exe == None:
+        return False
+
+    # A hack to detect if stat in Nix shell is BSD stat as BSD stat does not
+    # support --version flag
+    is_bsd_stat = repository_ctx.execute([stat_exe, "--version"]).return_code != 0
+    if is_bsd_stat:
+        stat_args = ["-f", "%Lp", path]
+    else:
+        stat_args = ["-c", "%a", path]
+
+    arguments = [stat_exe] + stat_args
+    exec_result = repository_ctx.execute(arguments)
+    stdout = exec_result.stdout.strip()
+    mode = int(stdout, 8)
+    return mode & 0o100 != 0
+
+def external_repository_root(label):
+    """Get path to repository root from label."""
+    return "/".join([
+        component
+        for component in [label.workspace_root, label.package, label.name]
+        if component
+    ])
+
 def cp(repository_ctx, src, dest = None):
     """Copy the given file into the external repository root.
 
@@ -20,30 +47,19 @@ def cp(repository_ctx, src, dest = None):
     if dest == None:
         if type(src) != "Label":
             fail("src must be a Label if dest is not specified explicitly.")
-        dest = "/".join([
-            component
-            for component in [src.workspace_root, src.package, src.name]
-            if component
-        ])
+        dest = external_repository_root(src)
+
+    src_path = repository_ctx.path(src)
+    dest_path = repository_ctx.path(dest)
+    executable = _is_executable(repository_ctx, src_path)
 
     # Copy the file
     repository_ctx.file(
-        repository_ctx.path(dest),
-        repository_ctx.read(repository_ctx.path(src)),
-        executable = False,
+        dest_path,
+        repository_ctx.read(src_path),
+        executable = executable,
         legacy_utf8 = False,
     )
-
-    # Copy the executable bit of the source
-    # This is important to ensure that copied binaries are executable.
-    # Windows may not have chmod in path and doesn't have executable bits anyway.
-    if get_cpu_value(repository_ctx) != "x64_windows":
-        repository_ctx.execute([
-            repository_ctx.which("chmod"),
-            "--reference",
-            repository_ctx.path(src),
-            repository_ctx.path(dest),
-        ])
 
     return dest
 
