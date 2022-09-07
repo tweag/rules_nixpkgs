@@ -17,7 +17,7 @@ def docs_dependencies_2():
     nixpkgs_local_repository(
         name = "nixpkgs",
         nix_file = "@rules_nixpkgs_core//:nixpkgs.nix",
-        nix_file_deps = ["@rules_nixpkgs_core//:nixpkgs.json"],
+        nix_file_deps = ["@rules_nixpkgs_core//:flake.lock"],
     )
 
     rules_sh_dependencies()
