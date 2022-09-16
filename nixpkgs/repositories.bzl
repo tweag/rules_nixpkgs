@@ -2,7 +2,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-_TOOLCHAINS = sorted([ 'cc', 'java', 'python', 'go', 'rust', 'posix' ])
+_TOOLCHAINS = sorted([ 'cc', 'java', 'python', 'go', 'rust', 'posix', 'nodejs' ])
 
 def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", toolchains = None):
     """Load repositories required by rules_nixpkgs.

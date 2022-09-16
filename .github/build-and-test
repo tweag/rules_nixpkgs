@@ -34,6 +34,7 @@ declare -ra dirs=(
     toolchains/python
     toolchains/posix
     toolchains/rust
+    toolchains/nodejs
 )
 for dir in "${dirs[@]}"
 do
