@@ -10,12 +10,11 @@ SCRIPT_DIR="${SCRIPT_DIR%/*}"
 
 cd "$( dirname "$SCRIPT_DIR" )"
 
-declare -i FAILED=0
 declare -a FAILURES=( )
 
 function on_exit() {
     echo
-    if [[ "$FAILED" -gt 0 ]]; then
+    if [[ "${#FAILURES[@]}" -gt 0 ]]; then
         echo "error: running tests in ${FAILURES[@]} was not successful"
         exit 1
     elif [[ $? -eq 0 ]]; then
@@ -41,7 +40,6 @@ for dir in "${dirs[@]}"; do
 
     pushd $dir >/dev/null
     if ! bazel test //... ; then
-        let ++FAILED
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
