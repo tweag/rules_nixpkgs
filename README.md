@@ -32,12 +32,12 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 * [nixpkgs_package](#nixpkgs_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
-* [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
 * [nixpkgs_java_configure](#nixpkgs_java_configure)
-* [nixpkgs_nodejs_configure](#nixpkgs_nodejs_configure)
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
+* [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
 * [nixpkgs_rust_configure](#nixpkgs_rust_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
+* [nixpkgs_nodejs_configure](#nixpkgs_nodejs_configure)
 
 ## Setup
 
