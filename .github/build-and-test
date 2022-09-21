@@ -36,14 +36,16 @@ declare -ra dirs=(
     toolchains/rust
     toolchains/nodejs
 )
-for dir in "${dirs[@]}"
-do
-    pushd $dir
+for dir in "${dirs[@]}"; do
+    echo "::group::Running \`bazel test\` in $dir"
+
+    pushd $dir >/dev/null
     if ! bazel test //... ; then
         let ++FAILED
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
-    popd
-done
+    popd >/dev/null
 
+    echo '::endgroup::'
+done
