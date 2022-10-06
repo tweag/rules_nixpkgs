@@ -20,6 +20,7 @@ bzl_library(
         "@rules_nixpkgs_core//:bazel_tools",
         "@rules_nixpkgs_core//:nixpkgs",
         "@rules_nixpkgs_java//:java",
+        "@rules_nixpkgs_nodejs//:nodejs",
         "@rules_nixpkgs_posix//:posix",
         "@rules_nixpkgs_python//:python",
         "@rules_nixpkgs_rust//:rust",

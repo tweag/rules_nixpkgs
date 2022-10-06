@@ -37,6 +37,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 * [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
 * [nixpkgs_rust_configure](#nixpkgs_rust_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
+* [nixpkgs_nodejs_configure](#nixpkgs_nodejs_configure)
 
 ## Setup
 
