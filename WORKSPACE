@@ -30,8 +30,8 @@ nixpkgs_local_repository(
 )
 
 nixpkgs_package(
-    name = "nix_2_4",
-    attribute_path = "nix_2_4",
+    name = "nix_2_7",
+    attribute_path = "nixVersions.nix_2_7",
     repositories = {"nixpkgs": "@nixpkgs"},
 )
 
