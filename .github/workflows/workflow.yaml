@@ -20,9 +20,14 @@ jobs:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           cp .bazelrc.ci $HOME/.bazelrc
+          if [ -z "$BUILDBUDDY_API_KEY" ]; then
+              cache_setting='build --noremote_upload_local_results'
+          else
+              cache_setting="build --remote_header=x-buildbuddy-api-key=$BUILDBUDDY_API_KEY"
+          fi
           cat >>$HOME/.bazelrc <<EOF
           common --config=ci
-          build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
+          $cache_setting
           # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
           common:ci --announce_rc=false
           EOF
