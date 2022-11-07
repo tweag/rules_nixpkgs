@@ -12,6 +12,7 @@ load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
     "rules_nixpkgs_core",
     "rules_nixpkgs_cc",
     "rules_nixpkgs_java",
+    "rules_nixpkgs_nodejs",
     "rules_nixpkgs_python",
     "rules_nixpkgs_rust",
     "rules_nixpkgs_posix",
