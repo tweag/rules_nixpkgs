@@ -4,7 +4,7 @@
 
 # Nixpkgs rules for Bazel
 
-[![Build status](https://badge.buildkite.com/79bd0a8aa1e47a92e0254ca3afe5f439776e6d389cfbde9d8c.svg?branch=master)](https://buildkite.com/tweag-1/rules-nixpkgs)
+[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
 
 Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
 external dependencies (like system packages) into [Bazel][bazel]
