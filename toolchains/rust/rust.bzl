@@ -163,7 +163,11 @@ def nixpkgs_rust_configure(
     if not nix_file and not nix_file_content:
         nix_file_content = _rust_nix_contents.format(
             binary_ext = "",
-            dylib_ext = ".so",
+            dylib_ext = select({
+                "@platforms//os:macos": ".dylib",
+                "@platforms//os:ios": ".dylib",
+                "//conditions:default": ".so",
+            }),
             staticlib_ext = ".a",
             default_edition = default_edition,
             stdlib_linkflags = '["-lpthread", "-ldl"]',
