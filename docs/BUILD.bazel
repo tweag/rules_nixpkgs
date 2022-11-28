@@ -13,6 +13,7 @@ generate_documentation(
         "nixpkgs_python_configure",
         "nixpkgs_rust_configure",
         "nixpkgs_sh_posix_configure",
+        "nixpkgs_nodejs_configure",
     ],
     deps = [
         "//nixpkgs",
