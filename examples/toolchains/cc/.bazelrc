@@ -1,1 +1,2 @@
 build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build:nix --crosstool_top=@nixpkgs_config_cc//:toolchain
