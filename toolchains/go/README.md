@@ -16,8 +16,8 @@ Rules for importing a Go toolchain from Nixpkgs.
 ### nixpkgs_go_configure
 
 <pre>
-nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>,
-                     <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>)
+nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>,
+                     <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>)
 </pre>
 
 Use go toolchain from Nixpkgs.
@@ -147,6 +147,20 @@ Specify one of `path` or `repositories`.
 </p>
 </td>
 </tr>
+<tr id="nixpkgs_go_configure-attribute_path">
+<td><code>attribute_path</code></td>
+<td>
+
+optional.
+default is <code>"go"</code>
+
+<p>
+
+The nixpkgs attribute path for the `go` to use.
+
+</p>
+</td>
+</tr>
 <tr id="nixpkgs_go_configure-nix_file">
 <td><code>nix_file</code></td>
 <td>
@@ -156,7 +170,7 @@ default is <code>None</code>
 
 <p>
 
-An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge.
+An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge. Takes precedence over attribute_path.
 
 </p>
 </td>
@@ -184,7 +198,7 @@ default is <code>None</code>
 
 <p>
 
-An expression for a Nix environment derivation.
+An expression for a Nix environment derivation. Takes precedence over attribute_path.
 
 </p>
 </td>

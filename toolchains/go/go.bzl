@@ -229,6 +229,7 @@ def nixpkgs_go_configure(
         sdk_name = "go_sdk",
         repository = None,
         repositories = {},
+        attribute_path = "go",
         nix_file = None,
         nix_file_deps = None,
         nix_file_content = None,
@@ -305,9 +306,10 @@ def nixpkgs_go_configure(
 
     Args:
       sdk_name: Go sdk name to pass to rules_go
-      nix_file: An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge.
+      attribute_path: The nixpkgs attribute path for the `go` to use.
+      nix_file: An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge. Takes precedence over attribute_path.
       nix_file_deps: Dependencies of `nix_file` if any.
-      nix_file_content: An expression for a Nix environment derivation.
+      nix_file_content: An expression for a Nix environment derivation. Takes precedence over attribute_path.
       repository: A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`.
       repositories: A dictionary mapping `NIX_PATH` entries to repository labels.
 
@@ -324,17 +326,17 @@ def nixpkgs_go_configure(
 
     if not nix_file and not nix_file_content:
         nix_file_content = """
-            with import <nixpkgs> { config = {}; overlays = []; }; buildEnv {
+           with import <nixpkgs> {{ config = {{}}; overlays = []; }}; buildEnv {{
               name = "bazel-go-toolchain";
               paths = [
-                go
+                {attribute_path}
               ];
               postBuild = ''
                 touch $out/ROOT
-                ln -s $out/share/go/{api,doc,lib,misc,pkg,src} $out/
+                ln -s $out/share/go/{{api,doc,lib,misc,pkg,src}} $out/
               '';
-            }
-        """
+            }}
+        """.format(attribute_path = attribute_path)
 
     helpers_repo = sdk_name + "_helpers"
     nixpkgs_go_helpers(
