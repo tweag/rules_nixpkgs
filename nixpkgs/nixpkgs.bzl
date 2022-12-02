@@ -42,6 +42,8 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 Add the following to your `WORKSPACE` file, and select a `$COMMIT` accordingly.
 
 ```bzl
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
     name = "io_tweag_rules_nixpkgs",
     strip_prefix = "rules_nixpkgs-$COMMIT",
