@@ -82,6 +82,16 @@ nixpkgs_package(
 )
 ```
 
+## Remote Nix builds (WIP)
+
+Nix builds themselves can be run on remote Nix builders by setting
+the following parameters in `.bazelrc`:
+```
+build --repo_env=BAZEL_NIX_REMOTE=<host>
+build --repo_env=BAZEL_NIX_REMOTE_USER=<username>
+build --repo_env=BAZEL_NIX_REMOTE_KEY=<path to private key>
+```
+
 ## Migration from older releases
 
 ### `path` Attribute (removed in 0.3)
