@@ -14,11 +14,11 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_depende
 
 rules_nixpkgs_dependencies(toolchains = ['cc', 'posix'])
 
-load("@rules_nixpkgs_core//docs:dependencies_1.bzl", "docs_dependencies_1")
+load("@io_tweag_rules_nixpkgs//docs:dependencies_1.bzl", "docs_dependencies_1")
 
 docs_dependencies_1()
 
-load("@rules_nixpkgs_core//docs:dependencies_2.bzl", "docs_dependencies_2")
+load("@io_tweag_rules_nixpkgs//docs:dependencies_2.bzl", "docs_dependencies_2")
 
 docs_dependencies_2()
 

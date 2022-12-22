@@ -1,4 +1,4 @@
-load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate_documentation")
+load("@io_tweag_rules_nixpkgs//docs:stardoc.bzl", "generate_documentation")
 
 generate_documentation(
     name = "README.md",

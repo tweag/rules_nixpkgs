@@ -53,11 +53,11 @@ def stardoc(
         name,
         out,
         input,
-        aspect_template = "@rules_nixpkgs_core//docs:templates/aspect.vm",
-        func_template = "@rules_nixpkgs_core//docs:templates/func.vm",
-        header_template = "@rules_nixpkgs_core//docs:templates/header.vm",
-        provider_template = "@rules_nixpkgs_core//docs:templates/provider.vm",
-        rule_template = "@rules_nixpkgs_core//docs:templates/rule.vm",
+        aspect_template = "@io_tweag_rules_nixpkgs//docs:templates/aspect.vm",
+        func_template = "@io_tweag_rules_nixpkgs//docs:templates/func.vm",
+        header_template = "@io_tweag_rules_nixpkgs//docs:templates/header.vm",
+        provider_template = "@io_tweag_rules_nixpkgs//docs:templates/provider.vm",
+        rule_template = "@io_tweag_rules_nixpkgs//docs:templates/rule.vm",
         **kwargs):
     _stardoc(
         name = name,
@@ -75,7 +75,7 @@ def copy_files(name, data):
     """copy list of files to workspace root"""
     native.sh_binary(
         name = name,
-        srcs = ["@rules_nixpkgs_core//docs:copy-files.sh"],
+        srcs = ["@io_tweag_rules_nixpkgs//docs:copy-files.sh"],
         args = ["$(location {}) {}".format(a, b) for a, b in data],
         data = [a for a, b in data],
         # pass `cp` from `coreutils`, so that it is not something arbitrary
@@ -94,7 +94,7 @@ def compare_files(name, data, error_message = ""):
     data = [f for pair in data for f in pair]
     native.sh_test(
         name = name,
-        srcs = ["@rules_nixpkgs_core//docs:compare-files.sh"],
+        srcs = ["@io_tweag_rules_nixpkgs//docs:compare-files.sh"],
         args = ["$(location {})".format(f) for f in data],
         data = data,
         env = {"errormsg": error_message},
