@@ -11,7 +11,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        bazel = if pkgs.lib.strings.hasSuffix system "-darwin" then 
+        bazel = if pkgs.lib.strings.hasSuffix "-darwin" system then 
           pkgs.bazel_6.override { runJdk = pkgs.zulu; }
         else
           pkgs.bazel_6;
