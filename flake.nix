@@ -11,11 +11,15 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        bazel = if pkgs.lib.strings.hasSuffix system "-darwin" then 
+          pkgs.bazel_6.override { runJdk = pkgs.zulu; }
+        else
+          pkgs.bazel_6;
       in
       {
         devShells.default = with pkgs; mkShell {
           name = "rules_nixpkgs_shell";
-          packages = [ bazel_6 bazel-buildtools cacert gcc nix git ];
+          packages = [ bazel bazel-buildtools cacert gcc nix git ];
         };
       });
 }
