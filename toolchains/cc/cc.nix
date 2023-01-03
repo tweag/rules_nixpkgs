@@ -6,6 +6,7 @@ in
 , ccAttrPath ? null
 , ccAttrSet ? null
 , ccExpr ? null
+, ccLang ? "c++"
 }:
 
 let
@@ -105,13 +106,13 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     is_compiler_option_supported() {
       local option="$1"
       local pattern="''${2-$1}"
-      { $cc "$option" -o /dev/null -c -x c++ - <<<"int main() {}" 2>&1 1>/dev/null || true; } \
+      { $cc "$option" -o /dev/null -c -x ${ccLang} - <<<"int main() {}" 2>&1 1>/dev/null || true; } \
         | grep -qe "$pattern" && return 1 || return 0
     }
     is_linker_option_supported() {
       local option="$1"
       local pattern="''${2-$1}"
-      { $cc "$option" -o /dev/null -x c++ - <<<"int main() {}" 2>&1 1>/dev/null || true; } \
+      { $cc "$option" -o /dev/null -x ${ccLang} - <<<"int main() {}" 2>&1 1>/dev/null || true; } \
         | grep -qe "$pattern" && return 1 || return 0
     }
     add_compiler_option_if_supported() {
@@ -176,7 +177,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
       -fno-omit-frame-pointer
     )
     CXX_FLAGS=(
-      -x c++
+      -x ${ccLang}
       -std=c++0x
     )
     LINK_FLAGS=(
