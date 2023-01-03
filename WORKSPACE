@@ -3,7 +3,7 @@ workspace(name = "io_tweag_rules_nixpkgs")
 # For documentation
 
 local_repository(
-    name = "io_tweag_rules_nixpkgs_docs",
+    name = "rules_nixpkgs_docs",
     path = "./docs",
 )
 
@@ -11,11 +11,11 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_depende
 
 rules_nixpkgs_dependencies()
 
-load("@io_tweag_rules_nixpkgs_docs//:dependencies_1.bzl", "docs_dependencies_1")
+load("@rules_nixpkgs_docs//:dependencies_1.bzl", "docs_dependencies_1")
 
 docs_dependencies_1()
 
-load("@io_tweag_rules_nixpkgs_docs//:dependencies_2.bzl", "docs_dependencies_2")
+load("@rules_nixpkgs_docs//:dependencies_2.bzl", "docs_dependencies_2")
 
 docs_dependencies_2()
 
