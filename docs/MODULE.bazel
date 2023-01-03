@@ -1,5 +1,5 @@
 module(
-    name = "docs_generation",
+    name = "rules_nixpkgs_docs",
     version = "0.9.0",
 )
 
