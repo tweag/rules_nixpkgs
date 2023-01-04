@@ -1,6 +1,6 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-<!-- Edit the docstring in `nixpkgs/nixpkgs.bzl` and run `bazel run //docs:update-readme` to change the project README. -->
+<!-- Edit the docstring in `nixpkgs/nixpkgs.bzl` and run `bazel run @rules_nixpkgs_docs//:update-readme` to change the project README. -->
 
 # Nixpkgs rules for Bazel
 
