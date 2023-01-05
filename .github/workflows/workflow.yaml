@@ -88,22 +88,30 @@ jobs:
             read -a ${1} <<< $(echo ${!p//$2})
           }
 
-          cd examples/toolchains
+          pushd examples/toolchains
           with_nix=( $(ls) )
           without_nix=( cc go java rust )
 
           for dir in "${with_nix[@]}"; do
-              cd "$dir"
+              pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) with Nix"
               nix-shell --command 'bazel run --config=nix :hello'
               # TODO: all toolchains should run without Nixpkgs
-              cd ..
+              popd
           done
           for dir in "${without_nix[@]}"; do
-              cd "$dir"
+              pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) without Nix"
               bazel run :hello
-              cd ..
+              popd
           done
+
+          popd
+
+          pushd examples/python-container
+          echo
+          echo "::group::Running $(head -n1 README.md) with Nix"
+          nix-shell --command 'bazel build --config=nix :hello_image'
+          popd
