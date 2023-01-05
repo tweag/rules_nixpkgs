@@ -8,6 +8,14 @@ on:
   workflow_dispatch: # allows manual triggering
 
 jobs:
+  cancel-running-workflows:
+    name: Cancel running workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: cancel running workflows
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
   test-nixpkgs:
     name: Build & Test - Nixpkgs
     strategy:
