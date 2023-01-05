@@ -47,11 +47,11 @@ Expect something like this as output:
 
 ## Step 2: Nix-Environment with bazel
 
-We're using Nix 21.11 (stable at the time of writing) and Bazel version 4, so
+We're using Nix 22.05 (stable at the time of writing) and Bazel version 5, so
 create a file `shell.nix` wit the following content:
 
 ```
-{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/refs/tags/21.11.tar.gz") {} }:
+{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz") {} }:
 
 pkgs.mkShellNoCC {
     nativeBuildInputs = [
@@ -69,7 +69,7 @@ nix-shell --pure --command 'bazel --version'
 You get something like
 
 ```
-bazel 4.2.1- (@non-git)
+bazel 5.1.1- (@non-git)
 ```
 
 ---
