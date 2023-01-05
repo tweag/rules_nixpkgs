@@ -2,6 +2,19 @@
 
 Rules for importing a C++ toolchain from Nixpkgs.
 
+## Compiling non-C++ languages
+
+One may wish to use a C++ toolchain to compile certain libraries written in
+non-C++ languages. For instance, Clang/LLVM can be used to compile CUDA or HIP
+code targeting GPUs. This can be achieved by:
+
+  1. passing `cc_lang = "none"` in `nixpkgs_cc_configure` below 
+  2. using a rule invocation of the form `cc_library(..., copts="-x cuda")`
+  when defining individual libraries or executables
+
+It is also possible to override the language used by the toolchain itself,
+using `nixpkgs_cc_configure(..., cc_lang = "cuda")` or similar.
+
 ## Rules
 
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
@@ -290,7 +303,8 @@ def nixpkgs_cc_configure(
         fail_not_supported = True,
         exec_constraints = None,
         target_constraints = None,
-        register = True):
+        register = True,
+        cc_lang = "c++"):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -353,6 +367,7 @@ def nixpkgs_cc_configure(
       exec_constraints: Constraints for the execution platform.
       target_constraints: Constraints for the target platform.
       register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
+      cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
     """
 
     nixopts = list(nixopts)
@@ -380,6 +395,9 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccAttrSet",
             nix_expr,
+            "--arg",
+            "ccLang",
+            cc_lang,
         ])
     elif nix_expr:
         nixopts.extend([

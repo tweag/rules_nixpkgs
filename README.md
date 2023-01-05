@@ -297,7 +297,7 @@ A dictionary from local repository name to global repository name. This allows c
 <pre>
 nixpkgs_cc_configure(<a href="#nixpkgs_cc_configure-name">name</a>, <a href="#nixpkgs_cc_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_cc_configure-nix_file">nix_file</a>, <a href="#nixpkgs_cc_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_cc_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_cc_configure-repositories">repositories</a>,
                      <a href="#nixpkgs_cc_configure-repository">repository</a>, <a href="#nixpkgs_cc_configure-nixopts">nixopts</a>, <a href="#nixpkgs_cc_configure-quiet">quiet</a>, <a href="#nixpkgs_cc_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_cc_configure-exec_constraints">exec_constraints</a>,
-                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>, <a href="#nixpkgs_cc_configure-register">register</a>)
+                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>, <a href="#nixpkgs_cc_configure-register">register</a>, <a href="#nixpkgs_cc_configure-cc_lang">cc_lang</a>)
 </pre>
 
 Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
@@ -531,6 +531,20 @@ default is <code>True</code>
 <p>
 
 bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure-cc_lang">
+<td><code>cc_lang</code></td>
+<td>
+
+optional.
+default is <code>"c++"</code>
+
+<p>
+
+string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
 
 </p>
 </td>
