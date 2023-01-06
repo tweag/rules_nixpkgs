@@ -113,5 +113,5 @@ jobs:
           pushd examples/python-container
           echo
           echo "::group::Running $(head -n1 README.md) with Nix"
-          nix-shell --command 'bazel build --config=nix :hello_image'
+          nix-shell --command 'bazel build :hello_image'
           popd
