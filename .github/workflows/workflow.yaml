@@ -110,8 +110,10 @@ jobs:
 
           popd
 
-          pushd examples/python-container
-          echo
-          echo "::group::Running $(head -n1 README.md) with Nix"
-          nix-shell --command 'bazel build :hello_image'
-          popd
+          if [[ ${{ matrix.os }} = ubuntu* ]]; then
+            pushd examples/python-container
+            echo
+            echo "::group::Running $(head -n1 README.md) with Nix"
+            nix-shell --command 'bazel build :hello_image'
+            popd
+          fi
