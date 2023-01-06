@@ -25,8 +25,16 @@ nixpkgs_git_repository(
 # Configure the C++ toolchain
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure")
 nixpkgs_cc_configure(
-    name = "nixpkgs_config_cc",
     repository = "@nixpkgs",
+    exec_constraints = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+        "@io_bazel_rules_docker//platforms:run_in_container",
+    ],
+    target_constraints = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
 )
 
 # Configure python
@@ -71,3 +79,8 @@ exports_files(["image"])
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_load" )
 container_load(name = "python39_base_image", file = "@raw_python39_base_image//:image")
+
+register_execution_platforms(
+    "@io_tweag_rules_nixpkgs//nixpkgs/platforms:host",
+    "@//:nix_container_platform",
+)
