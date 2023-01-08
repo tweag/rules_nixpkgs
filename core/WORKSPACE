@@ -1,31 +1,14 @@
 # NOTE: temporary boilerplate for compatibility with `WORKSPACE` setup!
 # TODO: remove when migration to `bzlmod` is complete
 
-### generic dependencies for rendering documentation
-
 local_repository(
     name = "io_tweag_rules_nixpkgs",
     path = "..",
 )
 
-local_repository(
-    name = "rules_nixpkgs_docs",
-    path = "../docs",
-)
-
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 rules_nixpkgs_dependencies(toolchains = ['cc', 'java', 'posix'])
-
-load("@rules_nixpkgs_docs//:dependencies_1.bzl", "docs_dependencies_1")
-
-docs_dependencies_1()
-
-load("@rules_nixpkgs_docs//:dependencies_2.bzl", "docs_dependencies_2")
-
-docs_dependencies_2()
-
-### end generic dependencies for rendering documentation
 
 ### dependencies for tests
 
@@ -36,6 +19,12 @@ load(
     "nixpkgs_package",
 )
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+load("//:test_dependencies_1.bzl", "test_dependencies_1")
+test_dependencies_1()
+
+load("//:test_dependencies_2.bzl", "test_dependencies_2")
+test_dependencies_2()
 
 bazel_skylib_workspace()
 
