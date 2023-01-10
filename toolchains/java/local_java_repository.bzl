@@ -14,7 +14,7 @@
 
 """Rules for importing and registering a local JDK."""
 
-load(":default_java_toolchain.bzl", "JVM8_TOOLCHAIN_CONFIGURATION", "default_java_toolchain")
+load(":default_java_toolchain.bzl", "default_java_toolchain")
 
 def _detect_java_version(repository_ctx, java_bin):
     properties_out = repository_ctx.execute([java_bin, "-XshowSettings:properties"]).stderr
@@ -93,27 +93,16 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         target_settings = [":%s_settings_alias" % name],
         toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
         toolchain = runtime_name,
-        exec_compatible_with = exec_compatible_with,
-        target_compatible_with = target_compatible_with,
     )
 
-    if version == "8":
-        default_java_toolchain(
-            name = name + "_toolchain_java8",
-            configuration = JVM8_TOOLCHAIN_CONFIGURATION,
-            source_version = version,
-            target_version = version,
-            java_runtime = runtime_name,
-            exec_compatible_with = exec_compatible_with,
-            target_compatible_with = target_compatible_with,
-        )
-    elif type(version) == type("") and version.isdigit() and int(version) > 8:
+    if type(version) == type("") and version.isdigit() and int(version) > 8:
         for version in range(8, int(version) + 1):
             default_java_toolchain(
                 name = name + "_toolchain_java" + str(version),
                 source_version = str(version),
                 target_version = str(version),
                 java_runtime = runtime_name,
+
                 exec_compatible_with = exec_compatible_with,
                 target_compatible_with = target_compatible_with,
             )
@@ -129,8 +118,8 @@ def _local_java_repository_impl(repository_ctx):
     java_home = repository_ctx.attr.java_home
     java_home_path = repository_ctx.path(java_home)
     if not java_home_path.exists:
-        fail('The path indicated by the "java_home" attribute "%s" (absolute: "%s") ' +
-             "does not exist." % (java_home, str(java_home_path)))
+        fail(('The path indicated by the "java_home" attribute "%s" (absolute: "%s") ' +
+              "does not exist.") % (java_home, str(java_home_path)))
 
     repository_ctx.file(
         "WORKSPACE",
@@ -138,8 +127,8 @@ def _local_java_repository_impl(repository_ctx):
         "workspace(name = \"{name}\")\n".format(name = repository_ctx.name),
     )
 
-    extension = ".exe" if repository_ctx.os.name.lower().find("windows") != -1 else ""
-    java_bin = java_home_path.get_child("bin").get_child("java" + extension)
+    extension = ".exe" if repository_ctx.os.name.find("windows") != -1 else ""
+    java_bin = java_home_path.get_child("bin", "java" + extension)
 
     if not java_bin.exists:
         # Java binary does not exist
