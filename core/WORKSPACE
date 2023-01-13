@@ -8,7 +8,7 @@ local_repository(
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
-rules_nixpkgs_dependencies(toolchains = ['cc', 'java', 'posix'])
+rules_nixpkgs_dependencies(toolchains = ['java', 'posix'])
 
 ### dependencies for tests
 

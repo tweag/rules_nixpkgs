@@ -9,7 +9,6 @@ load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
 load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
 load("@rules_sh//sh:posix.bzl", "sh_posix_configure")
 load("@rules_nixpkgs_posix//:posix.bzl", "nixpkgs_sh_posix_configure")
-load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
 load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
 
 def test_dependencies_2():
@@ -22,11 +21,6 @@ def test_dependencies_2():
     rules_sh_dependencies()
     nixpkgs_sh_posix_configure(repository = "@nixpkgs")
     sh_posix_configure()
-
-    nixpkgs_cc_configure(
-        name = "nixpkgs_config_cc",
-        repository = "@nixpkgs",
-    )
 
     rules_java_dependencies()
 
