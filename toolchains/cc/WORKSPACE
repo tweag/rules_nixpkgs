@@ -26,3 +26,10 @@ load("@rules_nixpkgs_docs//:dependencies_2.bzl", "docs_dependencies_2")
 docs_dependencies_2()
 
 ### end generic dependencies for rendering documentation
+
+load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
+
+nixpkgs_cc_configure(
+    name = "nixpkgs_config_cc",
+    repository = "@nixpkgs",
+)
