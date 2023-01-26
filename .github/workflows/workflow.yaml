@@ -26,7 +26,7 @@ jobs:
           - macos-11
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - uses: cachix/install-nix-action@v18
         with:
           nix_path: nixpkgs=./core/nixpkgs.nix
@@ -59,7 +59,7 @@ jobs:
           - macos-11
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - uses: cachix/install-nix-action@v18
         with:
           nix_path: nixpkgs=./nixpkgs.nix
@@ -88,22 +88,32 @@ jobs:
             read -a ${1} <<< $(echo ${!p//$2})
           }
 
-          cd examples/toolchains
+          pushd examples/toolchains
           with_nix=( $(ls) )
           without_nix=( cc go java )
 
           for dir in "${with_nix[@]}"; do
-              cd "$dir"
+              pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) with Nix"
               nix-shell --command 'bazel run --config=nix :hello'
               # TODO: all toolchains should run without Nixpkgs
-              cd ..
+              popd
           done
           for dir in "${without_nix[@]}"; do
-              cd "$dir"
+              pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) without Nix"
               bazel run :hello
-              cd ..
+              popd
           done
+
+          popd
+
+          if [[ ${{ matrix.os }} = ubuntu* ]]; then
+            pushd examples/python-container
+            echo
+            echo "::group::Running $(head -n1 README.md) with Nix"
+            nix-shell --command 'bazel build :hello_image'
+            popd
+          fi
