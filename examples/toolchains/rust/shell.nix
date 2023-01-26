@@ -1,3 +1,6 @@
 { pkgs ? import ./nixpkgs.nix { } }:
-
-pkgs.mkShellNoCC { nativeBuildInputs = [ pkgs.bazel_5 ]; }
+with pkgs;
+mkShell {
+  nativeBuildInputs = [ bazel_5 git nix zlib libiconv ]
+    ++ (lib.optional stdenv.isDarwin [ darwin.apple_sdk.frameworks.Security ]);
+}

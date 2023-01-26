@@ -90,7 +90,7 @@ jobs:
 
           pushd examples/toolchains
           with_nix=( $(ls) )
-          without_nix=( cc go java rust )
+          without_nix=( cc go java )
 
           for dir in "${with_nix[@]}"; do
               pushd "$dir"
