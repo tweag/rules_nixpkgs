@@ -1,5 +1,6 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@rules_nixpkgs_core//:util.bzl", "ensure_constraints")
+load("@rules_nodejs//nodejs:repositories.bzl", "BUILT_IN_NODE_PLATFORMS")
 
 _nodejs_nix_content = """\
 let
@@ -105,3 +106,13 @@ def nixpkgs_nodejs_configure(
     )
 
     native.register_toolchains("@{}_toolchain//:nodejs_nix".format(name))
+
+def nixpkgs_nodejs_configure_platforms(
+  name = "nixpkgs_nodejs",
+  **kwargs,
+):
+    for platform in BUILT_IN_NODE_PLATFORMS:
+        nixpkgs_nodejs_configure(
+            name = "{}_{}".format(name, platform),
+            **kwargs,
+        )

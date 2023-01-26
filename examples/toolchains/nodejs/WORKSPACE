@@ -28,9 +28,9 @@ nixpkgs_git_repository(
     sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
 )
 
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_nodejs_configure")
-nixpkgs_nodejs_configure(
-  name = "nixpkgs-nodejs_linux_amd64",
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_nodejs_configure_platforms")
+nixpkgs_nodejs_configure_platforms(
+  name = "nixpkgs-nodejs",
   repository = "@nixpkgs",
 )
 
