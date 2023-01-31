@@ -2,14 +2,23 @@ load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@rules_nixpkgs_core//:util.bzl", "ensure_constraints")
 load("@rules_nodejs//nodejs/private:toolchains_repo.bzl", "PLATFORMS")
 
+
+def _mk_mapping(rules_nodejs_platform_name):
+    constraints = PLATFORMS[rules_nodejs_platform_name].compatible_with
+    return struct(
+        rules_nodejs_platform = rules_nodejs_platform_name,
+        exec_constraints = constraints,
+        target_constraints = constraints,
+    )
+
 # obtained (and matched) from:
 # nixpkgs search: https://search.nixos.org/packages?channel=22.11&show=nodejs&from=0&size=50&sort=relevance&type=packages&query=nodejs
 # rules_nodejs: https://github.com/bazelbuild/rules_nodejs/blob/a5755eb458c2dd8e0e2cf9b92d8304d9e77ea117/nodejs/private/toolchains_repo.bzl#L20
-_nodejs_nix_to_bazel_platforms_map = {
-    "aarch64-darwin": "darwin_arm64",
-    "x86_64-linux": "linux_amd64",
-    "x86_64-darwin": "darwin_amd64",
-    "aarch64-linux": "linux_arm64",
+DEFAULT_PLATFORMS_MAPPING = {
+  "aarch64-darwin": _mk_mapping("darwin_arm64"),
+  "x86_64-linux": _mk_mapping("linux_amd64"),
+  "x86_64-darwin": _mk_mapping("darwin_amd64"),
+  "aarch64-linux": _mk_mapping("linux_arm64"),
 }
 
 _nodejs_nix_content = """\
@@ -79,7 +88,7 @@ def nixpkgs_nodejs_configure(
   attribute_path = "nodejs",
   repository = None,
   repositories = {},
-  nix_platform = None,
+  nix_platform = "builtins.currentSystem",
   nix_file = None,
   nix_file_content = None,
   nix_file_deps = None,
@@ -91,12 +100,14 @@ def nixpkgs_nodejs_configure(
 ):
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
-    if (nix_platform != None and nix_platform not in _nodejs_nix_to_bazel_platforms_map.keys()):
-        fail("'nix_platform' ({}) not supported.".format(repr(nix_platform)), "nix_platform")
+    if (nix_platform == None):
+        fail("'nix_platform' is required.", "attribute_path")
     if not nix_file and not nix_file_content:
+      if (nix_platform == None):
+        fail("'nix_platform' is required.", "attribute_path")
       nix_file_content = _nodejs_nix_content.format(
         attribute_path = attribute_path,
-        nix_platform = repr(nix_platform) if nix_platform in _nodejs_nix_to_bazel_platforms_map else "builtins.currentSystem",
+        nix_platform = repr(nix_platform),
       )
 
     nixpkgs_package(
@@ -122,15 +133,14 @@ def nixpkgs_nodejs_configure(
 
 def nixpkgs_nodejs_configure_platforms(
   name = "nixpkgs_nodejs",
+  platforms_mapping = DEFAULT_PLATFORMS_MAPPING,
   **kwargs,
 ):
-    for nix_platform, bazel_platform in _nodejs_nix_to_bazel_platforms_map.items():
-        # get the constaints defined under rules_nodejs PLATFORMS variable
-        constraints = PLATFORMS[bazel_platform].compatible_with
+    for nix_platform, bazel_platform in platforms_mapping.items():
         nixpkgs_nodejs_configure(
-            name = "{}_{}".format(name, bazel_platform),
+            name = "{}_{}".format(name, bazel_platform.rules_nodejs_platform),
             nix_platform = nix_platform,
-            exec_constraints = constraints,
-            target_constraints = constraints,
+            exec_constraints = bazel_platform.exec_constraints,
+            target_constraints = bazel_platform.target_constraints,
             **kwargs,
         )
