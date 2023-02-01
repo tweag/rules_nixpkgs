@@ -9,12 +9,12 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # https://bazelbuild.github.io/rules_rust/#setup
 http_archive(
     name = "rules_rust",
-    sha256 = "73580f341f251f2fc633b73cdf74910f4da64d06a44c063cbf5c01b1de753ec1",
+    sha256 = "d125fb75432dc3b20e9b5a19347b45ec607fabe75f98c6c4ba9badaab9c193ce",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.5.0/rules_rust-v0.5.0.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.5.0/rules_rust-v0.5.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.17.0/rules_rust-v0.17.0.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.17.0/rules_rust-v0.17.0.tar.gz",
     ],
-    # rules_rust 0.5.0 does not yet support direct
+    # rules_rust 0.17.0 does not yet support direct
     # overriding toolchain used for build of cargo-bazel
     # binary.
     # On non-standard systems (viz. NixOS), that approach
@@ -22,7 +22,7 @@ http_archive(
     # cannot build cargo bazel.
     # This patch fixes the issue, allowing for toolchain
     # specification.
-    # 
+    #
     # Note: This should be removed as soon as
     # issue in rules_rust is resolved.
     patches = [
@@ -118,7 +118,8 @@ crates_repository(
             OPENSSL_CRATE_ANNOTATION
         ],
     },
-    lockfile = "//:Cargo.Bazel.lock",
+    cargo_lockfile = "//:Cargo.lock",
+    lockfile = "//:cargo-bazel-lock.json",
     packages = {
         "openssl": crate.spec(
             version = "0.10.40",
