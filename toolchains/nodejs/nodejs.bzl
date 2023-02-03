@@ -88,7 +88,7 @@ def nixpkgs_nodejs_configure(
   attribute_path = "nodejs",
   repository = None,
   repositories = {},
-  nix_platform = "builtins.currentSystem",
+  nix_platform = None,
   nix_file = None,
   nix_file_content = None,
   nix_file_deps = None,
@@ -100,14 +100,10 @@ def nixpkgs_nodejs_configure(
 ):
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
-    if (nix_platform == None):
-        fail("'nix_platform' is required.", "attribute_path")
     if not nix_file and not nix_file_content:
-      if (nix_platform == None):
-        fail("'nix_platform' is required.", "attribute_path")
       nix_file_content = _nodejs_nix_content.format(
         attribute_path = attribute_path,
-        nix_platform = repr(nix_platform),
+        nix_platform = "builtins.currentSystem" if nix_platform == None else repr(nix_platform),
       )
 
     nixpkgs_package(
