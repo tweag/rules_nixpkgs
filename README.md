@@ -114,182 +114,6 @@ nixpkgs_package(
 
 # Reference documentation
 
-<a id="#nixpkgs_git_repository"></a>
-
-### nixpkgs_git_repository
-
-<pre>
-nixpkgs_git_repository(<a href="#nixpkgs_git_repository-name">name</a>, <a href="#nixpkgs_git_repository-remote">remote</a>, <a href="#nixpkgs_git_repository-repo_mapping">repo_mapping</a>, <a href="#nixpkgs_git_repository-revision">revision</a>, <a href="#nixpkgs_git_repository-sha256">sha256</a>)
-</pre>
-
-Name a specific revision of Nixpkgs on GitHub or a local checkout.
-
-
-#### Attributes
-
-<table class="params-table">
-<colgroup>
-<col class="col-param" />
-<col class="col-description" />
-</colgroup>
-<tbody>
-<tr id="nixpkgs_git_repository-name">
-<td><code>name</code></td>
-<td>
-
-<a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-
-<p>
-
-A unique name for this repository.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_git_repository-remote">
-<td><code>remote</code></td>
-<td>
-
-String; optional
-
-<p>
-
-The URI of the remote Git repository. This must be a HTTP URL. There is currently no support for authentication. Defaults to [upstream nixpkgs](https://github.com/NixOS/nixpkgs).
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_git_repository-repo_mapping">
-<td><code>repo_mapping</code></td>
-<td>
-
-<a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a>; required
-
-<p>
-
-A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.<p>For example, an entry `"@foo": "@bar"` declares that, for any time this repository depends on `@foo` (such as a dependency on `@foo//some:target`, it should actually resolve that dependency within globally-declared `@bar` (`@bar//some:target`).
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_git_repository-revision">
-<td><code>revision</code></td>
-<td>
-
-String; required
-
-<p>
-
-Git commit hash or tag identifying the version of Nixpkgs to use.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_git_repository-sha256">
-<td><code>sha256</code></td>
-<td>
-
-String; optional
-
-<p>
-
-The SHA256 used to verify the integrity of the repository.
-
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-
-<a id="#nixpkgs_local_repository"></a>
-
-### nixpkgs_local_repository
-
-<pre>
-nixpkgs_local_repository(<a href="#nixpkgs_local_repository-name">name</a>, <a href="#nixpkgs_local_repository-nix_file">nix_file</a>, <a href="#nixpkgs_local_repository-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_local_repository-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_local_repository-repo_mapping">repo_mapping</a>)
-</pre>
-
-Create an external repository representing the content of Nixpkgs, based on a Nix expression stored locally or provided inline. One of `nix_file` or `nix_file_content` must be provided.
-
-
-#### Attributes
-
-<table class="params-table">
-<colgroup>
-<col class="col-param" />
-<col class="col-description" />
-</colgroup>
-<tbody>
-<tr id="nixpkgs_local_repository-name">
-<td><code>name</code></td>
-<td>
-
-<a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-
-<p>
-
-A unique name for this repository.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_local_repository-nix_file">
-<td><code>nix_file</code></td>
-<td>
-
-<a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
-
-<p>
-
-A file containing an expression for a Nix derivation.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_local_repository-nix_file_content">
-<td><code>nix_file_content</code></td>
-<td>
-
-String; optional
-
-<p>
-
-An expression for a Nix derivation.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_local_repository-nix_file_deps">
-<td><code>nix_file_deps</code></td>
-<td>
-
-<a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a>; optional
-
-<p>
-
-Dependencies of `nix_file` if any.
-
-</p>
-</td>
-</tr>
-<tr id="nixpkgs_local_repository-repo_mapping">
-<td><code>repo_mapping</code></td>
-<td>
-
-<a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a>; required
-
-<p>
-
-A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.<p>For example, an entry `"@foo": "@bar"` declares that, for any time this repository depends on `@foo` (such as a dependency on `@foo//some:target`, it should actually resolve that dependency within globally-declared `@bar` (`@bar//some:target`).
-
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-
 <a id="#nixpkgs_cc_configure"></a>
 
 ### nixpkgs_cc_configure
@@ -684,6 +508,105 @@ Options to forward to the nix command.
 </table>
 
 
+<a id="#nixpkgs_git_repository"></a>
+
+### nixpkgs_git_repository
+
+<pre>
+nixpkgs_git_repository(<a href="#nixpkgs_git_repository-name">name</a>, <a href="#nixpkgs_git_repository-revision">revision</a>, <a href="#nixpkgs_git_repository-remote">remote</a>, <a href="#nixpkgs_git_repository-sha256">sha256</a>, <a href="#nixpkgs_git_repository-kwargs">kwargs</a>)
+</pre>
+
+Name a specific revision of Nixpkgs on GitHub or a local checkout.
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_git_repository-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+String
+
+A unique name for this repository.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_git_repository-revision">
+<td><code>revision</code></td>
+<td>
+
+required.
+
+<p>
+
+String
+
+Git commit hash or tag identifying the version of Nixpkgs to use.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_git_repository-remote">
+<td><code>remote</code></td>
+<td>
+
+optional.
+default is <code>"https://github.com/NixOS/nixpkgs"</code>
+
+<p>
+
+String
+
+The URI of the remote Git repository. This must be a HTTP URL. There is
+currently no support for authentication. Defaults to [upstream
+nixpkgs](https://github.com/NixOS/nixpkgs).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_git_repository-sha256">
+<td><code>sha256</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+
+The SHA256 used to verify the integrity of the repository.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_git_repository-kwargs">
+<td><code>kwargs</code></td>
+<td>
+
+optional.
+
+<p>
+
+Additional arguments to forward to the underlying repository rule.
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
 <a id="#nixpkgs_java_configure"></a>
 
 ### nixpkgs_java_configure
@@ -974,6 +897,108 @@ default is <code>None</code>
 <p>
 
 Constraints for the target platform.
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<a id="#nixpkgs_local_repository"></a>
+
+### nixpkgs_local_repository
+
+<pre>
+nixpkgs_local_repository(<a href="#nixpkgs_local_repository-name">name</a>, <a href="#nixpkgs_local_repository-nix_file">nix_file</a>, <a href="#nixpkgs_local_repository-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_local_repository-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_local_repository-kwargs">kwargs</a>)
+</pre>
+
+Create an external repository representing the content of Nixpkgs.
+
+Based on a Nix expression stored locally or provided inline. One of
+`nix_file` or `nix_file_content` must be provided.
+
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_local_repository-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+String
+
+A unique name for this repository.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_local_repository-nix_file">
+<td><code>nix_file</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Label
+
+A file containing an expression for a Nix derivation.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_local_repository-nix_file_deps">
+<td><code>nix_file_deps</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+List of labels
+
+Dependencies of `nix_file` if any.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_local_repository-nix_file_content">
+<td><code>nix_file_content</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+
+An expression for a Nix derivation.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_local_repository-kwargs">
+<td><code>kwargs</code></td>
+<td>
+
+optional.
+
+<p>
+
+Additional arguments to forward to the underlying repository rule.
 
 </p>
 </td>
