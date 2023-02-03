@@ -434,6 +434,10 @@ def nixpkgs_package(
         See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
       build_file_content: Like `build_file`, but a string of the contents instead of a file name.
       nixopts: Extra flags to pass when calling Nix.
+
+        Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
+
+        Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Use `./$${"$(location @for//:example)"}` to work around this limitation.
       quiet: Whether to hide the output of the Nix command.
       fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
     """
