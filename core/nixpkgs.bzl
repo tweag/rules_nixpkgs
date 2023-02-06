@@ -49,7 +49,7 @@ def _nixpkgs_git_repository_impl(repository_ctx):
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for default.nix.
-    repository_ctx.symlink("default.nix", repository_ctx.name)
+    repository_ctx.symlink("default.nix", repository_ctx.attr.unmangled_name)
 
     repository_ctx.download_and_extract(
         url = "%s/archive/%s.tar.gz" % (repository_ctx.attr.remote, repository_ctx.attr.revision),
@@ -57,23 +57,53 @@ def _nixpkgs_git_repository_impl(repository_ctx):
         sha256 = repository_ctx.attr.sha256,
     )
 
-nixpkgs_git_repository = repository_rule(
+_nixpkgs_git_repository = repository_rule(
     implementation = _nixpkgs_git_repository_impl,
     attrs = {
-        "revision": attr.string(
-            mandatory = True,
-            doc = "Git commit hash or tag identifying the version of Nixpkgs to use.",
-        ),
-        "remote": attr.string(
-            default = "https://github.com/NixOS/nixpkgs",
-            doc = "The URI of the remote Git repository. This must be a HTTP URL. There is currently no support for authentication. Defaults to [upstream nixpkgs](https://github.com/NixOS/nixpkgs).",
-        ),
-        "sha256": attr.string(doc = "The SHA256 used to verify the integrity of the repository."),
+        # The workspace name as specified by the user. Needed for bzlmod
+        # compatibility, as other means of retrieving the name only return the
+        # mangled name, not the user defined name.
+        "unmangled_name": attr.string(mandatory = True),
+        "revision": attr.string(mandatory = True),
+        "remote": attr.string(default = "https://github.com/NixOS/nixpkgs"),
+        "sha256": attr.string(doc = ""),
     },
-    doc = """\
-Name a specific revision of Nixpkgs on GitHub or a local checkout.
-""",
 )
+
+def nixpkgs_git_repository(
+        *,
+        name,
+        revision,
+        remote = "https://github.com/NixOS/nixpkgs",
+        sha256 = None,
+        **kwargs):
+    """Name a specific revision of Nixpkgs on GitHub or a local checkout.
+
+    Args:
+      name: String
+
+        A unique name for this repository.
+      revision: String
+
+        Git commit hash or tag identifying the version of Nixpkgs to use.
+      remote: String
+
+        The URI of the remote Git repository. This must be a HTTP URL. There is
+        currently no support for authentication. Defaults to [upstream
+        nixpkgs](https://github.com/NixOS/nixpkgs).
+      sha256: String
+
+        The SHA256 used to verify the integrity of the repository.
+      **kwargs: Additional arguments to forward to the underlying repository rule.
+    """
+    _nixpkgs_git_repository(
+        name = name,
+        unmangled_name = name,
+        revision = revision,
+        remote = remote,
+        sha256 = sha256,
+        **kwargs
+    )
 
 def _nixpkgs_local_repository_impl(repository_ctx):
     if not bool(repository_ctx.attr.nix_file) != \
@@ -106,26 +136,57 @@ def _nixpkgs_local_repository_impl(repository_ctx):
 
     # Make "@nixpkgs" (syntactic sugar for "@nixpkgs//:nixpkgs") a valid
     # label for the target Nix file.
-    repository_ctx.symlink(target, repository_ctx.name)
+    # produces _main~non_module_deps~nixpkgs_content
+    repository_ctx.symlink(target, repository_ctx.attr.unmangled_name)
 
-nixpkgs_local_repository = repository_rule(
+_nixpkgs_local_repository = repository_rule(
     implementation = _nixpkgs_local_repository_impl,
     attrs = {
-        "nix_file": attr.label(
-            allow_single_file = [".nix"],
-            doc = "A file containing an expression for a Nix derivation.",
-        ),
-        "nix_file_deps": attr.label_list(
-            doc = "Dependencies of `nix_file` if any.",
-        ),
-        "nix_file_content": attr.string(
-            doc = "An expression for a Nix derivation.",
-        ),
+        # The workspace name as specified by the user. Needed for bzlmod
+        # compatibility, as other means of retrieving the name only return the
+        # mangled name, not the user defined name.
+        "unmangled_name": attr.string(mandatory = True),
+        "nix_file": attr.label(allow_single_file = [".nix"]),
+        "nix_file_deps": attr.label_list(),
+        "nix_file_content": attr.string(),
     },
-    doc = """\
-Create an external repository representing the content of Nixpkgs, based on a Nix expression stored locally or provided inline. One of `nix_file` or `nix_file_content` must be provided.
-""",
 )
+
+def nixpkgs_local_repository(
+        *,
+        name,
+        nix_file = None,
+        nix_file_deps = None,
+        nix_file_content = None,
+        **kwargs):
+    """Create an external repository representing the content of Nixpkgs.
+
+    Based on a Nix expression stored locally or provided inline. One of
+    `nix_file` or `nix_file_content` must be provided.
+
+    Args:
+      name: String
+
+        A unique name for this repository.
+      nix_file: Label
+
+        A file containing an expression for a Nix derivation.
+      nix_file_deps: List of labels
+
+        Dependencies of `nix_file` if any.
+      nix_file_content: String
+
+        An expression for a Nix derivation.
+      **kwargs: Additional arguments to forward to the underlying repository rule.
+    """
+    _nixpkgs_local_repository(
+        name = name,
+        unmangled_name = name,
+        nix_file = nix_file,
+        nix_file_deps = nix_file_deps,
+        nix_file_content = nix_file_content,
+        **kwargs
+    )
 
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
@@ -222,7 +283,7 @@ def _nixpkgs_package_impl(repository_ctx):
 
     expr_args.extend([
         "-A",
-        repository_ctx.attr.attribute_path if repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content else repository_ctx.attr.attribute_path or repository_ctx.attr.name,
+        repository_ctx.attr.attribute_path if repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content else repository_ctx.attr.attribute_path or repository_ctx.attr.unmangled_name,
         # Creating an out link prevents nix from garbage collecting the store path.
         # nixpkgs uses `nix-support/` for such house-keeping files, so we mirror them
         # and use `bazel-support/`, under the assumption that no nix package has
@@ -293,6 +354,10 @@ def _nixpkgs_package_impl(repository_ctx):
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
     attrs = {
+        # The workspace name as specified by the user. Needed for bzlmod
+        # compatibility, as other means of retrieving the name only return the
+        # mangled name, not the user defined name.
+        "unmangled_name": attr.string(mandatory = True),
         "attribute_path": attr.string(),
         "nix_file": attr.label(allow_single_file = [".nix"]),
         "nix_file_deps": attr.label_list(),
@@ -374,6 +439,7 @@ def nixpkgs_package(
     """
     kwargs.update(
         name = name,
+        unmangled_name = name,
         attribute_path = attribute_path,
         nix_file = nix_file,
         nix_file_deps = nix_file_deps,
