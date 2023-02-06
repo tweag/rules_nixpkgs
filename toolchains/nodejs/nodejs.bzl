@@ -130,12 +130,43 @@ def nixpkgs_nodejs_configure(
 def nixpkgs_nodejs_configure_platforms(
   name = "nixpkgs_nodejs",
   platforms_mapping = DEFAULT_PLATFORMS_MAPPING,
+  attribute_path = "nodejs",
+  repository = None,
+  repositories = {},
+  nix_platform = None,
+  nix_file = None,
+  nix_file_content = None,
+  nix_file_deps = None,
+  nixopts = [],
+  fail_not_supported = True,
+  quiet = False,
+  exec_constraints = None,
+  target_constraints = None,
   **kwargs,
 ):
+    """Runs nixpkgs_nodejs_configure for each platform.
+
+    Since rules_nodejs adds platform suffix to repository name, this can be helpful
+    if one wants to use npm_install and reference js dependencies from npm repo.
+    See the example directory.
+
+    Args:
+      platforms_mapping: struct describing mapping between nix platform and rules_nodejs bazel platform with
+        target and exec constraints
+    """
     for nix_platform, bazel_platform in platforms_mapping.items():
         nixpkgs_nodejs_configure(
             name = "{}_{}".format(name, bazel_platform.rules_nodejs_platform),
+            attribute_path = attribute_path,
+            repository = repository,
+            repositories = repositories,
             nix_platform = nix_platform,
+            nix_file = nix_file,
+            nix_file_content = nix_file_content,
+            nix_file_deps = nix_file_deps,
+            nixopts = nixopts,
+            fail_not_supported = fail_not_supported,
+            quiet = quiet,
             exec_constraints = bazel_platform.exec_constraints,
             target_constraints = bazel_platform.target_constraints,
             **kwargs,
