@@ -278,8 +278,8 @@ def _nixpkgs_package_impl(repository_ctx):
         expr_args.extend(["-E", "import <nixpkgs> { config = {}; overlays = []; }"])
 
     nix_file_deps = {}
-    for dep in repository_ctx.attr.nix_file_deps:
-        nix_file_deps[dep] = cp(repository_ctx, dep)
+    for dep_lbl, dep_str in repository_ctx.attr.nix_file_deps.items():
+        nix_file_deps[dep_str] = cp(repository_ctx, dep_lbl)
 
     expr_args.extend([
         "-A",
@@ -360,7 +360,7 @@ _nixpkgs_package = repository_rule(
         "unmangled_name": attr.string(mandatory = True),
         "attribute_path": attr.string(),
         "nix_file": attr.label(allow_single_file = [".nix"]),
-        "nix_file_deps": attr.label_list(),
+        "nix_file_deps": attr.label_keyed_string_dict(),
         "nix_file_content": attr.string(),
         "repositories": attr.label_keyed_string_dict(),
         "repository": attr.label(),
@@ -442,7 +442,7 @@ def nixpkgs_package(
         unmangled_name = name,
         attribute_path = attribute_path,
         nix_file = nix_file,
-        nix_file_deps = nix_file_deps,
+        nix_file_deps = {dep: dep for dep in nix_file_deps} if nix_file_deps else {},
         nix_file_content = nix_file_content,
         repository = repository,
         repositories = repositories,

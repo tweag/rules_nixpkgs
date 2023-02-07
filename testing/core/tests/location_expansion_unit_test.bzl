@@ -2,11 +2,8 @@ load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load(
     "@rules_nixpkgs_core//:util.bzl",
     "parse_expand_location",
-    _resolve_label = "resolve_label",
+    "resolve_label",
 )
-
-def resolve_label(label_str, labels):
-    return _resolve_label(label_str, labels, unittest = True)
 
 def _parse_expand_location_test(ctx):
     env = unittest.begin(ctx)
@@ -90,8 +87,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "@workspace//package:target",
             {
-                Label("@workspace//package:target"): "correct/path",
-                Label("@another//package:target"): "wrong/path",
+                "@workspace//package:target": "correct/path",
+                "@another//package:target": "wrong/path",
             },
         ),
         msg = "Finds an absolute label",
@@ -103,8 +100,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "//package:target",
             {
-                Label("@workspace//package:target"): "correct/path",
-                Label("@another//different:target"): "wrong/path",
+                "@workspace//package:target": "correct/path",
+                "@another//different:target": "wrong/path",
             },
         ),
         msg = "Finds an unambiguous relative label",
@@ -116,8 +113,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "@unknown//package:target",
             {
-                Label("@workspace//package:target"): "wrong/path",
-                Label("@another//package:target"): "another/wrong/path",
+                "@workspace//package:target": "wrong/path",
+                "@another//package:target": "another/wrong/path",
             },
         ),
         msg = "Fails on an unknown label",
@@ -125,12 +122,12 @@ def _resolve_label_test(ctx):
 
     asserts.equals(
         env,
-        expected = (None, "Ambiguous label '//package:target' in location expansion. Candidates: {}, {}".format(Label("@workspace//package:target"), Label("@another//package:target"))),
+        expected = (None, "Ambiguous label '//package:target' in location expansion. Candidates: @workspace//package:target, @another//package:target"),
         actual = resolve_label(
             "//package:target",
             {
-                Label("@workspace//package:target"): "wrong/path",
-                Label("@another//package:target"): "another/wrong/path",
+                "@workspace//package:target": "wrong/path",
+                "@another//package:target": "another/wrong/path",
             },
         ),
         msg = "Fails on an ambiguous relative label",

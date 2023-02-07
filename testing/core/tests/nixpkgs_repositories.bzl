@@ -129,16 +129,7 @@ filegroup(
             "$(location //tests:location_expansion/test_file)",
             "--arg",
             "external_file",
-            # TODO[AH] Support location expansion in bzlmod mode.
-            #   When evaluating location expansion in the repository rule
-            #   context, we only have access to the stringly representation
-            #   entered by the user, and the mangled label representations of
-            #   `nix_file_deps`. The Starlark API offers no way to access the
-            #   unmangled module name. So, we need to provide a mapping from
-            #   user defined label strings to mangled labels.
-            './$${"$(location @@nixpkgs_location_expansion_test_file~override//:test_file)"}'
-            if bzlmod else
-            "$(location @nixpkgs_location_expansion_test_file//:test_file)" ,
+            './$${"$(location @nixpkgs_location_expansion_test_file//:test_file)"}',
         ],
         repository = "@remote_nixpkgs",
     )
