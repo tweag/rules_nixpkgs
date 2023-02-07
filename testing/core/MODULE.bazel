@@ -8,9 +8,11 @@ local_path_override(
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
+use_repo(non_module_deps, "remote_nixpkgs")
 use_repo(non_module_deps, "hello")
 use_repo(non_module_deps, "expr-test")
 use_repo(non_module_deps, "attribute-test")
 use_repo(non_module_deps, "expr-attribute-test")
 use_repo(non_module_deps, "nix-file-test")
 use_repo(non_module_deps, "nix-file-deps-test")
+use_repo(non_module_deps, "nixpkgs-git-repository-test")

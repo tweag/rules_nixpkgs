@@ -1,5 +1,6 @@
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
+    "nixpkgs_git_repository",
     "nixpkgs_local_repository",
     "nixpkgs_package",
 )
@@ -12,6 +13,14 @@ def nixpkgs_repositories():
         nix_file = "//:nixpkgs.nix",
         nix_file_deps = ["//:flake.lock"],
     )
+
+    nixpkgs_git_repository(
+        name = "remote_nixpkgs",
+        remote = "https://github.com/NixOS/nixpkgs",
+        revision = "22.05",
+        sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    )
+
 
     nixpkgs_package(
         name = "hello",
@@ -52,4 +61,10 @@ def nixpkgs_repositories():
         nix_file = "//tests:hello.nix",
         nix_file_deps = ["//tests:pkgname.nix"],
         repository = "@nixpkgs",
+    )
+
+    nixpkgs_package(
+        name = "nixpkgs-git-repository-test",
+        attribute_path = "hello",
+        repositories = {"nixpkgs": "@remote_nixpkgs"},
     )
