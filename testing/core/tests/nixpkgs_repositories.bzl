@@ -39,3 +39,10 @@ def nixpkgs_repositories():
         nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
         repository = "@nixpkgs",
     )
+
+    nixpkgs_package(
+        name = "nix-file-test",
+        attribute_path = "hello",
+        nix_file = "//tests:nixpkgs.nix",
+        repository = "@nixpkgs",
+    )
