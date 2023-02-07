@@ -241,7 +241,7 @@ def parse_expand_location(string):
 
     return (result, None)
 
-def resolve_label(label_str, labels):
+def resolve_label(label_str, labels, unittest = False):
     """Find the label that corresponds to the given string.
 
     Attr:
@@ -256,7 +256,11 @@ def resolve_label(label_str, labels):
     label_candidates = [
         (lbl, path)
         for (lbl, path) in labels.items()
-        if lbl.relative(label_str) == lbl
+        # TODO[AH] This is a workaround for `==` returning False on equal
+        #   labels if they belong to an unknown repository. This is the case
+        #   during unitesting with bzlmod enabled.
+        if (not unittest and lbl.relative(label_str) == lbl)
+        or (unittest and str(lbl.relative(label_str)) == str(lbl))
     ]
 
     if len(label_candidates) == 0:

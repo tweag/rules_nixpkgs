@@ -1,4 +1,8 @@
+load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
+
 package(default_testonly = 1)
+
+expand_location_unit_test_suite()
 
 [
     # All of these tests use the "hello" binary to see
