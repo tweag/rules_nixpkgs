@@ -5,3 +5,7 @@ local_path_override(
     module_name = "rules_nixpkgs_core",
     path = "../../core",
 )
+
+non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
+use_repo(non_module_deps, "nixpkgs")
+use_repo(non_module_deps, "hello")
