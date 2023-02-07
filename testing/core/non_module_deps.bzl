@@ -7,10 +7,10 @@ load(
 def _non_module_deps_impl(ctx):
     nixpkgs_local_repository(
         name = "nixpkgs",
-        # TODO[AH] Move these files out of
-        #   rules_nixpkgs_core into this testing module.
-        nix_file = "@rules_nixpkgs_core//:nixpkgs.nix",
-        nix_file_deps = ["@rules_nixpkgs_core//:flake.lock"],
+        # TODO[AH] Remove these files from
+        # rules_nixpkgs_core.
+        nix_file = "//:nixpkgs.nix",
+        nix_file_deps = ["//:flake.lock"],
     )
 
     nixpkgs_package(
