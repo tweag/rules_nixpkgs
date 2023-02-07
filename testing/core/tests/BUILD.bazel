@@ -1,0 +1,25 @@
+package(default_testonly = 1)
+
+[
+    # All of these tests use the "hello" binary to see
+    # whether different invocations of `nixpkgs_package`
+    # produce a valid bazel repository.
+    sh_test(
+        name = "run-{0}".format(test),
+        timeout = "short",
+        srcs = ["test_bin.sh"],
+        args = ["$(location @{0}//:bin)".format(test)],
+        data = ["@{0}//:bin".format(test)],
+    )
+    for test in [
+        "hello",
+        "expr-test",
+        "attribute-test",
+        "expr-attribute-test",
+        #"nix-file-test",
+        #"nix-file-deps-test",
+        #"nixpkgs-git-repository-test",
+        #"nixpkgs-local-repository-test",
+        #"relative-imports",
+    ]
+]

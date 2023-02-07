@@ -1,5 +1,5 @@
 load(
-    "//:nixpkgs_repositories.bzl",
+    "//tests:nixpkgs_repositories.bzl",
     "nixpkgs_repositories",
 )
 

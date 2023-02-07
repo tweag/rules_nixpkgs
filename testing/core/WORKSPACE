@@ -19,7 +19,7 @@ load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
 rules_sh_dependencies()
 
 load(
-    "//:nixpkgs_repositories.bzl",
+    "//tests:nixpkgs_repositories.bzl",
     "nixpkgs_repositories",
 )
 
