@@ -20,6 +20,6 @@ package(default_testonly = 1)
         "nix-file-deps-test",
         "nixpkgs-git-repository-test",
         "nixpkgs-local-repository-test",
-        #"relative-imports",
+        "relative-imports",
     ]
 ]

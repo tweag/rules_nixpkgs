@@ -83,3 +83,15 @@ def nixpkgs_repositories():
         nix_file_content = "with import <nixpkgs> {}; hello",
         repositories = {"nixpkgs": "@nixpkgs_content"},
     )
+
+    nixpkgs_package(
+        name = "relative-imports",
+        attribute_path = "hello",
+        nix_file = "//tests:relative_imports.nix",
+        nix_file_deps = [
+            "//:flake.lock",
+            "//:nixpkgs.nix",
+            "//tests:relative_imports/nixpkgs.nix",
+        ],
+        repository = "@nixpkgs",
+    )
