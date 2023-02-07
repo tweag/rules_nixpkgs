@@ -32,3 +32,10 @@ def nixpkgs_repositories():
         attribute_path = "hello",
         repository = "@nixpkgs",
     )
+
+    nixpkgs_package(
+        name = "expr-attribute-test",
+        attribute_path = "hello",
+        nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
+        repository = "@nixpkgs",
+    )
