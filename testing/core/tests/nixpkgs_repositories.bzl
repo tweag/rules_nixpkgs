@@ -95,3 +95,9 @@ def nixpkgs_repositories():
         ],
         repository = "@nixpkgs",
     )
+
+    nixpkgs_package(
+        name = "output-filegroup-test",
+        nix_file = "//tests:output.nix",
+        repository = "@nixpkgs",
+    )
