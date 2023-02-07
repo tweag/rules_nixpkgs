@@ -21,6 +21,15 @@ def nixpkgs_repositories():
         sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
     )
 
+    # same as @nixpkgs but using the `nix_file_content` parameter
+    nixpkgs_local_repository(
+        name = "nixpkgs_content",
+        nix_file_content = "import ./nixpkgs.nix",
+        nix_file_deps = [
+            "//:nixpkgs.nix",
+            "//:flake.lock",
+        ],
+    )
 
     nixpkgs_package(
         name = "hello",
@@ -67,4 +76,10 @@ def nixpkgs_repositories():
         name = "nixpkgs-git-repository-test",
         attribute_path = "hello",
         repositories = {"nixpkgs": "@remote_nixpkgs"},
+    )
+
+    nixpkgs_package(
+        name = "nixpkgs-local-repository-test",
+        nix_file_content = "with import <nixpkgs> {}; hello",
+        repositories = {"nixpkgs": "@nixpkgs_content"},
     )
