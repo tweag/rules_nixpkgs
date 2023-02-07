@@ -53,3 +53,19 @@ package(default_testonly = 1)
     ),
 ]
 
+# Test nixopts location expansion
+sh_test(
+    name = "location-expansion-test",
+    srcs = ["location_expansion.sh"],
+    args = [
+        "diff",
+        "$(rootpath //tests:location_expansion/test_file)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/local_file)",
+        "$(rootpath @nixpkgs_location_expansion_test//:out/external_file)",
+    ],
+    data = [
+        "//tests:location_expansion/test_file",
+        "@nixpkgs_location_expansion_test//:out/external_file",
+        "@nixpkgs_location_expansion_test//:out/local_file",
+    ],
+)

@@ -18,9 +18,14 @@ load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
 
 rules_sh_dependencies()
 
+local_repository(
+    name = "nixpkgs_location_expansion_test_file",
+    path = "tests/location_expansion/test_repo",
+)
+
 load(
     "//tests:nixpkgs_repositories.bzl",
     "nixpkgs_repositories",
 )
 
-nixpkgs_repositories()
+nixpkgs_repositories(bzlmod = False)

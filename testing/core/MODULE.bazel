@@ -6,6 +6,12 @@ local_path_override(
     path = "../../core",
 )
 
+bazel_dep(name = "nixpkgs_location_expansion_test_file")
+local_path_override(
+    module_name = "nixpkgs_location_expansion_test_file",
+    path = "tests/location_expansion/test_repo",
+)
+
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "remote_nixpkgs")
@@ -21,3 +27,4 @@ use_repo(non_module_deps, "nixpkgs-local-repository-test")
 use_repo(non_module_deps, "relative-imports")
 use_repo(non_module_deps, "output-filegroup-test")
 use_repo(non_module_deps, "output-filegroup-manual-test")
+use_repo(non_module_deps, "nixpkgs_location_expansion_test")

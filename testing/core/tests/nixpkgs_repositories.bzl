@@ -5,7 +5,7 @@ load(
     "nixpkgs_package",
 )
 
-def nixpkgs_repositories():
+def nixpkgs_repositories(*, bzlmod):
     nixpkgs_local_repository(
         name = "nixpkgs",
         # TODO[AH] Remove these files from
@@ -113,4 +113,32 @@ filegroup(
     """,
         nix_file = "//tests:output.nix",
         repository = "@nixpkgs",
+    )
+
+    nixpkgs_package(
+        name = "nixpkgs_location_expansion_test",
+        build_file_content = "exports_files(glob(['out/**']))",
+        nix_file = "//tests:location_expansion.nix",
+        nix_file_deps = [
+            "//tests:location_expansion/test_file",
+            "@nixpkgs_location_expansion_test_file//:test_file",
+        ],
+        nixopts = [
+            "--arg",
+            "local_file",
+            "$(location //tests:location_expansion/test_file)",
+            "--arg",
+            "external_file",
+            # TODO[AH] Support location expansion in bzlmod mode.
+            #   When evaluating location expansion in the repository rule
+            #   context, we only have access to the stringly representation
+            #   entered by the user, and the mangled label representations of
+            #   `nix_file_deps`. The Starlark API offers no way to access the
+            #   unmangled module name. So, we need to provide a mapping from
+            #   user defined label strings to mangled labels.
+            './$${"$(location @@nixpkgs_location_expansion_test_file~override//:test_file)"}'
+            if bzlmod else
+            "$(location @nixpkgs_location_expansion_test_file//:test_file)" ,
+        ],
+        repository = "@remote_nixpkgs",
     )
