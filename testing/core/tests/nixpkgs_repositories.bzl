@@ -101,3 +101,16 @@ def nixpkgs_repositories():
         nix_file = "//tests:output.nix",
         repository = "@nixpkgs",
     )
+
+    nixpkgs_package(
+        name = "output-filegroup-manual-test",
+        build_file_content = """
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+    name = "manual-filegroup",
+    srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
+)
+    """,
+        nix_file = "//tests:output.nix",
+        repository = "@nixpkgs",
+    )
