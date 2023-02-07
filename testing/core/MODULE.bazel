@@ -1,1 +1,7 @@
 module(name = "rules_nixpkgs_core_testing")
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
