@@ -13,7 +13,7 @@ package(default_testonly = 1)
     )
     for test in [
         "hello",
-        #"expr-test",
+        "expr-test",
         #"attribute-test",
         #"expr-attribute-test",
         #"nix-file-test",

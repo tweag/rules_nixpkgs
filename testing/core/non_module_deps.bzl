@@ -19,6 +19,14 @@ def _non_module_deps_impl(ctx):
         repositories = {"nixpkgs": "@nixpkgs"},
     )
 
+    nixpkgs_package(
+        name = "expr-test",
+        nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+        nix_file_deps = ["//:flake.lock"],
+        # Deliberately not @nixpkgs, to test whether explict file works.
+        repositories = {"nixpkgs": "//:nixpkgs.nix"},
+    )
+
 non_module_deps = module_extension(
     implementation = _non_module_deps_impl,
 )
