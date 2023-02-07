@@ -26,3 +26,9 @@ def nixpkgs_repositories():
         # Deliberately not @nixpkgs, to test whether explict file works.
         repositories = {"nixpkgs": "//:nixpkgs.nix"},
     )
+
+    nixpkgs_package(
+        name = "attribute-test",
+        attribute_path = "hello",
+        repository = "@nixpkgs",
+    )

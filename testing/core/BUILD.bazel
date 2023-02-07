@@ -14,7 +14,7 @@ package(default_testonly = 1)
     for test in [
         "hello",
         "expr-test",
-        #"attribute-test",
+        "attribute-test",
         #"expr-attribute-test",
         #"nix-file-test",
         #"nix-file-deps-test",
