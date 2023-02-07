@@ -46,3 +46,10 @@ def nixpkgs_repositories():
         nix_file = "//tests:nixpkgs.nix",
         repository = "@nixpkgs",
     )
+
+    nixpkgs_package(
+        name = "nix-file-deps-test",
+        nix_file = "//tests:hello.nix",
+        nix_file_deps = ["//tests:pkgname.nix"],
+        repository = "@nixpkgs",
+    )

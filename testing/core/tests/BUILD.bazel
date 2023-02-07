@@ -17,7 +17,7 @@ package(default_testonly = 1)
         "attribute-test",
         "expr-attribute-test",
         "nix-file-test",
-        #"nix-file-deps-test",
+        "nix-file-deps-test",
         #"nixpkgs-git-repository-test",
         #"nixpkgs-local-repository-test",
         #"relative-imports",
