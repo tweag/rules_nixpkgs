@@ -16,8 +16,8 @@ load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 def docs_dependencies_2():
     nixpkgs_local_repository(
         name = "nixpkgs",
-        nix_file = "@rules_nixpkgs_core//:nixpkgs.nix",
-        nix_file_deps = ["@rules_nixpkgs_core//:flake.lock"],
+        nix_file = "@rules_nixpkgs_docs//:nixpkgs.nix",
+        nix_file_deps = ["@rules_nixpkgs_docs//:flake.lock"],
     )
 
     rules_sh_dependencies()
