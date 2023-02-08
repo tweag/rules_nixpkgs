@@ -146,3 +146,19 @@ filegroup(
         ],
         repository = "@remote_nixpkgs",
     )
+
+    # TODO this is currently untested,
+    #   see https://github.com/tweag/rules_nixpkgs/issues/318
+    # This bazel build @output-derivation-is-a-file//... must fail
+    # See https://github.com/tweag/rules_nixpkgs/issues/99 for details
+    nixpkgs_package(
+        name = "output-derivation-is-a-file",
+        attribute_path = "",
+        nix_file_content = """let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.writeText "foo" "bar" """,
+        nix_file_deps = [
+            "//:flake.lock",
+            "//:nixpkgs.nix",
+            "//tests:relative_imports/nixpkgs.nix",
+        ],
+        repository = "@nixpkgs",
+    )
