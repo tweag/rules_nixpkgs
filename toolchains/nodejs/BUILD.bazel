@@ -13,5 +13,6 @@ bzl_library(
     srcs = ["//:nodejs.bzl"],
     deps = [
         "@rules_nixpkgs_core//:nixpkgs",
+        "@rules_nodejs//nodejs:bzl",
     ],
 )

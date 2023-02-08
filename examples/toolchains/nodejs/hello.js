@@ -1,1 +1,4 @@
-console.log("Hello world!")
+const log = require ('ololog')
+
+log("Hello world!")
+
