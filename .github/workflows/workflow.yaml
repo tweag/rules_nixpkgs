@@ -53,7 +53,10 @@ jobs:
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
         run: |
-          nix-shell --pure --keep GITHUB_REPOSITORY --run 'bash .github/build-and-test'
+          nix-shell --pure \
+            --keep GITHUB_REPOSITORY \
+            --keep BZLMOD_ENABLED \
+            --run 'bash .github/build-and-test'
   test-examples:
     name: Build & Test - Examples
     strategy:
