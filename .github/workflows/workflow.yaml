@@ -24,6 +24,9 @@ jobs:
         os:
           - ubuntu-latest
           - macos-11
+        bzlmodEnabled:
+          - true
+          - false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3.3.0
@@ -47,6 +50,8 @@ jobs:
           common:ci --announce_rc=false
           EOF
       - name: Build & test
+        env:
+          BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
         run: |
           nix-shell --pure --keep GITHUB_REPOSITORY --run 'bash .github/build-and-test'
   test-examples:

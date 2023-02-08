@@ -24,22 +24,35 @@ function on_exit() {
 
 trap on_exit EXIT
 
-declare -ra dirs=(
-    .
-    core
-    toolchains/go
-    toolchains/java
-    toolchains/cc
-    toolchains/python
-    toolchains/posix
-    toolchains/rust
-    toolchains/nodejs
-)
+if [[ ${BZLMOD_ENABLED-} = true ]]; then
+    declare -ra dirs=(
+        core
+        testing/core
+    )
+    declare -ra extra_flags=(
+        --enable_bzlmod
+    )
+else
+    declare -ra dirs=(
+        .
+        core
+        toolchains/go
+        toolchains/java
+        toolchains/cc
+        toolchains/python
+        toolchains/posix
+        toolchains/rust
+        toolchains/nodejs
+        testing/core
+    )
+    declare -ra extra_flags=(
+    )
+fi
 for dir in "${dirs[@]}"; do
     echo "::group::Running \`bazel test\` in $dir"
 
     pushd $dir >/dev/null
-    if ! bazel test //... ; then
+    if ! bazel test //... "${extra_flags[@]}" ; then
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
