@@ -1,9 +1,29 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@rules_nixpkgs_core//:util.bzl", "ensure_constraints")
+load("@rules_nodejs//nodejs/private:toolchains_repo.bzl", "PLATFORMS")
+
+
+def _mk_mapping(rules_nodejs_platform_name):
+    constraints = PLATFORMS[rules_nodejs_platform_name].compatible_with
+    return struct(
+        rules_nodejs_platform = rules_nodejs_platform_name,
+        exec_constraints = constraints,
+        target_constraints = constraints,
+    )
+
+# obtained (and matched) from:
+# nixpkgs search: https://search.nixos.org/packages?channel=22.11&show=nodejs&from=0&size=50&sort=relevance&type=packages&query=nodejs
+# rules_nodejs: https://github.com/bazelbuild/rules_nodejs/blob/a5755eb458c2dd8e0e2cf9b92d8304d9e77ea117/nodejs/private/toolchains_repo.bzl#L20
+DEFAULT_PLATFORMS_MAPPING = {
+  "aarch64-darwin": _mk_mapping("darwin_arm64"),
+  "x86_64-linux": _mk_mapping("linux_amd64"),
+  "x86_64-darwin": _mk_mapping("darwin_amd64"),
+  "aarch64-linux": _mk_mapping("linux_arm64"),
+}
 
 _nodejs_nix_content = """\
 let
-    pkgs = import <nixpkgs> {{ config = {{}}; overlays = []; }};
+    pkgs = import <nixpkgs> {{ config = {{}}; overlays = []; system = {nix_platform}; }};
     nodejs = pkgs.{attribute_path};
 in
 pkgs.buildEnv {{
@@ -68,6 +88,7 @@ def nixpkgs_nodejs_configure(
   attribute_path = "nodejs",
   repository = None,
   repositories = {},
+  nix_platform = None,
   nix_file = None,
   nix_file_content = None,
   nix_file_deps = None,
@@ -79,10 +100,10 @@ def nixpkgs_nodejs_configure(
 ):
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
-
     if not nix_file and not nix_file_content:
       nix_file_content = _nodejs_nix_content.format(
         attribute_path = attribute_path,
+        nix_platform = "builtins.currentSystem" if nix_platform == None else repr(nix_platform),
       )
 
     nixpkgs_package(
@@ -105,3 +126,48 @@ def nixpkgs_nodejs_configure(
     )
 
     native.register_toolchains("@{}_toolchain//:nodejs_nix".format(name))
+
+def nixpkgs_nodejs_configure_platforms(
+  name = "nixpkgs_nodejs",
+  platforms_mapping = DEFAULT_PLATFORMS_MAPPING,
+  attribute_path = "nodejs",
+  repository = None,
+  repositories = {},
+  nix_platform = None,
+  nix_file = None,
+  nix_file_content = None,
+  nix_file_deps = None,
+  nixopts = [],
+  fail_not_supported = True,
+  quiet = False,
+  exec_constraints = None,
+  target_constraints = None,
+  **kwargs,
+):
+    """Runs nixpkgs_nodejs_configure for each platform.
+
+    Since rules_nodejs adds platform suffix to repository name, this can be helpful
+    if one wants to use npm_install and reference js dependencies from npm repo.
+    See the example directory.
+
+    Args:
+      platforms_mapping: struct describing mapping between nix platform and rules_nodejs bazel platform with
+        target and exec constraints
+    """
+    for nix_platform, bazel_platform in platforms_mapping.items():
+        nixpkgs_nodejs_configure(
+            name = "{}_{}".format(name, bazel_platform.rules_nodejs_platform),
+            attribute_path = attribute_path,
+            repository = repository,
+            repositories = repositories,
+            nix_platform = nix_platform,
+            nix_file = nix_file,
+            nix_file_content = nix_file_content,
+            nix_file_deps = nix_file_deps,
+            nixopts = nixopts,
+            fail_not_supported = fail_not_supported,
+            quiet = quiet,
+            exec_constraints = bazel_platform.exec_constraints,
+            target_constraints = bazel_platform.target_constraints,
+            **kwargs,
+        )
