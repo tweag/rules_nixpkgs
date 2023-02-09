@@ -1,0 +1,12 @@
+module(name = "rules_nixpkgs_java_testing")
+
+bazel_dep(name = "rules_nixpkgs_java")
+local_path_override(
+    module_name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
+
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)

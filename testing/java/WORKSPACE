@@ -1,0 +1,6 @@
+workspace(name = "rules_nixpkgs_java_testing")
+
+local_repository(
+    name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
