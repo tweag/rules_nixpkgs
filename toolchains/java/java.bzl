@@ -114,6 +114,7 @@ def nixpkgs_java_configure(
         fail_not_supported = True,
         quiet = False,
         toolchain = False,
+        register = None,
         toolchain_name = None,
         toolchain_version = None,
         exec_constraints = None,
@@ -181,7 +182,8 @@ def nixpkgs_java_configure(
       nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
-      toolchain: Create & register a Bazel toolchain based on the Java runtime.
+      toolchain: Create a Bazel toolchain based on the Java runtime.
+      register: Register the created toolchain. Requires `toolchain` to be `True`. Defaults to the value of `toolchain`.
       toolchain_name: The name of the toolchain that can be used in --java_runtime_version.
       toolchain_version: The version of the toolchain that can be used in --java_runtime_version.
       exec_constraints: Constraints for the execution platform.
@@ -233,4 +235,7 @@ def nixpkgs_java_configure(
             exec_constraints = exec_constraints,
             target_constraints = target_constraints,
         )
-        native.register_toolchains("@{}_toolchain//:all".format(name))
+        if register or register == None:
+            native.register_toolchains("@{}_toolchain//:all".format(name))
+    elif register:
+        fail("toolchain must be True if register is set to True.")
