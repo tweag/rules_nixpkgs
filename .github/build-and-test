@@ -27,12 +27,17 @@ trap on_exit EXIT
 if [[ ${BZLMOD_ENABLED-} = true ]]; then
     declare -ra build_dirs=(
         core
+        toolchains/java
     )
     declare -ra test_dirs=(
         testing/core
+        testing/java
     )
+    # Skip docs directories in bzlmod mode.
+    # Stardoc is not yet bzlmod compatible.
     declare -ra extra_flags=(
         --enable_bzlmod
+        --deleted_packages=docs
     )
 else
     declare -ra build_dirs=(
@@ -48,6 +53,7 @@ else
         toolchains/rust
         toolchains/nodejs
         testing/core
+        testing/java
     )
     declare -ra extra_flags=(
     )
@@ -59,8 +65,17 @@ run_command() {
 
     echo "::group::Running \`bazel $1\` in $dir"
 
+    if [[ $dir != core ]]; then
+        declare -ra override_flags=(
+            --override_module=rules_nixpkgs_core=$SCRIPT_DIR/../core
+        )
+    else
+        declare -ra override_flags=(
+        )
+    fi
+
     pushd $dir >/dev/null
-    if ! bazel $1 //... "${extra_flags[@]}" ; then
+    if ! bazel $1 //... "${extra_flags[@]}" "${override_flags[@]}"; then
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
