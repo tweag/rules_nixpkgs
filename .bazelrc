@@ -1,1 +1,22 @@
-core/.bazelrc
+build --host_platform=@rules_nixpkgs_core//platforms:host
+
+# Using toolchain resolution can lead to spurious dependencies on
+# `@local_config_cc//:builtin_include_directory_paths`. This needs to be
+# resolved before `--incompatible_enable_cc_toolchain_resolution` can be
+# recommended for `nixpkgs_cc_configure_hermetic`.
+# build --incompatible_enable_cc_toolchain_resolution
+
+build --java_runtime_version=nixpkgs_java_11
+build --java_language_version=11
+build --tool_java_runtime_version=nixpkgs_java_11
+build --tool_java_language_version=11
+
+# The following lines provide a workaround for a test failure in on the Java
+# toolchain on MacOS 11, documented here: https://github.com/tweag/rules_nixpkgs/issues/299.
+# They should be removed as soon as that issue has been resolved.
+build --enable_platform_specific_config
+build:macos --experimental_strict_java_deps=warn
+
+# User Configuration
+# ------------------
+try-import %workspace%/.bazelrc.local
