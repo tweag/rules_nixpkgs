@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_test")
-#load(":java-test.bzl", "java_runtime_test")
+load(":java-test.bzl", "java_runtime_test")
 
 package(default_testonly = 1)
 
@@ -11,6 +11,6 @@ java_test(
 )
 
 # Test that nixpkgs_java_runtime is selected.
-#java_runtime_test(
-#    name = "java-runtime",
-#)
+java_runtime_test(
+    name = "java-runtime",
+)
