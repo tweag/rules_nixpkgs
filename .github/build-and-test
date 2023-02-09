@@ -37,6 +37,8 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
     # Stardoc is not yet bzlmod compatible.
     declare -ra extra_flags=(
         --enable_bzlmod
+        --registry=file://$SCRIPT_DIR/../registry
+        --registry=https://bcr.bazel.build
         --deleted_packages=docs
     )
 else
@@ -65,17 +67,8 @@ run_command() {
 
     echo "::group::Running \`bazel $1\` in $dir"
 
-    if [[ $dir != core ]]; then
-        declare -ra override_flags=(
-            --override_module=rules_nixpkgs_core=$SCRIPT_DIR/../core
-        )
-    else
-        declare -ra override_flags=(
-        )
-    fi
-
     pushd $dir >/dev/null
-    if ! bazel $1 //... "${extra_flags[@]}" "${override_flags[@]}"; then
+    if ! bazel $1 //... "${extra_flags[@]}" ; then
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
