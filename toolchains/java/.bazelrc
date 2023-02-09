@@ -1,3 +1,9 @@
+build:bzlmod --enable_bzlmod
+build:bzlmod --registry=file://%workspace%/../../registry
+build:bzlmod --registry=https://bcr.bazel.build
+# Skip docs directories in bzlmod mode. Stardoc is not yet bzlmod compatible.
+build:bzlmod --deleted_packages=docs
+
 build --host_platform=@rules_nixpkgs_core//platforms:host
 
 # Using toolchain resolution can lead to spurious dependencies on
