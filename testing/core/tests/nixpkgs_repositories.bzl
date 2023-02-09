@@ -8,8 +8,6 @@ load(
 def nixpkgs_repositories(*, bzlmod):
     nixpkgs_local_repository(
         name = "nixpkgs",
-        # TODO[AH] Remove these files from
-        # rules_nixpkgs_core.
         nix_file = "//:nixpkgs.nix",
         nix_file_deps = ["//:flake.lock"],
     )
