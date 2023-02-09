@@ -25,17 +25,21 @@ function on_exit() {
 trap on_exit EXIT
 
 if [[ ${BZLMOD_ENABLED-} = true ]]; then
-    declare -ra dirs=(
+    declare -ra build_dirs=(
         core
+    )
+    declare -ra test_dirs=(
         testing/core
     )
     declare -ra extra_flags=(
         --enable_bzlmod
     )
 else
-    declare -ra dirs=(
-        .
+    declare -ra build_dirs=(
         core
+    )
+    declare -ra test_dirs=(
+        .
         toolchains/go
         toolchains/java
         toolchains/cc
@@ -48,15 +52,30 @@ else
     declare -ra extra_flags=(
     )
 fi
-for dir in "${dirs[@]}"; do
-    echo "::group::Running \`bazel test\` in $dir"
+
+run_command() {
+    local -r cmd=$1
+    local -r dir=$2
+
+    echo "::group::Running \`bazel $1\` in $dir"
 
     pushd $dir >/dev/null
-    if ! bazel test //... "${extra_flags[@]}" ; then
+    if ! bazel $1 //... "${extra_flags[@]}" ; then
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
     popd >/dev/null
 
     echo '::endgroup::'
+}
+
+for dir in "${build_dirs[@]}"; do
+    # bazel test //... fails in modules that don't define any test targets, use
+    # bazel build in those instead. Workaround for
+    # https://github.com/bazelbuild/bazel/issues/7291#issuecomment-1283970438
+    run_command build $dir
+done
+
+for dir in "${test_dirs[@]}"; do
+    run_command test $dir
 done
