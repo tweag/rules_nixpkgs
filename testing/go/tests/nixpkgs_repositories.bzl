@@ -1,5 +1,6 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_local_repository")
 load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
+load("@rules_nixpkgs_go//:go.bzl", "nixpkgs_go_configure")
 
 def nixpkgs_repositories(*, bzlmod):
     nixpkgs_local_repository(
@@ -16,4 +17,8 @@ def nixpkgs_repositories(*, bzlmod):
         register = not bzlmod,
         toolchain_name = "nixpkgs_java",
         toolchain_version = "11",
+    )
+
+    nixpkgs_go_configure(
+        repository = "@nixpkgs",
     )
