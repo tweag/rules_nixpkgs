@@ -1,0 +1,6 @@
+workspace(name = "rules_nixpkgs_cc_testing")
+
+local_repository(
+    name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
+)
