@@ -20,5 +20,7 @@ def nixpkgs_repositories(*, bzlmod):
     )
 
     nixpkgs_sh_posix_configure(
+        name = "nixpkgs_sh_posix_config",
         repository = "@nixpkgs",
+        register = not bzlmod,
     )
