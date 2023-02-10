@@ -5,7 +5,7 @@ load(
     "nixpkgs_package",
 )
 
-def nixpkgs_repositories(*, bzlmod):
+def nixpkgs_repositories():
     nixpkgs_local_repository(
         name = "nixpkgs",
         nix_file = "//:nixpkgs.nix",
