@@ -135,7 +135,7 @@ def declare_toolchains(host_goos, host_goarch):
             exec_compatible_with = [
                 "@io_bazel_rules_go//go/toolchain:" + host_goos,
                 "@io_bazel_rules_go//go/toolchain:" + host_goarch,
-                "@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix",
+                "@rules_nixpkgs_core//constraints:support_nix",
             ],
             target_compatible_with = constraints,
             toolchain = ":" + impl_name,
