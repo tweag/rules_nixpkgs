@@ -1,0 +1,10 @@
+build --host_platform=@rules_nixpkgs_core//platforms:host
+
+build:bzlmod --enable_bzlmod
+build:bzlmod --registry=https://bcr.bazel.build
+
+# User Configuration
+# ------------------
+try-import %workspace%/.bazelrc.local
+
+# vim: ft=conf

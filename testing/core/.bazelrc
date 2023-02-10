@@ -1,1 +1,2 @@
-../../.bazelrc
+import %workspace%/../../.bazelrc.common
+import %workspace%/../../.bazelrc.java

@@ -1,7 +1,1 @@
-build:bzlmod --enable_bzlmod
-
-build --host_platform=@rules_nixpkgs_core//platforms:host
-
-# User Configuration
-# ------------------
-try-import %workspace%/.bazelrc.local
+import %workspace%/../.bazelrc.common
