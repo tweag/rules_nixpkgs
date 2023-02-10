@@ -22,4 +22,5 @@ def nixpkgs_repositories(*, bzlmod):
     nixpkgs_cc_configure(
         name = "nixpkgs_config_cc",
         repository = "@nixpkgs",
+        register = not bzlmod,
     )
