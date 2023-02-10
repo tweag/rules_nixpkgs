@@ -87,8 +87,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "@workspace//package:target",
             {
-                Label("@workspace//package:target"): "correct/path",
-                Label("@another//package:target"): "wrong/path",
+                "@workspace//package:target": "correct/path",
+                "@another//package:target": "wrong/path",
             },
         ),
         msg = "Finds an absolute label",
@@ -100,8 +100,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "//package:target",
             {
-                Label("@workspace//package:target"): "correct/path",
-                Label("@another//different:target"): "wrong/path",
+                "@workspace//package:target": "correct/path",
+                "@another//different:target": "wrong/path",
             },
         ),
         msg = "Finds an unambiguous relative label",
@@ -113,8 +113,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "@unknown//package:target",
             {
-                Label("@workspace//package:target"): "wrong/path",
-                Label("@another//package:target"): "another/wrong/path",
+                "@workspace//package:target": "wrong/path",
+                "@another//package:target": "another/wrong/path",
             },
         ),
         msg = "Fails on an unknown label",
@@ -126,8 +126,8 @@ def _resolve_label_test(ctx):
         actual = resolve_label(
             "//package:target",
             {
-                Label("@workspace//package:target"): "wrong/path",
-                Label("@another//package:target"): "another/wrong/path",
+                "@workspace//package:target": "wrong/path",
+                "@another//package:target": "another/wrong/path",
             },
         ),
         msg = "Fails on an ambiguous relative label",

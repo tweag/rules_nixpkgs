@@ -246,7 +246,7 @@ def resolve_label(label_str, labels):
 
     Attr:
       label_str: string, String representation of a label.
-      labels: dict from Label to path: Known label to path mappings.
+      labels: dict from String to path: Known label-string to path mappings.
 
     Returns:
       (path, error):
@@ -254,9 +254,9 @@ def resolve_label(label_str, labels):
         error: string or None, This is set if an error occurred.
     """
     label_candidates = [
-        (lbl, path)
-        for (lbl, path) in labels.items()
-        if lbl.relative(label_str) == lbl
+        (lbl_str, path)
+        for (lbl_str, path) in labels.items()
+        if Label(lbl_str).relative(label_str) == Label(lbl_str)
     ]
 
     if len(label_candidates) == 0:
@@ -278,7 +278,7 @@ def expand_location(repository_ctx, string, labels, attr = None):
     Attrs:
       repository_ctx: The repository rule context.
       string: string, Replace instances of `$(location )` in this string.
-      labels: dict from label to path: Known label to path mappings.
+      labels: dict from string to path: Known label-string to path mappings.
       attr: string, The rule attribute to use for error reporting.
 
     Returns:
@@ -293,12 +293,12 @@ def expand_location(repository_ctx, string, labels, attr = None):
         if command == "string":
             result += argument
         elif command == "location":
-            (label, error) = resolve_label(argument, labels)
+            (path, error) = resolve_label(argument, labels)
             if error != None:
                 fail(error, attr)
 
             result += paths.join(".", paths.relativize(
-                str(repository_ctx.path(label)),
+                str(repository_ctx.path(path)),
                 str(repository_ctx.path(".")),
             ))
         else:

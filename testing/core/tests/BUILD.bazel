@@ -1,3 +1,4 @@
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
 
 package(default_testonly = 1)
@@ -20,6 +21,7 @@ expand_location_unit_test_suite()
         "expr-test",
         "attribute-test",
         "expr-attribute-test",
+        "extra-args-test",
         "nix-file-test",
         "nix-file-deps-test",
         "nixpkgs-git-repository-test",
@@ -58,19 +60,22 @@ expand_location_unit_test_suite()
 ]
 
 # Test nixopts location expansion
-sh_test(
+test_suite(
     name = "location-expansion-test",
-    srcs = ["location_expansion.sh"],
-    args = [
-        "$(POSIX_DIFF)",
-        "$(rootpath //tests:location_expansion/test_file)",
-        "$(rootpath @nixpkgs_location_expansion_test//:out/local_file)",
-        "$(rootpath @nixpkgs_location_expansion_test//:out/external_file)",
+    tests = [
+        "location-expansion-test-external",
+        "location-expansion-test-local",
     ],
-    data = [
-        "//tests:location_expansion/test_file",
-        "@nixpkgs_location_expansion_test//:out/external_file",
-        "@nixpkgs_location_expansion_test//:out/local_file",
-    ],
-    toolchains = ["@rules_sh//sh/posix:make_variables"],
+)
+
+diff_test(
+    name = "location-expansion-test-local",
+    file1 = "//tests:location_expansion/test_file",
+    file2 = "@nixpkgs_location_expansion_test//:out/local_file",
+)
+
+diff_test(
+    name = "location-expansion-test-external",
+    file1 = "//tests:location_expansion/test_file",
+    file2 = "@nixpkgs_location_expansion_test//:out/external_file",
 )

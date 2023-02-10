@@ -278,8 +278,8 @@ def _nixpkgs_package_impl(repository_ctx):
         expr_args.extend(["-E", "import <nixpkgs> { config = {}; overlays = []; }"])
 
     nix_file_deps = {}
-    for dep in repository_ctx.attr.nix_file_deps:
-        nix_file_deps[dep] = cp(repository_ctx, dep)
+    for dep_lbl, dep_str in repository_ctx.attr.nix_file_deps.items():
+        nix_file_deps[dep_str] = cp(repository_ctx, dep_lbl)
 
     expr_args.extend([
         "-A",
@@ -360,7 +360,7 @@ _nixpkgs_package = repository_rule(
         "unmangled_name": attr.string(mandatory = True),
         "attribute_path": attr.string(),
         "nix_file": attr.label(allow_single_file = [".nix"]),
-        "nix_file_deps": attr.label_list(),
+        "nix_file_deps": attr.label_keyed_string_dict(),
         "nix_file_content": attr.string(),
         "repositories": attr.label_keyed_string_dict(),
         "repository": attr.label(),
@@ -434,6 +434,10 @@ def nixpkgs_package(
         See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
       build_file_content: Like `build_file`, but a string of the contents instead of a file name.
       nixopts: Extra flags to pass when calling Nix.
+
+        Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
+
+        Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Use `./$${"$(location @for//:example)"}` to work around this limitation.
       quiet: Whether to hide the output of the Nix command.
       fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
     """
@@ -442,7 +446,7 @@ def nixpkgs_package(
         unmangled_name = name,
         attribute_path = attribute_path,
         nix_file = nix_file,
-        nix_file_deps = nix_file_deps,
+        nix_file_deps = {dep: dep for dep in nix_file_deps} if nix_file_deps else {},
         nix_file_content = nix_file_content,
         repository = repository,
         repositories = repositories,

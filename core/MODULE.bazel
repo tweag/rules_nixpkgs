@@ -5,4 +5,3 @@ module(
 
 bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
-bazel_dep(name = "rules_sh", version = "0.3.0", dev_dependency = True)

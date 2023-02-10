@@ -361,7 +361,7 @@ def nixpkgs_cc_configure(
       nix_file_deps: optional, list of Label, Additional files that the Nix expression depends on.
       repositories: dict of Label to string, Provides `<nixpkgs>` and other repositories. Specify one of `repositories` or `repository`.
       repository: Label, Provides `<nixpkgs>`. Specify one of `repositories` or `repository`.
-      nixopts: optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
+      nixopts: optional, list of string, Extra flags to pass when calling Nix. See `nixopts` attribute to `nixpkgs_package` for further details.
       quiet: bool, Whether to hide `nix-build` output.
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
       exec_constraints: Constraints for the execution platform.

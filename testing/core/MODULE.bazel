@@ -1,0 +1,33 @@
+module(name = "rules_nixpkgs_core_testing")
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.0.3")
+
+bazel_dep(name = "nixpkgs_location_expansion_test_file")
+local_path_override(
+    module_name = "nixpkgs_location_expansion_test_file",
+    path = "tests/location_expansion/test_repo",
+)
+
+non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
+use_repo(non_module_deps, "nixpkgs")
+use_repo(non_module_deps, "remote_nixpkgs")
+use_repo(non_module_deps, "nixpkgs_content")
+use_repo(non_module_deps, "hello")
+use_repo(non_module_deps, "expr-test")
+use_repo(non_module_deps, "attribute-test")
+use_repo(non_module_deps, "expr-attribute-test")
+use_repo(non_module_deps, "extra-args-test")
+use_repo(non_module_deps, "nix-file-test")
+use_repo(non_module_deps, "nix-file-deps-test")
+use_repo(non_module_deps, "nixpkgs-git-repository-test")
+use_repo(non_module_deps, "nixpkgs-local-repository-test")
+use_repo(non_module_deps, "relative-imports")
+use_repo(non_module_deps, "output-filegroup-test")
+use_repo(non_module_deps, "output-filegroup-manual-test")
+use_repo(non_module_deps, "nixpkgs_location_expansion_test")

@@ -284,7 +284,7 @@ default is <code>[]</code>
 
 <p>
 
-optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
+optional, list of string, Extra flags to pass when calling Nix. See `nixopts` attribute to `nixpkgs_package` for further details.
 
 </p>
 </td>
@@ -1328,6 +1328,10 @@ default is <code>[]</code>
 <p>
 
 Extra flags to pass when calling Nix.
+
+Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
+
+Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Use `./$${"$(location @for//:example)"}` to work around this limitation.
 
 </p>
 </td>

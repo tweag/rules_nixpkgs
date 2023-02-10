@@ -1,0 +1,68 @@
+# TODO[AH] Move this into MODULE.bazel once rules_nixpkgs_java is bzlmod compatible.
+#   Bazel requires a resolved Java runtime to run any tests.
+#   Otherwise, it fails with errors of the form:
+#
+#     While resolving toolchains for target @remote_coverage_tools//:Main: No matching toolchains found for types @bazel_tools//tools/jdk:runtime_toolchain_type.
+#
+
+local_repository(
+    name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "platforms",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+    ],
+    sha256 = "5308fc1d8865406a49427ba24a9ab53087f17f5266a7aabbfc28823f3916e1ca",
+)
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "f24ab666394232f834f74d19e2ff142b0af17466ea0c69a3f4c276ee75f6efce",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+    ],
+)
+
+load(
+    "@rules_nixpkgs_core//:nixpkgs.bzl",
+    "nixpkgs_local_repository",
+)
+
+nixpkgs_local_repository(
+    name = "nixpkgs",
+    nix_file = "//:nixpkgs.nix",
+    nix_file_deps = ["//:flake.lock"],
+)
+
+http_archive(
+    name = "rules_java",
+    sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
+    strip_prefix = "rules_java-5.0.0",
+    url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
+)
+
+local_repository(
+    name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
+
+load(
+    "@rules_nixpkgs_java//:java.bzl",
+    "nixpkgs_java_configure",
+)
+
+nixpkgs_java_configure(
+    name = "nixpkgs_java_runtime",
+    attribute_path = "jdk11.home",
+    repository = "@nixpkgs",
+    toolchain = True,
+    toolchain_name = "nixpkgs_java",
+    toolchain_version = "11",
+)
