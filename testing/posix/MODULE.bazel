@@ -1,0 +1,13 @@
+module(name = "rules_nixpkgs_posix_testing")
+
+bazel_dep(name = "rules_nixpkgs_posix")
+local_path_override(
+    module_name = "rules_nixpkgs_posix",
+    path = "../../toolchains/posix",
+)
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)

@@ -1,0 +1,11 @@
+workspace(name = "rules_nixpkgs_posix_testing")
+
+local_repository(
+    name = "rules_nixpkgs_posix",
+    path = "../../toolchains/posix",
+)
+
+local_repository(
+    name = "rules_nixpkgs_core",
+    path = "../../core",
+)
