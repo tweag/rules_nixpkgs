@@ -9,3 +9,28 @@ local_repository(
     name = "rules_nixpkgs_core",
     path = "../../core",
 )
+
+local_repository(
+    name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_sh",
+    sha256 = "d668bb32f112ead69c58bde2cae62f6b8acefe759a8c95a2d80ff6a85af5ac5e",
+    strip_prefix = "rules_sh-0.3.0",
+    urls = ["https://github.com/tweag/rules_sh/archive/v0.3.0.tar.gz"],
+)
+
+load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
+
+rules_sh_dependencies()
+
+load(
+    "//tests:nixpkgs_repositories.bzl",
+    "nixpkgs_repositories",
+)
+
+nixpkgs_repositories(bzlmod = False)
