@@ -175,7 +175,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     )
     if darwin:
         info.tool_paths["gcc"] = "cc_wrapper.sh"
-        info.tool_paths["ar"] = "/usr/bin/libtool"
+        info.tool_paths["ar"] = info.tool_paths["libtool"]
     write_builtin_include_directory_paths(
         repository_ctx,
         info.tool_paths["gcc"],
