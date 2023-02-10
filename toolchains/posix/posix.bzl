@@ -138,6 +138,7 @@ def nixpkgs_sh_posix_configure(
         name = "nixpkgs_sh_posix_config",
         packages = ["stdenv.initialPath"],
         exec_constraints = None,
+        register = True,
         **kwargs):
     """Create a POSIX toolchain from nixpkgs.
 
@@ -157,6 +158,7 @@ def nixpkgs_sh_posix_configure(
       repository: See nixpkgs_package.
       nixopts: See nixpkgs_package.
       fail_not_supported: See nixpkgs_package.
+      register: Automatically register the generated toolchain if set to True.
     """
     nixpkgs_sh_posix_config(
         name = name,
@@ -170,6 +172,7 @@ def nixpkgs_sh_posix_configure(
         name = name + "_toolchain",
         workspace = name,
     )
-    native.register_toolchains(
-        "@{}//:nixpkgs_sh_posix_toolchain".format(name + "_toolchain"),
-    )
+    if register:
+        native.register_toolchains(
+            "@{}//:nixpkgs_sh_posix_toolchain".format(name + "_toolchain"),
+        )
