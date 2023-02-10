@@ -18,6 +18,7 @@ local_path_override(
     path = "../../toolchains/java",
 )
 
+bazel_dep(name = "bazel_skylib", version = "1.0.3")
 bazel_dep(name = "rules_sh", version = "0.3.0")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
@@ -31,5 +32,6 @@ use_repo(java_toolchains, "remote_java_tools")
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "nixpkgs_java_runtime_toolchain")
+use_repo(non_module_deps, "nixpkgs_sh_posix_config")
 # Bazel requries a Java runtime to run tests.
 register_toolchains("@nixpkgs_java_runtime_toolchain//:all")
