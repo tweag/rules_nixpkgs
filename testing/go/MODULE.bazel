@@ -1,0 +1,13 @@
+module(name = "rules_nixpkgs_go_testing")
+
+bazel_dep(name = "rules_nixpkgs_go")
+local_path_override(
+    module_name = "rules_nixpkgs_go",
+    path = "../../toolchains/go",
+)
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)

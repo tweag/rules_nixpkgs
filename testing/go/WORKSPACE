@@ -1,0 +1,6 @@
+workspace(name = "rules_nixpkgs_go_testing")
+
+local_repository(
+    name = "rules_nixpkgs_go",
+    path = "../../toolchains/go",
+)
