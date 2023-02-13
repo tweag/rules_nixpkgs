@@ -36,6 +36,12 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
         strip_prefix = "rules_java-5.0.0",
         url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
     )
+    maybe(
+        http_archive,
+        "rules_nodejs",
+        sha256 = "08337d4fffc78f7fe648a93be12ea2fc4e8eb9795a4e6aa48595b66b34555626",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-core-5.8.0.tar.gz"],
+    )
 
     # the following complication is due to migrating to `bzlmod`.
     # fetch extracted submodules as external repositories from an existing source tree, based on the import type.

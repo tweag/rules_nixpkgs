@@ -59,7 +59,7 @@ let
           name = "bazel-nixpkgs-cc";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-          paths = [ cc cc.bintools ];
+          paths = [ cc cc.bintools ] ++ pkgs.lib.optional pkgs.stdenv.isDarwin pkgs.darwin.cctools;
           pathsToLink = [ "/bin" ];
           passthru = {
             isClang = cc.isClang;
@@ -84,7 +84,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     # Determine toolchain tool paths.
     #
     # If a tool is not available then we use `bin/false` as a stand-in.
-    declare -A TOOLS=( [ar]=ar [cpp]=cpp [dwp]=dwp [gcc]=cc [gcov]=gcov [llvm-cov]=llvm-cov [ld]=ld [nm]=nm [objcopy]=objcopy [objdump]=objdump [strip]=strip )
+    declare -A TOOLS=( [ar]=ar [cpp]=cpp [dwp]=dwp [gcc]=cc [gcov]=gcov [llvm-cov]=llvm-cov [ld]=ld [libtool]=libtool [nm]=nm [objcopy]=objcopy [objdump]=objdump [strip]=strip )
     TOOL_NAMES=(''${!TOOLS[@]})
     declare -A TOOL_PATHS=()
     for tool_name in ''${!TOOLS[@]}; do

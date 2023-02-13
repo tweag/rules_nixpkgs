@@ -30,7 +30,7 @@ load(
     "nixpkgs_repositories",
 )
 
-nixpkgs_repositories(bzlmod = False)
+nixpkgs_repositories()
 
 local_repository(
     name = "rules_nixpkgs_java",
