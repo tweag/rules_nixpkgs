@@ -28,11 +28,3 @@ load("@rules_nixpkgs_docs//:dependencies_2.bzl", "docs_dependencies_2")
 docs_dependencies_2()
 
 ### end generic dependencies for rendering documentation
-
-### dependencies for tests
-
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-
-bazel_skylib_workspace()
-
-### end dependencies for tests
