@@ -1,5 +1,4 @@
-load("@rules_nixpkgs_go//:go.bzl", "RULES_GO")
-load("@rules_go//go:def.bzl", "go_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load(":go-test.bzl", "go_test_suite")
 
 package(default_testonly = 1)
