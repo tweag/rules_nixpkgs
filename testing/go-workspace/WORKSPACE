@@ -1,0 +1,55 @@
+workspace(name = "rules_nixpkgs_go_testing")
+
+local_repository(
+    name = "rules_nixpkgs_go",
+    path = "../../toolchains/go",
+)
+
+local_repository(
+    name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+local_repository(
+    name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "685052b498b6ddfe562ca7a97736741d87916fe536623afb7da2824c0211c369",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.33.0/rules_go-v0.33.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.33.0/rules_go-v0.33.0.zip",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "f24ab666394232f834f74d19e2ff142b0af17466ea0c69a3f4c276ee75f6efce",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.0/bazel-skylib-1.4.0.tar.gz",
+    ],
+)
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
+load(
+    "//tests:nixpkgs_repositories.bzl",
+    "nixpkgs_repositories",
+)
+
+nixpkgs_repositories(bzlmod = False)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains")
+
+go_register_toolchains(version = "1.17.1")
