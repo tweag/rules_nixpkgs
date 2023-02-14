@@ -345,6 +345,7 @@ def nixpkgs_go_configure(
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: Whether to hide the output of the Nix command.
       register: Automatically register the generated toolchain if set to True.
+      rules_go_repo_name: The name of the rules_go repository. Defaults to rules_go under bzlmod and io_bazel_rules_go otherwise.",
     """
 
     if not nix_file and not nix_file_content:
