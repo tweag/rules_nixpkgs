@@ -10,6 +10,14 @@ Rules for importing a Go toolchain from Nixpkgs.
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@io_bazel_rules_go//go/private:platforms.bzl", "PLATFORMS")
 
+def _is_bzlmod_enabled():
+    """Determine whether bzlmod mode is enabled."""
+    # If bzlmod is enabled, then `str(Label(...))` returns a canonical label,
+    # these start with `@@`.
+    return str(Label("@rules_nixpkgs_go//:go.bzl")).startswith("@@")
+
+RULES_GO = "rules_go" if _is_bzlmod_enabled() else "io_bazel_rules_go"
+
 def _detect_host_platform(ctx):
     """Copied from `rules_go`, since we have no other way to determine the proper `goarch` value.
     https://github.com/bazelbuild/rules_go/blob/728a9e1874bc965b05c415d7f6b332a86ac35102/go/private/sdk.bzl#L239
@@ -61,7 +69,7 @@ def _detect_host_platform(ctx):
     return goos, goarch
 
 go_helpers_build = """
-load("@io_bazel_rules_go//go:def.bzl", "go_sdk")
+load("@{rules_go}//go:def.bzl", "go_sdk")
 
 def go_sdk_for_arch():
     native.filegroup(
@@ -90,6 +98,7 @@ def _nixpkgs_go_helpers_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", executable = False, content = "")
     goos, goarch = _detect_host_platform(repository_ctx)
     content = go_helpers_build.format(
+        rules_go = repository_ctx.attr.rules_go_repo_name,
         goos = goos,
         goarch = goarch,
         exe = ".exe" if goos == "windows" else "",
@@ -98,11 +107,17 @@ def _nixpkgs_go_helpers_impl(repository_ctx):
 
 nixpkgs_go_helpers = repository_rule(
     implementation = _nixpkgs_go_helpers_impl,
+    attrs = {
+        "rules_go_repo_name": attr.string(
+            default = RULES_GO,
+            doc = "name of the rules_go repository, defaults to rules_go under bzlmod and io_bazel_rules_go otherwise.",
+        ),
+    },
 )
 
 go_toolchain_func = """
-load("@io_bazel_rules_go//go/private:platforms.bzl", "PLATFORMS")
-load("@io_bazel_rules_go//go:def.bzl", "go_toolchain")
+load("@{rules_go}//go/private:platforms.bzl", "PLATFORMS")
+load("@{rules_go}//go:def.bzl", "go_toolchain")
 
 def declare_toolchains(host_goos, host_goarch):
     for p in [p for p in PLATFORMS if not p.cgo]:
@@ -115,8 +130,8 @@ def declare_toolchains(host_goos, host_goarch):
         toolchain_name = "toolchain_go_" + p.name
         impl_name = toolchain_name + "-impl"
         cgo_constraints = (
-            "@io_bazel_rules_go//go/toolchain:cgo_off",
-            "@io_bazel_rules_go//go/toolchain:cgo_on",
+            "@{rules_go}//go/toolchain:cgo_off",
+            "@{rules_go}//go/toolchain:cgo_on",
         )
         constraints = [c for c in p.constraints if c not in cgo_constraints]
         go_toolchain(
@@ -131,10 +146,10 @@ def declare_toolchains(host_goos, host_goarch):
         )
         native.toolchain(
             name = toolchain_name,
-            toolchain_type = "@io_bazel_rules_go//go:toolchain",
+            toolchain_type = "@{rules_go}//go:toolchain",
             exec_compatible_with = [
-                "@io_bazel_rules_go//go/toolchain:" + host_goos,
-                "@io_bazel_rules_go//go/toolchain:" + host_goarch,
+                "@{rules_go}//go/toolchain:" + host_goos,
+                "@{rules_go}//go/toolchain:" + host_goarch,
                 "@rules_nixpkgs_core//constraints:support_nix",
             ],
             target_compatible_with = constraints,
@@ -151,6 +166,7 @@ declare_toolchains("{goos}", "{goarch}")
 def _nixpkgs_go_toolchain_impl(repository_ctx):
     goos, goarch = _detect_host_platform(repository_ctx)
     content = go_toolchain_func.format(
+        rules_go = repository_ctx.attr.rules_go_repo_name,
         sdk_repo = repository_ctx.attr.sdk_repo,
     )
     build_content = go_toolchain_build.format(
@@ -166,6 +182,10 @@ nixpkgs_go_toolchain = repository_rule(
         "sdk_repo": attr.string(
             doc = "name of the nixpkgs_package repository defining the go sdk",
         ),
+        "rules_go_repo_name": attr.string(
+            default = RULES_GO,
+            doc = "name of the rules_go repository, defaults to rules_go under bzlmod and io_bazel_rules_go otherwise.",
+        ),
     },
     doc = """
     Set up the Go SDK
@@ -173,9 +193,9 @@ nixpkgs_go_toolchain = repository_rule(
 )
 
 go_sdk_build = """
-load("@io_bazel_rules_go//go/private/rules:binary.bzl", "go_tool_binary")
-load("@io_bazel_rules_go//go/private/rules:sdk.bzl", "package_list")
-load("@io_bazel_rules_go//go:def.bzl", "go_sdk")
+load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
+load("@{rules_go}//go/private/rules:sdk.bzl", "package_list")
+load("@{rules_go}//go:def.bzl", "go_sdk")
 load("@{helpers}//:go_sdk.bzl", "go_sdk_for_arch")
 
 package(default_visibility = ["//visibility:public"])
@@ -199,7 +219,7 @@ filegroup(
 
 go_tool_binary(
     name = "builder",
-    srcs = ["@io_bazel_rules_go//go/tools/builders:builder_srcs"],
+    srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
     sdk = ":go_sdk",
 )
 
@@ -236,7 +256,8 @@ def nixpkgs_go_configure(
         nixopts = [],
         fail_not_supported = True,
         quiet = False,
-        register = True):
+        register = True,
+        rules_go_repo_name = RULES_GO):
     """Use go toolchain from Nixpkgs.
 
     By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS).
@@ -343,6 +364,7 @@ def nixpkgs_go_configure(
     helpers_repo = sdk_name + "_helpers"
     nixpkgs_go_helpers(
         name = helpers_repo,
+        rules_go_repo_name = rules_go_repo_name,
     )
     nixpkgs_package(
         name = sdk_name,
@@ -352,6 +374,7 @@ def nixpkgs_go_configure(
         nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
         build_file_content = go_sdk_build.format(
+            rules_go = rules_go_repo_name,
             helpers = helpers_repo,
         ),
         nixopts = nixopts,
@@ -362,6 +385,7 @@ def nixpkgs_go_configure(
     nixpkgs_go_toolchain(
         name = toolchains_repo,
         sdk_repo = sdk_name,
+        rules_go_repo_name = rules_go_repo_name,
     )
     if register:
         for p in [p for p in PLATFORMS if not p.cgo]:
