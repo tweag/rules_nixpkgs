@@ -1,5 +1,7 @@
+load("@rules_nixpkgs_go//:go.bzl", "RULES_GO")
+
 def _go_root_impl(ctx):
-    go = ctx.toolchains["@io_bazel_rules_go//go:toolchain"]
+    go = ctx.toolchains["@{}//go:toolchain".format(RULES_GO)]
     return [
         DefaultInfo(
             files = depset(direct = [go.sdk.root_file]),
@@ -8,7 +10,7 @@ def _go_root_impl(ctx):
 
 _go_root = rule(
     _go_root_impl,
-    toolchains = ["@io_bazel_rules_go//go:toolchain"],
+    toolchains = ["@{}//go:toolchain".format(RULES_GO)],
 )
 
 def _go_root_test(*, name, go_root):
