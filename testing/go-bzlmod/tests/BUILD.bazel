@@ -1,4 +1,3 @@
-load("@rules_nixpkgs_go//:go.bzl", "RULES_GO")
 load("@rules_go//go:def.bzl", "go_binary")
 load(":go-test.bzl", "go_test_suite")
 
