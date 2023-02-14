@@ -235,7 +235,8 @@ def nixpkgs_go_configure(
         nix_file_content = None,
         nixopts = [],
         fail_not_supported = True,
-        quiet = False):
+        quiet = False,
+        register = True):
     """Use go toolchain from Nixpkgs.
 
     By default rules_go configures the go toolchain to be downloaded as binaries (which doesn't work on NixOS).
@@ -322,6 +323,7 @@ def nixpkgs_go_configure(
         Specify one of `path` or `repositories`.
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: Whether to hide the output of the Nix command.
+      register: Automatically register the generated toolchain if set to True.
     """
 
     if not nix_file and not nix_file_content:
@@ -361,5 +363,6 @@ def nixpkgs_go_configure(
         name = toolchains_repo,
         sdk_repo = sdk_name,
     )
-    for p in [p for p in PLATFORMS if not p.cgo]:
-        native.register_toolchains("@{}//:toolchain_go_{}".format(toolchains_repo, p.name))
+    if register:
+        for p in [p for p in PLATFORMS if not p.cgo]:
+            native.register_toolchains("@{}//:toolchain_go_{}".format(toolchains_repo, p.name))
