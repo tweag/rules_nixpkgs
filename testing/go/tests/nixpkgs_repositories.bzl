@@ -22,4 +22,5 @@ def nixpkgs_repositories(*, bzlmod):
     nixpkgs_go_configure(
         sdk_name = "nixpkgs_go_sdk",
         repository = "@nixpkgs",
+        register = not bzlmod,
     )

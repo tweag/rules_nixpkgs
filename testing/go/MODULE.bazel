@@ -30,6 +30,8 @@ use_repo(java_toolchains, "remote_java_tools")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
+use_repo(non_module_deps, "nixpkgs_go_sdk_toolchains")
+register_toolchains("@nixpkgs_go_sdk_toolchains//:all")
 
 # Bazel requries a Java runtime to run tests.
 use_repo(non_module_deps, "nixpkgs_java_runtime_toolchain")
