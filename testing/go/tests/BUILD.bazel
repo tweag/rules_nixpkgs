@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(":go-test.bzl", "go_test_suite")
 
 package(default_testonly = 1)
 
@@ -6,3 +7,5 @@ go_binary(
     name = "go-binary",
     srcs = ["go-binary.go"],
 )
+
+go_test_suite(name = "go-test")
