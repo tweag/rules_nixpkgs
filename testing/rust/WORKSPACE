@@ -1,0 +1,23 @@
+workspace(name = "rules_nixpkgs_rust_testing")
+
+local_repository(
+    name = "rules_nixpkgs_rust",
+    path = "../../toolchains/rust",
+)
+
+local_repository(
+    name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+local_repository(
+    name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
+
+load(
+    "//tests:nixpkgs_repositories.bzl",
+    "nixpkgs_repositories",
+)
+
+nixpkgs_repositories(bzlmod = False)
