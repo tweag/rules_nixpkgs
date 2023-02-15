@@ -4,3 +4,10 @@ local_repository(
     name = "rules_nixpkgs_python",
     path = "../../toolchains/python",
 )
+
+load(
+    "//tests:nixpkgs_repositories.bzl",
+    "nixpkgs_repositories",
+)
+
+nixpkgs_repositories(bzlmod = False)
