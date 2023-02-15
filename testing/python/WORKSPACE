@@ -1,0 +1,6 @@
+workspace(name = "rules_nixpkgs_python_testing")
+
+local_repository(
+    name = "rules_nixpkgs_python",
+    path = "../../toolchains/python",
+)

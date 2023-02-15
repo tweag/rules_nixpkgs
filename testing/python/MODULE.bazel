@@ -1,0 +1,13 @@
+module(name = "rules_nixpkgs_python_testing")
+
+bazel_dep(name = "rules_nixpkgs_python")
+local_path_override(
+    module_name = "rules_nixpkgs_python",
+    path = "../../toolchains/python",
+)
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
