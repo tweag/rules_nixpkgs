@@ -1,1 +1,22 @@
+load("@nixpkgs_python_toolchain//:defs.bzl", "interpreter")
 package(default_testonly = 1)
+
+# Test nixpkgs_python_configure() by running some Python code.
+test_suite(
+    name = "python-test",
+    tests = [
+        "@nixpkgs_python_configure_test//:python2-test",
+        "@nixpkgs_python_configure_test//:python3-test",
+    ],
+)
+
+py_test(
+    name = "resolve-interpreter",
+    main = "interpreter_test.py",
+    srcs = ["interpreter_test.py"],
+    args = ["$(rootpath {interpreter})".format(interpreter = interpreter)],
+    data = [interpreter],
+    srcs_version = "PY3",
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+)

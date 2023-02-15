@@ -104,6 +104,7 @@ runCommand "bazel-nixpkgs-python-toolchain"
         ''}}
         visibility = ["//visibility:public"],
     )
+    exports_files(["bin/python"])
     EOF
   ''
 """.format(
