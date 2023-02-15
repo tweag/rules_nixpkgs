@@ -1,13 +1,5 @@
-load(
-    "@rules_nixpkgs_core//:nixpkgs.bzl",
-    "nixpkgs_git_repository",
-    "nixpkgs_local_repository",
-    "nixpkgs_package",
-)
-load(
-    "@rules_nixpkgs_java//:java.bzl",
-    "nixpkgs_java_configure",
-)
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_local_repository")
+load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
 
 def nixpkgs_repositories(*, bzlmod):
     nixpkgs_local_repository(

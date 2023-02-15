@@ -1,3 +1,3 @@
 { pkgs ? import ./nixpkgs.nix { } }:
 
-pkgs.mkShellNoCC { nativeBuildInputs = [ pkgs.bazel_6 ]; }
+pkgs.mkShellNoCC { nativeBuildInputs = with pkgs; [ bazel_6 ]; }

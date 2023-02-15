@@ -6,11 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.9.0...HEAD
+
+### Added
+- nixpkgs_nodejs_configure_platforms for platform transparent npm_install
+  See [#309]
 
 ## [0.9.0] - 2022-07-19
 
-[0.9.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.9.0...v0.9.0
+[0.9.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.8.0...v0.9.0
 
 ### Added
 

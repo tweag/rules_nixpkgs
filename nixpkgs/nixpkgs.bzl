@@ -150,6 +150,7 @@ load(
 load(
     "@rules_nixpkgs_nodejs//:nodejs.bzl",
     _nixpkgs_nodejs_configure = "nixpkgs_nodejs_configure",
+    _nixpkgs_nodejs_configure_platforms = "nixpkgs_nodejs_configure_platforms",
 )
 
 # aliases for backwards compatibility prior to `bzlmod`
@@ -162,6 +163,7 @@ nixpkgs_cc_configure = _nixpkgs_cc_configure
 nixpkgs_rust_configure = _nixpkgs_rust_configure
 nixpkgs_sh_posix_configure = _nixpkgs_sh_posix_configure
 nixpkgs_nodejs_configure = _nixpkgs_nodejs_configure
+nixpkgs_nodejs_configure_platforms = _nixpkgs_nodejs_configure_platforms
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
