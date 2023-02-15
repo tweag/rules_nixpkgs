@@ -1,0 +1,4 @@
+module(
+    name = "rules_rust",
+    version = "0.17.0",
+)
