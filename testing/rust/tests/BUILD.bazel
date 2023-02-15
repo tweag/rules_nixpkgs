@@ -1,4 +1,5 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
+load(":rust-test.bzl", "rust_test_suite")
 
 package(default_testonly = 1)
 
@@ -6,3 +7,5 @@ rust_binary(
     name = "rust-binary",
     srcs = ["main.rs"],
 )
+
+rust_test_suite("rust-test")
