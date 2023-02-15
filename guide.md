@@ -1,22 +1,20 @@
 # A guide to rules_nixpkgs
 
-TODO: is the flake shell pure? because if this is run on a non-nixos system, and /usr/bin/gcc continues to be visible, that messes things up
-TODO: document nixpkgs.nix
+In order to explain the benefits of rules\_nixpkgs in practical Bazel
+deployments, let's review some properties Bazel emphasises that distinguish it
+from various other build systems. Bazel is a modern build system that its users
+value for the ability to define and run builds that are both _fast_ and
+_correct_:
 
----
-
-Bazel is a modern build system valued for _fast_ and _correct_ builds.
-
-- Builds are fast, thanks to advanced caching and distributed builds.
-- Builds are correct, in that build artifacts always reflect the state of their
-  declared inputs. In other words, the user should never need to run `bazel
-  clean`.
+- builds are fast, thanks to advanced caching and distributed builds.
+- builds are correct, in that build artifacts always reflect the state of their
+  declared inputs, so the user never needs to run `bazel clean`
 
 Bazel's caching and distributed build features depend on build definitions being
 _correct_ by capturing all required dependencies. Build actions are run in
 isolation, which helps to ensure that build definitions are indeed correct in
-this manner. This is referred to as "hermeticity": A build is hermetic if there
-are no external influences on it.  However, Bazel is only hermetic if certain
+this manner. This is referred to as _hermeticity_: a build is hermetic if there
+are no external influences on it. However, Bazel is only hermetic if certain
 conditions are met, and they aren't in many people's build setups. In practice,
 Bazel build products fail to be reproducible by default, because Bazel silently
 depends on various things present in the global environment, like a C++
@@ -39,7 +37,7 @@ defined in a language also called Nix. A sizeable collection of such package
 definitions is available in the Nixpkgs repository, which can then be used
 freely from Bazel.
 
-# A basic Bazel project
+## A basic Bazel project
 
 Let's start with a simple example, on the Bazel "happy path": building a simple
 C/C++ project. The project structure we'll work with is available
@@ -63,7 +61,7 @@ cc_binary(
 )
 ```
 
-`src/hello-world.cc` is simply
+`src/hello-world.cc` is simply:
 
 ```cpp
 #include <iostream>
@@ -89,7 +87,7 @@ INFO: Build completed successfully, 1 total action
 Hello world!
 ```
 
-# The lack of hermeticity
+## The lack of hermeticity
 
 Bazel is prized for its hermetic and reproducible builds, but this example
 already demonstrates that isn't a completely accurate description: we haven't
@@ -110,7 +108,7 @@ build products will depend on whatever versions of happen to be available on the
 host during the build, which may very well change after a simple system package
 upgrade.
 
-# How rules_nixpkgs solves the issue
+## How rules_nixpkgs solves the issue
 
 There are two common ways that Bazel users work around these issues and achieve
 partial or full hermeticity. 
@@ -162,48 +160,238 @@ This has several advantages:
   reproducibility and predictability benefits one gets from running all builds
   in identical environments.
 
-# Transitioning the build to using Nix
+## Transitioning the build to using Nix
 
 We start by installing Nix as per the official
-[instructions](https://nixos.org/download.html).
+[instructions](https://nixos.org/download.html). Any recent version should be
+fine. For reference, this guide was tested using:
 
 ```
 > nix --version
-nix (Nix) 2.12.0
+nix (Nix) 2.13.2
 ```
 
-rules_nixpkgs requires a Nix-provided Bazel version. We can use the `nix-env
--i` command to install Bazel into the user environment, but this pollutes the
-shell environment and will prevent the use of the globally installed Bazel (if
-any) in other projects. A better solution is to use `nix-shell`, which can
-create development environments containing specific dependencies on demand,
-somewhat akin to Python virtualenvs but for any kind of dependency. Here's a
-demonstration of how it works:
+Getting everything working requires some boilerplate, which we'll go through
+right now in detail, and then set up our project to perform builds using
+rules\_nixpkgs to source dependencies. A high-level overview of what we'll do:
+- create a flake.nix file, in which we define a development shell with the
+  dependencies used during development
+- enter the shell for the first time, which will provide a pinned Nixpkgs
+  version in a flake.lock file that we can then use consistently within our
+  build as well as a source of dependencies during the build
+- adapt the `WORKSPACE` file to use rules_nixpkgs, with the Nixpkgs version
+  pinned above
+- define a hermetic Nixpkgs-provided CC toolchain
+- tell Bazel to use it by default
+- test that everything works
+
+## Nix development shells
+
+Nix has quite a few features that come in handy when working on a software
+project with a team, one of which is the ability to define hermetic shell
+environments. Conceptually, these are similar to Python virtualenvs, except with
+unified support for both system libraries and language-specific dependencies
+across many different languages, guaranteeing consistent versions of these for
+different users across different platforms. Even better, it's possible to deny
+access to anything _not_ defined in the shell, which makes it almost impossible
+to write builds that are _incorrect_ and fail to declare all their dependencies.
+
+Nix itself is fairly old (the first commit dates back to 2003) and as old
+software tends to do, there are "legacy" and "modern" ways of doing certain
+things that are both still in common use. When defining development shells and
+setting up projects for use with Nix, we choose the newer "flake" method over
+the legacy method (involving a `shell.nix` file) that you may run into in other
+places.
+
+A _flake_, defined in a file conventionally called `flake.nix`, can be thought
+of as a self-contained "Nix module". For our purposes, it will suffice to think
+of it as a way to define a cross-platform development shell, with the versions
+of the _inputs_ to the shell pinned in a lockfile (`flake.lock`). To get
+started, put the following code in a file named `flake.nix` at the root of the
+repository:
+
+```nix
+{
+  inputs = {
+    # Tracks the nixos-22.05 tag on the nixpkgs repo.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+
+    # The flake format itself is very minimal, so the use of this
+    # library is common.
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  # Here we can define various kinds of "outputs": packages, tests, 
+  # and so on, but we will only define a development shell.
+
+  outputs = { nixpkgs, flake-utils, ... }:
+
+    # For every platform that Nix supports, we ...
+    flake-utils.lib.eachDefaultSystem (system:
+
+      # ... get the package set for this particular platform ...
+      let pkgs = import nixpkgs { inherit system; };
+      in 
+      {
+
+        # ... and define a development shell for it ...
+        devShells.default =
+
+          # ... with no globally-available CC toolchain ...
+          pkgs.mkShellNoCC {
+            name = "rules_nixpkgs_shell";
+
+            # ... which makes available the following dependencies, 
+            # all sourced from the `pkgs` package set:
+            packages = with pkgs; [ bazel_5 bazel-buildtools cacert nix git ];
+          };
+      });
+}
+```
+
+It's not necessary at this juncture to understand the details of the Nix code
+above. (For those curious, [this][flake-post] series of articles on the Tweag
+blog is a good start.) It's worth noting the `packages = ...` line, however. The
+square brackets, as you might expect, set off a _list_ in Nix, with elements
+separated (admittedly a bit oddly) by whitespace. If you need packages in your
+development shell that aren't listed there already (compilers, development
+tools, editors, anything at all) you can add them to the `packages` list, and
+they'll become available within the shell when you enter it. In order to search
+for the package you want in Nixpkgs, there is a [package
+search](https://search.nixos.org/packages) function available on the Nixpkgs
+website.
+
+(TODO: this is false without --ignore-environment, which we haven't put into the
+direnv setup yet:) We've also done something else slightly out of the ordinary.
+The usual way to define a development shell is with the commonly-used `mkShell`
+Nix function, which creates a development shell with a given set of available
+dependencies _and_ a default CC toolchain. We've replaced it with `mkShellNoCC`,
+which, as the name suggests, does the same job but without implicitly making a
+CC toolchain available. This means it's no longer possible to unintentionally
+use `@local_config_cc`, as that toolchain won't be able to find the global
+binaries it wants and will fail to work.
+
+To enter the development shell, one can run:
+```
+$ nix develop
+```
+
+When running this for the first time, a `flake.lock` file is initialised,
+containing the exact versions of each dependency in `inputs` (which for us is
+basically just `nixpkgs`). This can be committed to the repository, and ensures
+that when others use the same environment, they will be provided the same
+versions of those dependencies, which means that the environment will be
+consistent across platforms. We will also use that same `flake.lock` as the
+single source of truth for the Nixpkgs version used in our build below.
+
+It's worth explicitly mentioning how useful being able to fix a version of
+Nixpkgs is for us: doing this allows us to select a consistent set of package
+revisions in one go, instead of having to maintain dependency versions for
+individual dependencies. Often one prefers to choose a tag for a stable release,
+which are of the form `nixos-yy.mm` where `yy` are the last two digits of a
+year, and `mm` is a month. Each stable release tag undergoes stringent
+verification via CI that packages in it will function correctly individually and
+play well together.
+
+### Upgrading the Nixpkgs version used (and other flake inputs)
+
+As with all dependencies, it's good to upgrade the version of the `nixpkgs`
+input from time to time, which will bump the versions of all Nix-provided
+dependencies. In the example above, the `nixpkgs` dependency is set to follow
+the `nixos-22.05` tag, and we can pull the latest commit from that branch using:
 
 ```
-> hello
-hello: command not found
-> nix-shell -p hello
-nix-shell> hello
-Hello, world!
-nix-shell> exit
-> hello
-hello: command not found
+$ nix flake lock --update-input nixpkgs
 ```
 
-For our purposes, we can enter a shell with a Nix-provided Bazel in a similar manner:
-```
-> nix-shell -p bazel_5
-```
-(`nix-shell` uses `bash` by default; if you use, say, zsh, use `nix-shell -p bazel_5 --run zsh`.)
+It is also possible to change the Nixpkgs dependency to any branch: for
+instance, we could switch to `master` and receive bleeding-edge dependencies, or
+(more practically) we could choose to follow a newer tag (22.11 is available
+right now) by making the following change in `flake.nix`:
 
-Once that's done, we can then edit the `WORKSPACE` file to instruct Bazel to load the `rules_nixpkgs` ruleset:
+```diff
+-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
++    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+```
+
+To update _all_ dependencies, one uses:
+
+```
+$ nix flake update
+```
+
+In the current example, this doesn't change much, since the only dependency we
+have apart from Nixpkgs itself is `flake-utils`, which doesn't change much.
+However, if you integrate more Nix-based dependencies or utilities into your
+shell, this will take care of all of them in one go, and update the `flake.lock`
+to include all of the changes.
+
+## Using `direnv` with Nix
+
+The use of this feature can be made even more seamless by using
+[direnv](direnv), which has support for the `flake.nix` file we used to describe
+the development shell.
+
+Put the following in a file called `.envrc` at the root of the repo:
+
+```sh
+# First, we import the nix-direnv library.
+# This is required for versions of direnv older than 2.29.0, since they do not 
+# support `use flake`, and recommended in all cases, since it caches the 
+# environment and prevents dependencies from being garbage-collected by Nix.
+
+if ! has nix_direnv_version || ! nix_direnv_version 2.2.1; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.2.1/direnvrc" "sha256-zelF0vLbEl5uaqrfIzbgNzJWGmLzCmYAkInj/LNxvKs="
+fi
+
+# Load the development shell defined in the flake.nix file
+use flake
+```
+
+direnv will ask you to manually allow running the code in the file:
+
+```
+direnv: error /home/w/sb/rules_nixpkgs_cc_template/.envrc is blocked. Run `direnv allow` to approve its content
+$ direnv allow
+direnv: loading ~/sb/rules_nixpkgs_cc_template/.envrc
+direnv: using flake
+...
+``` 
+
+Now whenever this directory is entered in the shell, this environment will be
+activated automatically.
+
+## Exposing the locked version of Nixpkgs to the Bazel build
+
+In order to ensure that our development shell uses the same Nixpkgs version as
+what rules\_nixpkgs uses below for our Bazel builds, we write a small shim that
+reads the data from the `flake.lock` and provides that version of Nix.
+
+Put the following in `nixpkgs.nix`, at the root of the repository:
+
+```nix
+let
+  lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+  spec = lock.nodes.nixpkgs.locked;
+  nixpkgs = fetchTarball "https://github.com/${spec.owner}/${spec.repo}/archive/${spec.rev}.tar.gz";
+in
+import nixpkgs
+```
+
+As is hopefully visible from reading the code, this reads the contents of
+`flake.lock` (which is plain JSON) and uses that to fetch the right version of
+Nixpkgs. We can access this from rules\_nixpkgs repository rules below.
+
+## Integrating rules_nixpkgs into the build
+
+Now that all the prerequisites are sorted, we can edit the `WORKSPACE` file to
+instruct Bazel to load the `rules_nixpkgs` ruleset:
 
 ```bazel
-# download the http_archive rule itself
+# load the http_archive rule itself
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# download rules_nixpkgs
+# load rules_nixpkgs
 http_archive(
     name = "io_tweag_rules_nixpkgs",
     strip_prefix = "rules_nixpkgs-9f08fb2322050991dead17c8d10d453650cf92b7",
@@ -216,31 +404,25 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_depende
 rules_nixpkgs_dependencies()
 ```
 
-Now we can select a version of the Nixpkgs repository from which all of our
-packages will be drawn. Any Git commit hash or tag is allowed. This way, we
-select a consistent set of package revisions in one go instead of having to
-maintain dependency versions for individual dependencies. Often this will be a
-tag for a stable release, which ensures that there has been especially
-stringent verification that packages in it will function correctly individually
-and play well together. Here we use the 22.05 release:
+Now we can tell rules\_nixpkgs to use our `nixpkgs.nix` above to create a Bazel
+repository:
 
 ```bazel
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
-nixpkgs_git_repository(
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_local_repository", "nixpkgs_cc_configure")
+nixpkgs_local_repository(
     name = "nixpkgs",
-    revision = "22.05",
-    sha256 = "",
+    nix_file = "//:nixpkgs.nix",
+    nix_file_deps = ["//:flake.lock"],
 )
 ```
 
-Specifying the SHA-256 hash here provides a stronger guarantee of
-reproducibility: Nix will check that the downloaded Git archive has a hash that
-matches the one provided.
+Note the `nix_file_deps` line, which tracks the dependency of the `nixpkgs.nix`
+file on the `flake.lock` file from where we read the Nixpkgs commit hash.
 
 # A hermetic CC toolchain
 
-We can now define a CC toolchain that will be provisioned by Nix using
-package definitions from the 22.05 release of Nixpkgs.
+We can now define a CC toolchain that will be provisioned by Nix using package
+definitions from the 22.05 release of Nixpkgs.
 
 ```bazel
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure")
@@ -251,23 +433,23 @@ nixpkgs_cc_configure(
 ```
 
 This will select the default `stdenv.cc` package as the compiler, drawing
-auxiliary tools from `stdenv.cc.bintools`. However, one can write a little bit of
-Nix to configure this:
+auxiliary tools from `stdenv.cc.bintools`. However, one can write a little bit
+of Nix to configure this:
 
 ```bazel
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure")
 nixpkgs_cc_configure(
   repository = "@nixpkgs",
-  attribute_path = "gcc11",
+  nix_file_content = "(import <nixpkgs> {}).gcc11",
   name = "nixpkgs_config_cc",
 )
 ```
 
 `(import <nixpkgs> {})` loads the entire package set into an attribute set
-(Nix's equivalent of a record), and `.gcc11` selects one value from it. It is
-possible to customize the compiler further using more Nix if desired: you could,
-for instance, point Nix to a custom fork of Clang containing support for a new
-architecture, and have everything work seamlessly.
+(Nix's equivalent of a record), and `.gcc11` selects the appropriate CC
+toolchain from it. It is possible to customize the compiler further using more
+Nix if desired: you could, for instance, point Nix to a custom fork of Clang
+containing support for a new architecture, and have everything work seamlessly.
 
 With this, we now have a fully hermetic CC toolchain that will behave correctly
 across platforms. It remains to tell Bazel to use it by default, instead of
@@ -286,9 +468,9 @@ Linux). The second directive tells Bazel to use the toolchain
 `@nixpkgs_config_cc//:toolchain` (which requires Nix support) by default for all
 C++ compilation.
 
-Now `bazel build` and `bazel run` should use this toolchain by
-default for C/C++ compilation. This can be verified using Bazel's
-`--toolchain_resolution_debug` switch:
+Now `bazel build` and `bazel run` should use this toolchain by default for C/C++
+compilation. This can be verified using Bazel's `--toolchain_resolution_debug`
+switch:
 
 ```
 > bazel build //src:hello-world --toolchain-resolution-debug '.*'
@@ -337,103 +519,14 @@ None of these options will apply to `bazel build` or `bazel run` unless an extra
 ...
 ```
 
-# Working from a Nix-provided developer environment
-
-Although we've made Bazel partially reproducible with the steps we've taken so
-far, we don't yet have a guarantee that our builds are not influenced by the
-global environment. Bazel has various hardcoded dependencies that can catch
-users off-guard. For example, you can remove `.bazelrc` and rerun `bazel run`,
-and everything will work just fine: Bazel will simply fall back to
-`@local_config_cc`, because it's perfectly happy to use the C++ compiler
-executables that are still on the PATH.
-
-To mitigate this, we can use Nix to create a hermetic shell environment. This
-will provide the exact dependencies that developers need, and nothing else. As
-alluded to before, this is a similar concept to Python virtualenvs and other
-similar language-specific tools, except with unified support for system
-dependencies and language-specific dependencies across many different languages.
-
-The `nix-shell` command we used to get a Nix-provided Bazel was the simplest
-example of a Nix developer environment (one that simply added Bazel to the
-environment), but they can be much more sophisticated. We can create development
-environments that all contributors on a project can use with zero setup. When in
-the shell, the user has access to consistent versions of libraries for whichever
-languages are used in the project, as well as for system dependencies.
-
-To get started, put the following code in a file named `flake.nix` at the root
-of the repository:
-
-```nix
-{
-
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
-
-  outputs = { nixpkgs, flake-utils, ... }:
-    # For every platform that Nix supports, we ...
-    flake-utils.lib.eachDefaultSystem (system:
-      # ... get the package set for this particular platform ...
-      let pkgs = import nixpkgs { inherit system; };
-      in {
-        # ... and define a development shell for it ...
-        devShells.default =
-          # ... with no globally-available CC toolchain ...
-          pkgs.mkShellNoCC {
-            name = "rules_nixpkgs_shell";
-            # ... which makes available the following dependencies, 
-            # all sourced from the `pkgs` package set:
-            packages = with pkgs; [ bazel_5 bazel-buildtools cacert nix git ];
-          };
-      });
-
-}
-```
-
-(For more about the `flake.nix` format, [this][flake-post] series of articles on
-the Tweag blog may be helpful.)
-
-We've also removed the "default" system-wide CC toolchain. The usual way to
-define a development shell is with the commonly-used `mkShell` Nix function,
-which creates a development shell with a given set of available dependencies
-_and_ a default CC toolchain. We've replaced it with `mkShellNoCC`, which, as
-the name suggests, does the same job but without implicitly making a CC
-toolchain available. This means it's no longer possible to unintentionally use
-`@local_config_cc`, as that toolchain won't be able to find the global binaries
-it wants and will fail to work.
-
-Now developers on different platforms can enter a development environment by
-running `nix develop`, and this environment will be consistent across platforms.
-This can be made even more seamless by using [direnv](direnv), which has support
-for the `flake.nix` file we used to describe the development shell.
-
-Put the following in a file called `.envrc` at the root of the repo:
-```sh
-# First, we import the nix-direnv library.
-# This is required for versions of direnv older than 2.29.0, since they do not 
-# support `use flake`, and recommended in all cases, since it caches the 
-# environment and prevents dependencies from being garbage-collected by Nix.
-
-if ! has nix_direnv_version || ! nix_direnv_version 2.2.1; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.2.1/direnvrc" "sha256-zelF0vLbEl5uaqrfIzbgNzJWGmLzCmYAkInj/LNxvKs="
-fi
-
-# Load the development shell defined in the flake.nix file
-use flake
-```
-
-direnv will ask you to manually allow running the code in the file:
-```
-direnv: error /home/w/sb/rules_nixpkgs_cc_template/.envrc is blocked. Run `direnv allow` to approve its content
-$ direnv allow
-direnv: loading ~/sb/rules_nixpkgs_cc_template/.envrc
-direnv: using flake
-...
-``` 
-
-Now whenever this directory is entered in the shell, this environment will be
-activated automatically.
+However, when doing this, it is critical that the `WORKSPACE` file define a
+non-Nix toolchain (for example, the default bindist) in addition to the
+Nix-provided one, and that the Nix-provided one is registered first, before the
+non-Nix one. This is because the Nix-provided toolchain is marked with an
+execution platform constraint, as noted earlier when we were creating our
+`.bazelrc`, which makes it only be selected by Bazel when the `nixpkgs` platform
+is available. However, non-Nix toolchains typically do not have such constraints,
+so Bazel will unconditionally select them if they appear first in the file.
 
 ## Further resources
 
