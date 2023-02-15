@@ -16,7 +16,7 @@ Rules for importing a POSIX toolchain from Nixpkgs.
 ### nixpkgs_sh_posix_configure
 
 <pre>
-nixpkgs_sh_posix_configure(<a href="#nixpkgs_sh_posix_configure-name">name</a>, <a href="#nixpkgs_sh_posix_configure-packages">packages</a>, <a href="#nixpkgs_sh_posix_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_sh_posix_configure-kwargs">kwargs</a>)
+nixpkgs_sh_posix_configure(<a href="#nixpkgs_sh_posix_configure-name">name</a>, <a href="#nixpkgs_sh_posix_configure-packages">packages</a>, <a href="#nixpkgs_sh_posix_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_sh_posix_configure-register">register</a>, <a href="#nixpkgs_sh_posix_configure-kwargs">kwargs</a>)
 </pre>
 
 Create a POSIX toolchain from nixpkgs.
@@ -75,6 +75,20 @@ default is <code>None</code>
 <p>
 
 Constraints for the execution platform.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_sh_posix_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+Automatically register the generated toolchain if set to True.
 
 </p>
 </td>
