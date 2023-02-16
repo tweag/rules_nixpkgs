@@ -29,11 +29,13 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
         core
         toolchains/java
         toolchains/posix
+        toolchains/rust
     )
     declare -ra test_dirs=(
         testing/core
         testing/java
         testing/posix
+        testing/rust
     )
     declare -ra extra_flags=(
         --config=bzlmod
@@ -54,6 +56,7 @@ else
         testing/core
         testing/java
         testing/posix
+        testing/rust
     )
     declare -ra extra_flags=(
     )
