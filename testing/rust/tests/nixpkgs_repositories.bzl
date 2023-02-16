@@ -29,4 +29,5 @@ def nixpkgs_repositories(*, bzlmod):
     nixpkgs_rust_configure(
         repository = "@nixpkgs",
         name = "nixpkgs_config_rust",
+        register = not bzlmod,
     )
