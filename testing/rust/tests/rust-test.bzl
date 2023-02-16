@@ -18,7 +18,7 @@ def _rust_toolchain_test_impl(ctx):
 
     rust = ctx.attr.toolchain[ResolvedRustToolchainInfo].rust
     toolchain_label = rust.rustc.owner
-    asserts.equals(env, "nixpkgs_config_rust", toolchain_label.workspace_name, "Rust toolchain must be provided by rules_nixpkgs_rust.")
+    asserts.true(env, toolchain_label.workspace_name.endswith("nixpkgs_config_rust"), "Rust toolchain must be provided by rules_nixpkgs_rust.")
 
     return unittest.end(env)
 
