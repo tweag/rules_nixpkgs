@@ -63,19 +63,19 @@ expand_location_unit_test_suite()
 test_suite(
     name = "location-expansion-test",
     tests = [
-        "location-expansion-test-external",
-        "location-expansion-test-local",
+        "location-expansion-test-arg-external",
+        "location-expansion-test-arg-local",
     ],
 )
 
 diff_test(
-    name = "location-expansion-test-local",
+    name = "location-expansion-test-arg-local",
     file1 = "//tests:location_expansion/test_file",
-    file2 = "@nixpkgs_location_expansion_test//:out/local_file",
+    file2 = "@nixpkgs_location_expansion_test//:out/arg_local_file",
 )
 
 diff_test(
-    name = "location-expansion-test-external",
+    name = "location-expansion-test-arg-external",
     file1 = "//tests:location_expansion/test_file",
-    file2 = "@nixpkgs_location_expansion_test//:out/external_file",
+    file2 = "@nixpkgs_location_expansion_test//:out/arg_external_file",
 )

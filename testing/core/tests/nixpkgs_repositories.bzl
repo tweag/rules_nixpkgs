@@ -136,10 +136,10 @@ filegroup(
         ],
         nixopts = [
             "--arg",
-            "local_file",
+            "arg_local_file",
             "$(location //tests:location_expansion/test_file)",
             "--arg",
-            "external_file",
+            "arg_external_file",
             './$${"$(location @nixpkgs_location_expansion_test_file//:test_file)"}',
         ],
         repository = "@remote_nixpkgs",

@@ -1,6 +1,6 @@
 with import <nixpkgs> { config = {}; overlays = []; };
 
-{ local_file, external_file }:
+{ arg_local_file, arg_external_file }:
 let
   inherit (attrs) nixpkgs_json nixpkgs_nix;
 in
@@ -11,6 +11,6 @@ in
     }
     ''
       mkdir -p $out/out
-      cp ${local_file} $out/out/local_file
-      cp ${external_file} $out/out/external_file
+      cp ${arg_local_file} $out/out/arg_local_file
+      cp ${arg_external_file} $out/out/arg_external_file
     ''
