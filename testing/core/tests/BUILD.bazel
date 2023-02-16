@@ -65,6 +65,8 @@ test_suite(
     tests = [
         "location-expansion-test-arg-external",
         "location-expansion-test-arg-local",
+        "location-expansion-test-argstr-external",
+        "location-expansion-test-argstr-local",
     ],
 )
 
@@ -78,4 +80,16 @@ diff_test(
     name = "location-expansion-test-arg-external",
     file1 = "//tests:location_expansion/test_file",
     file2 = "@nixpkgs_location_expansion_test//:out/arg_external_file",
+)
+
+diff_test(
+    name = "location-expansion-test-argstr-local",
+    file1 = "//tests:location_expansion/test_file",
+    file2 = "@nixpkgs_location_expansion_test//:out/argstr_local_file",
+)
+
+diff_test(
+    name = "location-expansion-test-argstr-external",
+    file1 = "//tests:location_expansion/test_file",
+    file2 = "@nixpkgs_location_expansion_test//:out/argstr_external_file",
 )

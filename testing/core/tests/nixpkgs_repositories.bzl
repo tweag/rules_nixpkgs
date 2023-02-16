@@ -141,6 +141,12 @@ filegroup(
             "--arg",
             "arg_external_file",
             './$${"$(location @nixpkgs_location_expansion_test_file//:test_file)"}',
+            "--argstr",
+            "argstr_local_file",
+            "$(location //tests:location_expansion/test_file)",
+            "--argstr",
+            "argstr_external_file",
+            "$(location @nixpkgs_location_expansion_test_file//:test_file)",
         ],
         repository = "@remote_nixpkgs",
     )
