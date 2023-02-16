@@ -1,4 +1,9 @@
 {
   "url": "https://github.com/bazelbuild/rules_rust/releases/download/0.17.0/rules_rust-v0.17.0.tar.gz",
-  "integrity": "sha384-v3eVoRi4rdkELxzV3egjTJkc8M3UH1YmbdZ2m6Y45gpjBew4a/JU5A4TFNO8Bq3z"
+  "integrity": "sha384-v3eVoRi4rdkELxzV3egjTJkc8M3UH1YmbdZ2m6Y45gpjBew4a/JU5A4TFNO8Bq3z",
+  "patches": {
+    "001-rules-rust-crate-universe.patch": "sha384-3jCxEdq9CtWHQZWbIj3vvI1MDxc735phBmjj49QbnRCuIVFjMfMQRH7x6px4iKT4",
+    "bzlmod-compat.patch": "sha384-N2llBj7w8Y9bTSuXEhuFYxt3eJ6IZpFKP+fOG2t37WilVocXjBVvarolapFJhzU5"
+  },
+  "patch_strip": "0"
 }
