@@ -34,7 +34,7 @@ use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "nixpkgs_config_cc")
 use_repo(non_module_deps, "nixpkgs_config_cc_info")
 use_repo(non_module_deps, "nixpkgs_config_cc_toolchains")
-register_toolchains("@nixpkgs_config_cc_toolchains//:cc-toolchain-k8")
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
 
 # Bazel requries a Java runtime to run tests.
 use_repo(non_module_deps, "nixpkgs_java_runtime_toolchain")
