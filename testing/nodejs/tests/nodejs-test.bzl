@@ -18,7 +18,7 @@ def _nodejs_toolchain_test_impl(ctx):
 
     nodejs = ctx.attr.toolchain[ResolvedNodeJSToolchainInfo].nodejs
     node_path = nodejs.nodeinfo.target_tool_path
-    asserts.true(env, node_path.find("nixpkgs-nodejs") != -1, "NodeJS toolchain must be provided by rules_nixpkgs_nodejs.")
+    asserts.true(env, node_path.find("nixpkgs_nodejs") != -1, "NodeJS toolchain must be provided by rules_nixpkgs_nodejs.")
 
     return unittest.end(env)
 

@@ -27,6 +27,6 @@ def nixpkgs_repositories(*, bzlmod):
     )
 
     nixpkgs_nodejs_configure_platforms(
-      name = "nixpkgs-nodejs",
+      name = "nixpkgs_nodejs",
       repository = "@nixpkgs",
     )
