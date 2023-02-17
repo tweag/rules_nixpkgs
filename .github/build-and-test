@@ -28,11 +28,13 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
     declare -ra build_dirs=(
         core
         toolchains/java
+        toolchains/nodejs
         toolchains/posix
     )
     declare -ra test_dirs=(
         testing/core
         testing/java
+        testing/nodejs
         testing/posix
     )
     declare -ra extra_flags=(
@@ -53,6 +55,7 @@ else
         toolchains/nodejs
         testing/core
         testing/java
+        testing/nodejs
         testing/posix
     )
     declare -ra extra_flags=(
