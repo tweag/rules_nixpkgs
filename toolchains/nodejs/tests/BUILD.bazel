@@ -1,8 +1,0 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_test")
-
-package(default_testonly = 1)
-
-nodejs_test(
-    name = "nodejs-test",
-    entry_point = ":nodejs-test.js",
-)
