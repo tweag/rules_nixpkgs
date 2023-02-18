@@ -342,6 +342,13 @@ def nixpkgs_cc_configure(
     )
     ```
     ```
+    # alternate usage without specifying `nix_file` or `nix_file_content`
+    nixpkgs_cc_configure(
+      repository = "@nixpkgs",
+      attribute_path = "gcc11",
+    )
+    ```
+    ```
     # use the `stdenv.cc` compiler (the default of the given @nixpkgs repository)
     nixpkgs_cc_configure(
       repository = "@nixpkgs",
@@ -355,7 +362,7 @@ def nixpkgs_cc_configure(
     this toolchain.
 
     Args:
-      attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
+      attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Uses default repository if no `nix_file` or `nix_file_content` is provided.
       nix_file: optional, Label, Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
       nix_file_content: optional, string, Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
       nix_file_deps: optional, list of Label, Additional files that the Nix expression depends on.
@@ -383,7 +390,14 @@ def nixpkgs_cc_configure(
         nix_expr = nix_file_content
 
     if attribute_path and nix_expr == None:
-        fail("'attribute_path' requires one of 'nix_file' or 'nix_file_content'", "attribute_path")
+        nixopts.extend([
+            "--argstr",
+            "ccType",
+            "ccTypeExpression",
+            "--arg",
+            "ccExpr",
+            "(import <nixpkgs> {{}}).{0}".format(attribute_path),
+        ])
     elif attribute_path:
         nixopts.extend([
             "--argstr",
