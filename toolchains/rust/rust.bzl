@@ -162,7 +162,8 @@ def nixpkgs_rust_configure(
         fail_not_supported = True,
         quiet = False,
         exec_constraints = None,
-        target_constraints = None):
+        target_constraints = None,
+        register = True):
     if not nix_file and not nix_file_content:
         nix_file_content = _rust_nix_contents.format(
             default_edition = default_edition,
@@ -186,4 +187,5 @@ def nixpkgs_rust_configure(
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
     )
-    native.register_toolchains("@{}_toolchain//:rust_nix".format(name))
+    if register:
+        native.register_toolchains("@{}_toolchain//:rust_nix".format(name))

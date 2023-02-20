@@ -30,12 +30,14 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
         toolchains/go
         toolchains/java
         toolchains/posix
+        toolchains/rust
     )
     declare -ra test_dirs=(
         testing/core
         testing/go-bzlmod
         testing/java
         testing/posix
+        testing/rust
     )
     declare -ra extra_flags=(
         --config=bzlmod
@@ -57,6 +59,7 @@ else
         testing/go-workspace
         testing/java
         testing/posix
+        testing/rust
     )
     declare -ra extra_flags=(
     )

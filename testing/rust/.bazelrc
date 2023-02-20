@@ -1,5 +1,3 @@
-# Skip docs directories in bzlmod mode. Stardoc is not yet bzlmod compatible.
-build:bzlmod --deleted_packages=docs
 build:bzlmod --registry=file://%workspace%/../../registry
 
 import %workspace%/../../.bazelrc.common
