@@ -27,12 +27,14 @@ trap on_exit EXIT
 if [[ ${BZLMOD_ENABLED-} = true ]]; then
     declare -ra build_dirs=(
         core
+        toolchains/go
         toolchains/java
         toolchains/posix
         toolchains/rust
     )
     declare -ra test_dirs=(
         testing/core
+        testing/go-bzlmod
         testing/java
         testing/posix
         testing/rust
@@ -54,6 +56,7 @@ else
         toolchains/rust
         toolchains/nodejs
         testing/core
+        testing/go-workspace
         testing/java
         testing/posix
         testing/rust

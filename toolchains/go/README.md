@@ -17,7 +17,8 @@ Rules for importing a Go toolchain from Nixpkgs.
 
 <pre>
 nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>,
-                     <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>)
+                     <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>, <a href="#nixpkgs_go_configure-register">register</a>,
+                     <a href="#nixpkgs_go_configure-rules_go_repo_name">rules_go_repo_name</a>)
 </pre>
 
 Use go toolchain from Nixpkgs.
@@ -236,6 +237,34 @@ default is <code>False</code>
 <p>
 
 Whether to hide the output of the Nix command.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+Automatically register the generated toolchain if set to True.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-rules_go_repo_name">
+<td><code>rules_go_repo_name</code></td>
+<td>
+
+optional.
+default is <code>"io_bazel_rules_go"</code>
+
+<p>
+
+The name of the rules_go repository. Defaults to rules_go under bzlmod and io_bazel_rules_go otherwise.",
 
 </p>
 </td>
