@@ -11,6 +11,11 @@ local_repository(
 )
 
 local_repository(
+    name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
+)
+
+local_repository(
     name = "rules_nixpkgs_java",
     path = "../../toolchains/java",
 )
