@@ -60,6 +60,99 @@ The module extensions should align with Bazel best-practices.
 
 The module extensions should support the use-cases that the previous repository
 rule based API supported and should strive to minimize migration cost.
+
+## Requirements
+
+### Nix Repositories
+
+Support the import of Nix repositories, i.e. collections of files containing
+Nix expressions, most commonly [nixpkgs][nixpgks].
+
+* Import from
+  * Local file, e.g. `nixpkgs.nix`, with optional file dependencies.
+  * HTTP URL, e.g. GitHub source archive.
+    (The current `nixpkgs_git_repository` is a special case of this that only
+    supports GitHub source archives.)
+  * (low-priority) Inline Nix expression, to support the `nix_file_content`
+    use-case.
+  * (to-consider) Nix channel, e.g. `nixos-22.11`, with recommended pinning.
+  * (to-consider) Git archive, similar to Bazel's own `git_repository`.
+    (Git archive imports tend to be costly, a Nix expression that fetches from
+    Git may be the better choice.)
+* Expose by
+  * Name to other module extensions, such as a Nix package tag, e.g. `name =
+    "nixpkgs-stable"`.
+    (To avoid collisions these may have to be scoped on the module level.)
+  * [`NIX_PATH` entry][nix-path] to Nix expressions to support angle-bracket
+    references, e.g. `import <nixpkgs>`.
+  * (to-consider) Define alias tags that map a repository to another `NIX_PATH`
+    entry.
+  * (to-consider) Default, e.g. `rules_nixkgs_core` or root could define a
+    default `nixpkgs`.
+
+### Nix Packages
+
+Support the build, or fetch, and import of Nix deriviations, or store paths,
+into a Bazel project.
+
+* Define by
+  * Nix attribute path, e.g. `pkgs.hello`, into a Nix repository, e.g.
+    `<nixpkgs>`.
+  * Nix file, as the top-level Nix expression or an attribute path into it,
+    support optional file dependencies.
+  * Inline Nix expression, as the top-level Nix expression or an attribute path
+    into it.
+* Depend on
+  * Nix repositories by name, e.g. `"nixpkgs-stable"`.
+  * Nix repositories mapped to `NIX_PATH` entry, e.g. `<nixpkgs>`.
+    (A repository alias tag may be sufficient instead of a dedicated package
+    attribute.)
+  * A default Nix repository, e.g. `<nixpkgs>`.
+* Import by
+  * Default `BUILD` file
+  * Custom `BUILD` file as inline string or in source file.
+* Expose by
+  * Predictable name or label to targets in the module.
+    (To avoid collisions names may need to be module scoped. A generated
+    mapping repository could expose a function to turn names into labels.)
+  * Predictable name or label to repository rules, e.g. Gazelle bootstrap Go
+    toolchain.
+
+### Nix Provided Toolchains
+
+Support the use of Nix built packages as Bazel toolchains.
+
+* Define by
+  * Same as Nix Packages.
+    (Currently toolchains are imported as a special `nixpkgs_package`. These
+    implementations should be adapted to support user-defined attribute paths
+    and Nix files or inline expressions. Where necessary, needed Nix helpers
+    could be exposed in `NIX_PATH` entries of the form `<rules_nixpkgs_LANG>`.)
+  * A consistent interface across toolchains.
+    (Currently rules\_nixpkgs toolchains do not all support the same basic
+    parameters and patterns. The API should be consistent across languages,
+    modulo language imposed requirements or differences.)
+  * Specific host and target system or collection thereof.
+    (Currently most toolchains are imported for the host platform. This should
+    be generalized to support multiple execute and target platforms.)
+* Depend on
+  * Same as Nix Packages.
+* Import by
+  * Dedicated `BUILD` file template.
+  * (to-consider) User extensible `BUILD` file template.
+    (The preferable way is to define a `current_toolchain` rule and expose what
+    a user may need through providers.)
+* Expose by
+  * Automatically registered toolchain.
+    (Asking users to apply `use_repo` would expose them to potentially hard to
+    predict external repository names and transitive dependencies. Prefer the
+    pattern used by rules\_go to generate a collection module hosting all
+    toolchains and register all of them in the rules\_nixpkgs\_LANG module.)
+  * (to-consider) Starlark constant for use by repository rules.
+    (For example the Python toolchain currently defines a Starlark constant
+    holding the label of the Python interpreter for use by repository rules
+    like `pip_parse`.)
+
 [bzlmod]: https://bazel.build/external/overview#bzlmod
 [module-extension]: https://bazel.build/external/extension
 [repository-rule]: https://bazel.build/extending/repo
