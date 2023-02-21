@@ -97,6 +97,7 @@ def nixpkgs_nodejs_configure(
   quiet = False,
   exec_constraints = None,
   target_constraints = None,
+  register = True,
 ):
     if attribute_path == None:
         fail("'attribute_path' is required.", "attribute_path")
@@ -125,7 +126,8 @@ def nixpkgs_nodejs_configure(
       target_constraints = target_constraints,
     )
 
-    native.register_toolchains("@{}_toolchain//:nodejs_nix".format(name))
+    if register:
+        native.register_toolchains("@{}_toolchain//:nodejs_nix".format(name))
 
 def nixpkgs_nodejs_configure_platforms(
   name = "nixpkgs_nodejs",
@@ -142,6 +144,7 @@ def nixpkgs_nodejs_configure_platforms(
   quiet = False,
   exec_constraints = None,
   target_constraints = None,
+  register = True,
   **kwargs,
 ):
     """Runs nixpkgs_nodejs_configure for each platform.
@@ -169,5 +172,6 @@ def nixpkgs_nodejs_configure_platforms(
             quiet = quiet,
             exec_constraints = bazel_platform.exec_constraints,
             target_constraints = bazel_platform.target_constraints,
+            register = register,
             **kwargs,
         )
