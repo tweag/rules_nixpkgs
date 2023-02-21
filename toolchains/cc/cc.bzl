@@ -388,17 +388,11 @@ def nixpkgs_cc_configure(
         nix_file_deps.append(nix_file)
     elif nix_file_content:
         nix_expr = nix_file_content
-
-    if attribute_path and nix_expr == None:
-        nixopts.extend([
-            "--argstr",
-            "ccType",
-            "ccTypeExpression",
-            "--arg",
-            "ccExpr",
-            "(import <nixpkgs> {{}}).{0}".format(attribute_path),
-        ])
     elif attribute_path:
+        nix_expr = "(import <nixpkgs> {{}}).{0}".format(attribute_path)
+        attribute_path = None
+
+    if attribute_path:
         nixopts.extend([
             "--argstr",
             "ccType",
