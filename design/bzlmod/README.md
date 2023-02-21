@@ -32,5 +32,36 @@ these Bazel modules. To avoid the resulting dependency bloat and likelihood of
 version conflicts, rules\_nixpkgs is split into a core module and one module
 per language integration.
 
+## rules\_nixpkgs Module Extensions
+
+Before Bzlmod rules\_nixpkgs defined Bazel [repository rules][repository-rule]
+to import nixpkgs repositories and Nix packages and toolchains into a Bazel
+project. Users invoked these in their project's WORKSPACE file, either
+directly, or through repository macros (Starlark functions).
+
+With Bzlmod repository rules can no longer be invoked directly by a user in the
+MODULE.bazel file that defines a Bazel module. Instead, users must invoke a
+[Module extension][module-extension] and define tags for the dependencies they
+wish to import.
+
+This design document defines the required functionality and the given
+constraints and uses these to develop which module extensions and tags are
+required, and API they should provide.
+
+## Principles
+
+Follow the principles of modular, simple, and composable software:
+
+* *modular* - define independently useful and reusable parts.
+* *simple* - keep components focused on a single purpose.
+* *composable* - enable interoperability between the system's parts.
+
+The module extensions should align with Bazel best-practices.
+
+The module extensions should support the use-cases that the previous repository
+rule based API supported and should strive to minimize migration cost.
 [bzlmod]: https://bazel.build/external/overview#bzlmod
 [module-extension]: https://bazel.build/external/extension
+[repository-rule]: https://bazel.build/extending/repo
+[nixpkgs]: https://github.com/NixOS/nixpkgs
+[nix-path]: https://nixos.org/manual/nix/stable/language/values.html#type-path
