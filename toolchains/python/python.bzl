@@ -127,7 +127,8 @@ def nixpkgs_python_configure(
         fail_not_supported = True,
         quiet = False,
         exec_constraints = None,
-        target_constraints = None):
+        target_constraints = None,
+        register = True):
     """Define and register a Python toolchain provided by nixpkgs.
 
     Creates `nixpkgs_package`s for Python 2 or 3 `py_runtime` instances and a
@@ -196,4 +197,6 @@ def nixpkgs_python_configure(
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
     )
-    native.register_toolchains("@%s//:toolchain" % name)
+
+    if register:
+        native.register_toolchains("@{}//:toolchain".format(name))
