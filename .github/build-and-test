@@ -50,6 +50,7 @@ else
     )
     declare -ra test_dirs=(
         .
+        docs
         toolchains/go
         toolchains/java
         toolchains/cc
