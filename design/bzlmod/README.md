@@ -21,16 +21,17 @@ One of rules\_nixpkgs's features is to import toolchains from Nix into Bazel
 and expose them as drop-in replacements for the corresponding Bazel extension's
 toolchains. E.g. rules\_nixpkgs\_cc can import a C/C++ toolchain from Nix that
 can be used in place of any other Bazel CC toolchain. To that end
-rules\_nixpkgs needs to depend on the corresponding Bazel module to gain access
-to the toolchain type label and potentially Bazel rules or macros to define a
-functioning toolchain.
+rules\_nixpkgs needs to depend on the corresponding Bazel module, e.g.
+`rules_cc`, to gain access to the toolchain type label and potentially Bazel
+rules or macros to define a functioning toolchain.
 
 Without a split of Bazel modules, rules\_nixpkgs would tend to depend on all
 Bazel modules that define language toolchains. Bzlmod does not know optional
 dependencies, so any user of rules\_nixpkgs would transitively depend on all
 these Bazel modules. To avoid the resulting dependency bloat and likelihood of
 version conflicts, rules\_nixpkgs is split into a core module and one module
-per language integration.
+per language integration, such that users only incur transitive dependencies on
+relevant Bazel extensions, e.g. only `rules_cc` for C/C++ users.
 
 ## rules\_nixpkgs Module Extensions
 
