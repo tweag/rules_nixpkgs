@@ -131,3 +131,9 @@ jobs:
             nix-shell --command 'bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello'
             popd
           fi
+
+          pushd examples/cc-template
+          echo
+          echo "::group::Running $(head -n1 README.md) with Nix"
+          nix-shell --command 'bazel run --config=nix //src:hello-world'
+          popd
