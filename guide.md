@@ -104,11 +104,11 @@ machine and Clang/LLVM on a macOS machine, which can mean that the same bit of
 hot code, say, vectorizes correctly on one platform but not on the other due to
 some difference between the two compilers, resulting in wildly different
 performance characteristics. System library versions are also not controlled, so
-build products will depend on whatever versions of happen to be available on the
-host during the build, which may very well change after a simple system package
-upgrade.
+build products will depend on whatever versions of those happen to be available
+on the host during the build, which may very well change after a simple system
+package upgrade.
 
-## How rules_nixpkgs solves the issue
+## Solutions to the issue
 
 There are two common ways that Bazel users work around these issues and achieve
 partial or full hermeticity. 
@@ -121,7 +121,8 @@ builds in sandboxes or VMs that all share the exact same configuration.
 The most common variation of this approach uses Docker containers, and comes
 with certain disadvantages. We don't know exactly what components of the Docker
 image our build products depend on, so any change to the container invalidates
-everything that was built using it. In addition, the most common ways to build
+everything that was built using it, and we need to rebuild our project from
+scratch, losing incrementality. In addition, the most common ways to build
 Docker images involve non-reproducible actions like executing `apt update` or
 similar. This means that what should be a version bump to a single library can
 pull in changes to the versions of other dependencies. Docker images are usually
@@ -213,7 +214,7 @@ repository:
 ```nix
 {
   inputs = {
-    # Tracks the nixos-22.05 tag on the nixpkgs repo.
+    # Track a specific tag on the nixpkgs repo.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
 
     # The flake format itself is very minimal, so the use of this
@@ -251,8 +252,8 @@ repository:
 
 It's not necessary at this juncture to understand the details of the Nix code
 above. (For those curious, [this][flake-post] series of articles on the Tweag
-blog is a good start.) It's worth noting the `packages = ...` line, however. The
-square brackets, as you might expect, set off a _list_ in Nix, with elements
+blog is a good start.) It's worth noting the `packages = ...` line near the end:
+the square brackets, as you might expect, set off a _list_ in Nix, with elements
 separated (admittedly a bit oddly) by whitespace. If you need packages in your
 development shell that aren't listed there already (compilers, development
 tools, editors, anything at all) you can add them to the `packages` list, and
@@ -261,15 +262,12 @@ for the package you want in Nixpkgs, there is a [package
 search](https://search.nixos.org/packages) function available on the Nixpkgs
 website.
 
-(TODO: this is false without --ignore-environment, which we haven't put into the
-direnv setup yet:) We've also done something else slightly out of the ordinary.
-The usual way to define a development shell is with the commonly-used `mkShell`
-Nix function, which creates a development shell with a given set of available
-dependencies _and_ a default CC toolchain. We've replaced it with `mkShellNoCC`,
-which, as the name suggests, does the same job but without implicitly making a
-CC toolchain available. This means it's no longer possible to unintentionally
-use `@local_config_cc`, as that toolchain won't be able to find the global
-binaries it wants and will fail to work.
+We've also done something else slightly out of the ordinary. The usual way to
+define a development shell is with the commonly-used `mkShell` Nix function,
+which creates a development shell with a given set of available dependencies
+_and_ a default CC toolchain. We've replaced it with `mkShellNoCC`, which, as
+the name suggests, does the same job but without implicitly making a
+Nix-provided CC toolchain available.
 
 To enter the development shell, one can run:
 ```
@@ -320,11 +318,12 @@ To update _all_ dependencies, one uses:
 $ nix flake update
 ```
 
-In the current example, this doesn't change much, since the only dependency we
-have apart from Nixpkgs itself is `flake-utils`, which doesn't change much.
-However, if you integrate more Nix-based dependencies or utilities into your
-shell, this will take care of all of them in one go, and update the `flake.lock`
-to include all of the changes.
+In the current example, this is effectively equivalent, since the only
+dependency we have apart from Nixpkgs itself is `flake-utils`, which is a small
+library of simple utilities that aren't changed much.  However, if you integrate
+more Nix-based dependencies or utilities into your shell, this will take care of
+all of them in one go, and update the `flake.lock` to include all of the
+changes.
 
 ## Using `direnv` with Nix
 
@@ -385,7 +384,7 @@ Nixpkgs. We can access this from rules\_nixpkgs repository rules below.
 ## Integrating rules_nixpkgs into the build
 
 Now that all the prerequisites are sorted, we can edit the `WORKSPACE` file to
-instruct Bazel to load the `rules_nixpkgs` ruleset:
+instruct Bazel to load the `rules_nixpkgs` ruleset and its dependencies:
 
 ```bazel
 # load the http_archive rule itself
@@ -404,8 +403,8 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_depende
 rules_nixpkgs_dependencies()
 ```
 
-Now we can tell rules\_nixpkgs to use our `nixpkgs.nix` above to create a Bazel
-repository:
+Now we can tell rules\_nixpkgs to use our `nixpkgs.nix` above to import this
+Nixpkgs collection into Bazel:
 
 ```bazel
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_local_repository", "nixpkgs_cc_configure")
@@ -416,8 +415,10 @@ nixpkgs_local_repository(
 )
 ```
 
-Note the `nix_file_deps` line, which tracks the dependency of the `nixpkgs.nix`
-file on the `flake.lock` file from where we read the Nixpkgs commit hash.
+Now this Nixpkgs collection has been imported into Bazel, and can be referenced
+as `@nixpkgs`. (Also note the `nix_file_deps` line, which tracks the dependency
+of the `nixpkgs.nix` file on the `flake.lock` file from where we read the
+Nixpkgs commit hash.)
 
 # A hermetic CC toolchain
 
@@ -519,14 +520,22 @@ None of these options will apply to `bazel build` or `bazel run` unless an extra
 ...
 ```
 
-However, when doing this, it is critical that the `WORKSPACE` file define a
+However, when doing this, it is necessary that the `WORKSPACE` file define a
 non-Nix toolchain (for example, the default bindist) in addition to the
 Nix-provided one, and that the Nix-provided one is registered first, before the
 non-Nix one. This is because the Nix-provided toolchain is marked with an
 execution platform constraint, as noted earlier when we were creating our
 `.bazelrc`, which makes it only be selected by Bazel when the `nixpkgs` platform
-is available. However, non-Nix toolchains typically do not have such constraints,
-so Bazel will unconditionally select them if they appear first in the file.
+is available. However, non-Nix toolchains typically do not have such
+constraints, so Bazel will unconditionally select them if they appear first in
+the file. 
+
+In the CC case, the "default bindist" is built into Bazel, so this doesn't need
+to be done explicitly. For non-CC toolchains, this means that the
+`rules_nixpkgs`-provided toolchain registration step must come before one
+provided by the usual ruleset: for instance, in the [Go case][go-register-toolchains],
+`nixpkgs_go_configure()` must come before the call to `go_register_toolchains()`
+from `rules_go`.
 
 ## Further resources
 
@@ -557,3 +566,4 @@ directories under
 [direnv]: https://github.com/direnv/direnv
 [template]: ../examples/cc-template
 [flake-post]: https://www.tweag.io/blog/2020-05-25-flakes/
+[go-register-toolchains]: https://github.com/tweag/rules_nixpkgs/blob/56b9cff9d175b916abdb36920a669b1face49e04/examples/toolchains/go/WORKSPACE

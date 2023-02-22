@@ -1,6 +1,6 @@
 {
   inputs = {
-    # Tracks the nixos-22.05 tag on the nixpkgs repo.
+    # Track a specific tag on the nixpkgs repo.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
 
     # The flake format itself is very minimal, so the use of this
