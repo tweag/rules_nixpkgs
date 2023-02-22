@@ -932,7 +932,8 @@ Constraints for the target platform.
 ### nixpkgs_local_repository
 
 <pre>
-nixpkgs_local_repository(<a href="#nixpkgs_local_repository-name">name</a>, <a href="#nixpkgs_local_repository-nix_file">nix_file</a>, <a href="#nixpkgs_local_repository-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_local_repository-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_local_repository-kwargs">kwargs</a>)
+nixpkgs_local_repository(<a href="#nixpkgs_local_repository-name">name</a>, <a href="#nixpkgs_local_repository-nix_file">nix_file</a>, <a href="#nixpkgs_local_repository-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_local_repository-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_local_repository-nix_flake_lock_file">nix_flake_lock_file</a>,
+                         <a href="#nixpkgs_local_repository-kwargs">kwargs</a>)
 </pre>
 
 Create an external repository representing the content of Nixpkgs.
@@ -1008,6 +1009,22 @@ default is <code>None</code>
 String
 
 An expression for a Nix derivation.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_local_repository-nix_flake_lock_file">
+<td><code>nix_flake_lock_file</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+
+A flake lock file that can be used on the provided nixpkgs repository.
 
 </p>
 </td>
