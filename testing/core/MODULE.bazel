@@ -6,6 +6,17 @@ local_path_override(
     path = "../../core",
 )
 
+nixpkgs_repositories = use_extension(
+    "@rules_nixpkgs_core//:extensions.bzl",
+    "repositories",
+)
+nixpkgs_repositories.file(
+    name = "nixpkgs",
+    file = "nixpkgs.nix",
+    file_deps = ["flake.lock"],
+)
+use_repo(nixpkgs_repositories, "nixpkgs_repositories")
+
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
 bazel_dep(name = "nixpkgs_location_expansion_test_file")

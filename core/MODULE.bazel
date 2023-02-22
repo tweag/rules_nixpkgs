@@ -5,3 +5,9 @@ module(
 
 bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
+
+nixpkgs_repositories = use_extension(
+    "@rules_nixpkgs_core//:extensions.bzl",
+    "repositories",
+)
+use_repo(nixpkgs_repositories, "nixpkgs_repositories")

@@ -16,11 +16,24 @@ _repository_file_tag = tag_class(
     },
 )
 
-def _nixpkgs_repositories_impl(module_ctx):
-    pass
+def _all_repositories_impl(repository_ctx):
+    defs = 'dummy = "hello"'
+    repository_ctx.file("defs.bzl", defs, executable=False)
+    repository_ctx.file("BUILD.bazel", "", executable=False)
 
-nixpkgs_repositories = module_extension(
-    _nixpkgs_repositories_impl,
+_all_repositories = repository_rule(
+    _all_repositories_impl,
+    attrs = {
+    },
+)
+
+def _repositories_impl(module_ctx):
+    _all_repositories(
+        name = "nixpkgs_repositories",
+    )
+
+repositories = module_extension(
+    _repositories_impl,
     tag_classes = {
         "file": _repository_file_tag,
     },
