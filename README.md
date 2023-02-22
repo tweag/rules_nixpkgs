@@ -161,6 +161,13 @@ nixpkgs_cc_configure(
 )
 ```
 ```
+# alternate usage without specifying `nix_file` or `nix_file_content`
+nixpkgs_cc_configure(
+  repository = "@nixpkgs",
+  attribute_path = "gcc11",
+)
+```
+```
 # use the `stdenv.cc` compiler (the default of the given @nixpkgs repository)
 nixpkgs_cc_configure(
   repository = "@nixpkgs",
@@ -200,7 +207,7 @@ default is <code>""</code>
 
 <p>
 
-optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
+optional, string, Obtain the toolchain from the Nix expression under this attribute path. Uses default repository if no `nix_file` or `nix_file_content` is provided.
 
 </p>
 </td>
@@ -1543,7 +1550,7 @@ Extra flags to pass when calling Nix.
 
 Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
 
-Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Use `./$${"$(location @for//:example)"}` to work around this limitation.
+Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Meaning, the result of location expansion may not form a valid Nix path literal. Use `./$${"$(location @for//:example)"}` to work around this limitation if you need to pass a path argument via `--arg`, or pass the resulting path as a string value using `--argstr` and combine it with an additional `--arg workspace_root ./.` argument using `workspace_root + ("/" + path_str)`.
 
 </p>
 </td>
