@@ -67,7 +67,7 @@ rule based API supported and should strive to minimize migration cost.
 ### Nix Repositories
 
 Support the import of Nix repositories, i.e. collections of files containing
-Nix expressions, most commonly [nixpkgs][nixpgks].
+Nix expressions, most commonly [nixpkgs].
 
 * Import from
   * Local file, e.g. `nixpkgs.nix`, with optional file dependencies.
