@@ -17,6 +17,12 @@ nixpkgs_repositories.file(
 )
 use_repo(nixpkgs_repositories, "nixpkgs_repositories")
 
+copy_dummy = use_extension(
+    "@rules_nixpkgs_core//:dummy.bzl",
+    "copy_dummy",
+)
+use_repo(copy_dummy, "nixpkgs_dummy")
+
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
 bazel_dep(name = "nixpkgs_location_expansion_test_file")
