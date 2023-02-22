@@ -47,7 +47,7 @@ wish to import.
 
 This design document defines the required functionality and the given
 constraints and uses these to develop which module extensions and tags are
-required, and API they should provide.
+required, and what API they should provide.
 
 ## Principles
 
