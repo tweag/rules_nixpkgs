@@ -18,7 +18,6 @@ local_path_override(
     path = "../../toolchains/java",
 )
 
-
 bazel_dep(name = "rules_nixpkgs_cc")
 local_path_override(
     module_name = "rules_nixpkgs_cc",
