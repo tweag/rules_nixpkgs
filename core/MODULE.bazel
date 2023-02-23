@@ -7,7 +7,13 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
 nixpkgs_repositories = use_extension(
-    "@rules_nixpkgs_core//:extensions.bzl",
+    # TODO[AH] Break the dependency cycle between repositories and packages
+    #"@rules_nixpkgs_core//:extensions.bzl",
+    # TODO[AH] Depending on `:repositories.bzl` directly here, but on
+    #   `:extensions.bzl` in `rules_nixpkgs_core_testing` seems to evaluate the
+    #   repositories module extension before discovering all module tags. Raise
+    #   an issue about this.
+    "@rules_nixpkgs_core//private/extensions:repositories.bzl",
     "repositories",
 )
 use_repo(nixpkgs_repositories, "nixpkgs_repositories")

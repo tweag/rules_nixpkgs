@@ -7,7 +7,8 @@ local_path_override(
 )
 
 nixpkgs_repositories = use_extension(
-    "@rules_nixpkgs_core//:extensions.bzl",
+    #"@rules_nixpkgs_core//:extensions.bzl",
+    "@rules_nixpkgs_core//private/extensions:repositories.bzl",
     "repositories",
 )
 nixpkgs_repositories.file(
@@ -18,7 +19,8 @@ nixpkgs_repositories.file(
 use_repo(nixpkgs_repositories, "nixpkgs_repositories")
 
 nixpkgs_packages = use_extension(
-    "@rules_nixpkgs_core//:extensions.bzl",
+    #"@rules_nixpkgs_core//:extensions.bzl",
+    "@rules_nixpkgs_core//private/extensions:packages.bzl",
     "packages",
 )
 nixpkgs_packages.attribute(
