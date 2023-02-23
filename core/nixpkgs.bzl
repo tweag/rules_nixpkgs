@@ -121,7 +121,7 @@ def _nixpkgs_local_repository_impl(repository_ctx):
     elif repository_ctx.attr.nix_file:
         target = cp(repository_ctx, repository_ctx.attr.nix_file)
     else:
-        lock_filename = str(repository_ctx.attr.nix_flake_lock_file).split(":")[1]
+        lock_filename = cp(repository_ctx, repository_ctx.attr.nix_flake_lock_file)
         target = "nixpkgs.nix"
         repository_ctx.file(
             target,
