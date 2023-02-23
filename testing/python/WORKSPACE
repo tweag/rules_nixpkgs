@@ -15,12 +15,10 @@ local_repository(
     path = "../../toolchains/java",
 )
 
-
 local_repository(
     name = "rules_nixpkgs_cc",
     path = "../../toolchains/cc",
 )
-
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
