@@ -1,6 +1,10 @@
 # TODO[AH] Push this into a load from JSON file within nixpkgs_package to avoid
-# the dependency between the packages module extension and a file generated due
-# to the repositories module extension.
+#   the dependency between the packages module extension and a file generated
+#   due to the repositories module extension.
+#
+#   Loading extension generated files into other extensions can lead to
+#   undetected dependency cycles and lost tags:
+#   https://github.com/bazelbuild/bazel/issues/17564
 load("@nixpkgs_repositories//:defs.bzl", "repositories")
 load("//:nixpkgs.bzl", "nixpkgs_package")
 
