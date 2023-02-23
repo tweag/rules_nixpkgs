@@ -43,9 +43,12 @@ def _all_repositories_impl(repository_ctx):
             fail("INTERNAL ERROR: Duplicate tag encountered: `{}` requested by module `{}`.".format(tag_name, module_name))
         if not repository_name in repositories:
             fail("INTERNAL ERROR: Unknown repository encountered: `{}` requested by module `{}`.".format(repository_name, module_name))
+        print("LABEL", repositories[repository_name])
+        print("  STR", str(repositories[repository_name]))
+        print(" REPR", repr(repositories[repository_name]))
         module_repositories[module_name][tag_name] = struct(
             repository_name = repository_name,
-            repository_label = repositories[repository_name],
+            repository_label = str(repositories[repository_name]),
         )
 
     for repository_label, repository_name in repository_ctx.attr.repositories.items():
@@ -60,7 +63,7 @@ def _all_repositories_impl(repository_ctx):
     print("REPOSITORIES", repositories)
     print("MODULE_REPOSITORIES", module_repositories)
 
-    defs = 'dummy = "hello"'
+    defs = 'repositories = {}'.format(repr(module_repositories))
     repository_ctx.file("defs.bzl", defs, executable=False)
     repository_ctx.file("BUILD.bazel", "", executable=False)
 
