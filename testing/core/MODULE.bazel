@@ -17,6 +17,17 @@ nixpkgs_repositories.file(
 )
 use_repo(nixpkgs_repositories, "nixpkgs_repositories")
 
+nixpkgs_packages = use_extension(
+    "@rules_nixpkgs_core//:extensions.bzl",
+    "packages",
+)
+nixpkgs_packages.attribute(
+    name = "hello",
+    path = "hello",
+    repository = "nixpkgs",
+)
+use_repo(nixpkgs_packages, "nixpkgs_packages")
+
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
 bazel_dep(name = "nixpkgs_location_expansion_test_file")
