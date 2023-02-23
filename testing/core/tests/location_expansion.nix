@@ -1,8 +1,11 @@
 with import <nixpkgs> { config = {}; overlays = []; };
 
-{ local_file, external_file }:
+{ arg_local_file, arg_external_file, workspace_root, argstr_local_file, argstr_external_file }:
 let
   inherit (attrs) nixpkgs_json nixpkgs_nix;
+  # replace by lib.path.append once released
+  # https://github.com/NixOS/nixpkgs/pull/208887
+  path_append = p: s: p + ("/" + s);
 in
   runCommand "location-expansion"
     {
@@ -11,6 +14,8 @@ in
     }
     ''
       mkdir -p $out/out
-      cp ${local_file} $out/out/local_file
-      cp ${external_file} $out/out/external_file
+      cp ${arg_local_file} $out/out/arg_local_file
+      cp ${arg_external_file} $out/out/arg_external_file
+      cp ${path_append workspace_root argstr_local_file} $out/out/argstr_local_file
+      cp ${path_append workspace_root argstr_external_file} $out/out/argstr_external_file
     ''

@@ -1,6 +1,17 @@
 {
   "homepage": "",
-  "maintainers": [],
+  "maintainers": [
+    {
+      "email": "benjamin.radford@tweag.io ",
+      "github": "benradf",
+      "name": "Benjamin Radford"
+    },
+    {
+      "email": "andreas.herrmann@tweag.io",
+      "github": "aherrmann",
+      "name": "Andreas Herrmann"
+    }
+  ],
   "versions": ["0.9.0"],
   "yanked_versions": []
 }

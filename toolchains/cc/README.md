@@ -71,6 +71,13 @@ nixpkgs_cc_configure(
 )
 ```
 ```
+# alternate usage without specifying `nix_file` or `nix_file_content`
+nixpkgs_cc_configure(
+  repository = "@nixpkgs",
+  attribute_path = "gcc11",
+)
+```
+```
 # use the `stdenv.cc` compiler (the default of the given @nixpkgs repository)
 nixpkgs_cc_configure(
   repository = "@nixpkgs",
@@ -110,7 +117,7 @@ default is <code>""</code>
 
 <p>
 
-optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
+optional, string, Obtain the toolchain from the Nix expression under this attribute path. Uses default repository if no `nix_file` or `nix_file_content` is provided.
 
 </p>
 </td>

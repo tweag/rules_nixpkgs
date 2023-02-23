@@ -33,6 +33,7 @@ nixpkgs_git_repository(
 nixpkgs_cc_configure(
     name = "nixpkgs_config_cc",
     repository = "@nixpkgs",
+    attribute_path = "clang_13",
 )
 
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
