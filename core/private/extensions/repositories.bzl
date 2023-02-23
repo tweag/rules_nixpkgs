@@ -63,14 +63,14 @@ def _all_repositories_impl(repository_ctx):
     print("REPOSITORIES", repositories)
     print("MODULE_REPOSITORIES", module_repositories)
 
-    defs = 'repositories = {}'.format(repr(module_repositories))
+    defs = "repositories = {}".format(repr(module_repositories))
     repository_ctx.file("defs.bzl", defs, executable=False)
     repository_ctx.file("BUILD.bazel", "", executable=False)
 
 _all_repositories = repository_rule(
     _all_repositories_impl,
     attrs = {
-        "repositories": attr.label_keyed_string_dict(doc = "`repository_label -> repository_name`"),
+        "repositories": attr.string_dict(doc = "`repository_label -> repository_name`"),
         "module_repositories": attr.string_list_dict(doc = "`module_name -> tag_name:repository_name`"),
     },
 )
