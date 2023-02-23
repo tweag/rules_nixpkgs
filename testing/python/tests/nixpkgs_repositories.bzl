@@ -37,6 +37,6 @@ def nixpkgs_repositories(*, bzlmod):
 
     nixpkgs_python_configure(
         python2_attribute_path = "python2",
-        repository = "@nixpkgs",  # `@nixpkgs` reused from `docs_dependencies_2`
+        repository = "@nixpkgs",
         register = not bzlmod,
     )
