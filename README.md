@@ -1602,7 +1602,7 @@ optional.
 <pre>
 nixpkgs_python_configure(<a href="#nixpkgs_python_configure-name">name</a>, <a href="#nixpkgs_python_configure-python2_attribute_path">python2_attribute_path</a>, <a href="#nixpkgs_python_configure-python2_bin_path">python2_bin_path</a>, <a href="#nixpkgs_python_configure-python3_attribute_path">python3_attribute_path</a>,
                          <a href="#nixpkgs_python_configure-python3_bin_path">python3_bin_path</a>, <a href="#nixpkgs_python_configure-repository">repository</a>, <a href="#nixpkgs_python_configure-repositories">repositories</a>, <a href="#nixpkgs_python_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_python_configure-nixopts">nixopts</a>,
-                         <a href="#nixpkgs_python_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_python_configure-quiet">quiet</a>, <a href="#nixpkgs_python_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_python_configure-target_constraints">target_constraints</a>)
+                         <a href="#nixpkgs_python_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_python_configure-quiet">quiet</a>, <a href="#nixpkgs_python_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_python_configure-target_constraints">target_constraints</a>, <a href="#nixpkgs_python_configure-register">register</a>)
 </pre>
 
 Define and register a Python toolchain provided by nixpkgs.
@@ -1804,6 +1804,15 @@ default is <code>None</code>
 Constraints for the target platform.
 
 </p>
+</td>
+</tr>
+<tr id="nixpkgs_python_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
 </td>
 </tr>
 </tbody>
