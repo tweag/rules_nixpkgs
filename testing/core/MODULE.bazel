@@ -28,7 +28,7 @@ nixpkgs_packages.attribute(
     path = "hello",
     repository = "nixpkgs",
 )
-use_repo(nixpkgs_packages, "nixpkgs_packages")
+use_repo(nixpkgs_packages, "nixpkgs_packages", "rules_nixpkgs_core_testing_hello")
 
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 

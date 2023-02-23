@@ -60,10 +60,15 @@ def _packages_impl(module_ctx):
             repository_label = _repository_label(repository_name)
             print("MODULE", module_name, "TAG", tag_type, tag.name, "REPOSITORY", repository_name)
 
+            if not module_name in repositories:
+                fail("Module `{}` requested nixpkgs repository `{}` but did not define any repository tags.".format(module_name, tag.repository))
+            if not tag.repository in repositories[module_name]:
+                fail("Module `{}` requested nixpkgs repository `{}` but did not define a corresponding repository tag.".format(module_name, tag.repository))
+
             nixpkgs_package(
                 name = repository_name,
                 attribute_path = tag.path,
-                repository = "TODO",
+                repository = repositories[module_name][tag.repository].repository_label,
             )
 
     _all_packages(
