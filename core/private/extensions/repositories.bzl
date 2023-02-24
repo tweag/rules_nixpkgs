@@ -19,19 +19,13 @@ _repository_file_tag = tag_class(
 )
 
 def _all_repositories_impl(repository_ctx):
-    repositories = {}  # repository_name -> repository_label
-    module_repositories = {}  # module_name -> tag_name -> struct(repository_name, repository_label)
+    module_repositories = {}  # module_name -> tag_name -> repository_name
 
     def _parse_tag_repository(repository):
         tag_name, repository_name = repository.split(":", 1)
         if tag_name == "" or repository_name == "":
             fail("INTERNAL ERROR: Malformed module repository `{}`.".format(repository))
         return tag_name, repository_name
-
-    def _add_repository(repository_name, repository_label):
-        if repository_name in repositories:
-            fail("INTERNAL ERROR: Duplicate repository encountered: `{}`.".format(repository_name))
-        repositories[repository_name] = repository_label
 
     def _add_module(module_name):
         if module_name in module_repositories:
@@ -41,18 +35,7 @@ def _all_repositories_impl(repository_ctx):
     def _add_module_repository(module_name, tag_name, repository_name):
         if tag_name in module_repositories[module_name]:
             fail("INTERNAL ERROR: Duplicate tag encountered: `{}` requested by module `{}`.".format(tag_name, module_name))
-        if not repository_name in repositories:
-            fail("INTERNAL ERROR: Unknown repository encountered: `{}` requested by module `{}`.".format(repository_name, module_name))
-        print("LABEL", repositories[repository_name])
-        print("  STR", str(repositories[repository_name]))
-        print(" REPR", repr(repositories[repository_name]))
-        module_repositories[module_name][tag_name] = struct(
-            repository_name = repository_name,
-            repository_label = str(repositories[repository_name]),
-        )
-
-    for repository_label, repository_name in repository_ctx.attr.repositories.items():
-        _add_repository(repository_name, repository_label)
+        module_repositories[module_name][tag_name] = repository_name
 
     for module_name, tag_repositories in repository_ctx.attr.module_repositories.items():
         _add_module(module_name)
@@ -60,7 +43,6 @@ def _all_repositories_impl(repository_ctx):
             tag_name, repository_name = _parse_tag_repository(tag_repository)
             _add_module_repository(module_name, tag_name, repository_name)
 
-    print("REPOSITORIES", repositories)
     print("MODULE_REPOSITORIES", module_repositories)
 
     defs = "repositories = {}".format(repr(module_repositories))
@@ -70,7 +52,6 @@ def _all_repositories_impl(repository_ctx):
 _all_repositories = repository_rule(
     _all_repositories_impl,
     attrs = {
-        "repositories": attr.string_dict(doc = "`repository_label -> repository_name`"),
         "module_repositories": attr.string_list_dict(doc = "`module_name -> tag_name:repository_name`"),
     },
 )
@@ -87,16 +68,10 @@ def _repository_label(repository_name):
     return "@{name}//:{name}".format(name = repository_name)
 
 def _repositories_impl(module_ctx):
-    repositories = {}  # repository_label -> repository_name
     module_repositories = {}  # module_name -> tag_name -> repository_name
 
     def _encode_tag_repository(tag_name, repository_name):
         return tag_name + ":" + repository_name
-
-    def _add_repository(module, tag_type, tag_name, repository_name, repository_label):
-        if repository_label in repositories:
-            fail("Duplicate repository encountered: `{}` requested by module `{}` as {} `{}`.".format(repository_label, module.name, tag_type, tag_name))
-        repositories[repository_label] = repository_name
 
     def _add_module(module, module_name):
         if module_name in module_repositories:
@@ -107,9 +82,6 @@ def _repositories_impl(module_ctx):
         if tag_name in module_repositories[module_name]:
             fail("Duplicate tag encountered: `{}` requested by module `{}` as {}.".format(tag_name, module_name, tag_type))
         module_repositories[module_name][tag_name] = repository_name
-
-    def _repositories_attribute():
-        return repositories
 
     def _module_repositories_attribute():
         result = {}
@@ -129,7 +101,6 @@ def _repositories_impl(module_ctx):
             repository_label = _repository_label(repository_name)
 
             _add_module_repository(module, tag_type, module_name, tag.name, repository_name)
-            _add_repository(module, tag_type, tag.name, repository_name, repository_label)
 
             nixpkgs_local_repository(
                 name = repository_name,
@@ -137,12 +108,10 @@ def _repositories_impl(module_ctx):
                 nix_file_deps = tag.file_deps,
             )
 
-    print("REPOSITORIES", _repositories_attribute())
     print("MODULE_REPOSITORIES", _module_repositories_attribute())
 
     _all_repositories(
         name = "nixpkgs_repositories",
-        repositories = _repositories_attribute(),
         module_repositories = _module_repositories_attribute(),
     )
 

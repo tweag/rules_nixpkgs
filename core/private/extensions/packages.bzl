@@ -68,7 +68,7 @@ def _packages_impl(module_ctx):
             nixpkgs_package(
                 name = repository_name,
                 attribute_path = tag.path,
-                repository = repositories[module_name][tag.repository].repository_label,
+                repository = repositories[module_name][tag.repository],
             )
 
     _all_packages(
