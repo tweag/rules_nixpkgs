@@ -1,9 +1,19 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@nixpkgs_packages//:defs.bzl", "get_nixpkgs_package")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
 
 package(default_testonly = 1)
 
 expand_location_unit_test_suite()
+
+bzlmod_hello = get_nixpkgs_package("rules_nixpkgs_core_testing", "hello", "//:bin")
+sh_test(
+    name = "run-bzlmod-hello",
+    timeout = "short",
+    srcs = ["test_bin.sh"],
+    args = ["$(location {})".format(bzlmod_hello)],
+    data = ["{}".format(bzlmod_hello)],
+)
 
 [
     # All of these tests use the "hello" binary to see
