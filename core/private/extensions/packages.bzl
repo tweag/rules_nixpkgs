@@ -66,7 +66,7 @@ def get_nixpkgs_package(module_name, tag_name, target):
         fail("Module `{}` requested nixpkgs package `{}` but did not define a corresponding package tag.".format(module_name, tag_name))
     repository_name = _packages[module_name][tag_name]
     # TODO[AH] Verify that `target` is well-formed.
-    return Label("@{}{}".format(repository_name, target))
+    return Label("@{}".format(repository_name)).relative(target)
 
 """
     defs += "_packages = {}".format(repr(module_packages))
