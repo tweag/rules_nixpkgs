@@ -5,7 +5,7 @@
 #   Loading extension generated files into other extensions can lead to
 #   undetected dependency cycles and lost tags:
 #   https://github.com/bazelbuild/bazel/issues/17564
-load("@nixpkgs_repositories//:defs.bzl", "repositories")
+load("@nixpkgs_repositories//:defs.bzl", "get_nixpkgs_repository")
 load("//:nixpkgs.bzl", "nixpkgs_package")
 
 _attribute_tag = tag_class(
@@ -60,15 +60,10 @@ def _packages_impl(module_ctx):
             repository_label = _repository_label(repository_name)
             print("MODULE", module_name, "TAG", tag_type, tag.name, "REPOSITORY", repository_name)
 
-            if not module_name in repositories:
-                fail("Module `{}` requested nixpkgs repository `{}` but did not define any repository tags.".format(module_name, tag.repository))
-            if not tag.repository in repositories[module_name]:
-                fail("Module `{}` requested nixpkgs repository `{}` but did not define a corresponding repository tag.".format(module_name, tag.repository))
-
             nixpkgs_package(
                 name = repository_name,
                 attribute_path = tag.path,
-                repository = repositories[module_name][tag.repository],
+                repository = get_nixpkgs_repository(module_name, tag.repository),
             )
 
     _all_packages(

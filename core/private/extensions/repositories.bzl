@@ -45,7 +45,17 @@ def _all_repositories_impl(repository_ctx):
 
     print("MODULE_REPOSITORIES", module_repositories)
 
-    defs = "repositories = {}".format(repr(module_repositories))
+    defs = """\
+def get_nixpkgs_repository(module_name, tag_name):
+    if not module_name in _repositories:
+        fail("Module `{}` requested nixpkgs repository `{}` but did not define any repository tags.".format(module_name, tag_name))
+    if not tag_name in _repositories[module_name]:
+        fail("Module `{}` requested nixpkgs repository `{}` but did not define a corresponding repository tag.".format(module_name, tag_name))
+    repository_name = _repositories[module_name][tag_name]
+    return Label("@{name}//:{name}".format(name = repository_name))
+
+"""
+    defs += "_repositories = {}".format(repr(module_repositories))
     repository_ctx.file("defs.bzl", defs, executable=False)
     repository_ctx.file("BUILD.bazel", "", executable=False)
 
