@@ -120,7 +120,7 @@ def _nixpkgs_local_repository_impl(repository_ctx):
         )
     elif repository_ctx.attr.nix_file:
         target = cp(repository_ctx, repository_ctx.attr.nix_file)
-    else:
+    elif repository_ctx.attr.nix_flake_lock_file:
         lock_filename = cp(repository_ctx, repository_ctx.attr.nix_flake_lock_file)
         target = "nixpkgs.nix"
         repository_ctx.file(
@@ -140,6 +140,8 @@ import nixpkgs
             """.format(lock_filename),
             executable = False,
         )
+    else:
+        fail("Specify at least one of 'nix_file', 'nix_file_content' or 'nix_flake_lock_file'.")
 
     repository_files = [target]
     for dep in repository_ctx.attr.nix_file_deps:
