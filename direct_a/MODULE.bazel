@@ -1,0 +1,6 @@
+module(
+    name = "direct_a",
+    version = "1.2.5",
+)
+
+bazel_dep(name = "transitive", version = "1.1.3")

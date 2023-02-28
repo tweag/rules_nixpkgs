@@ -1,0 +1,7 @@
+module(
+    name = "rules_nixpkgs_core",
+    version = "1.0.1",
+)
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repo.bzl", "nix_repo")
+use_repo(nix_repo, "nixpkgs_repositories")

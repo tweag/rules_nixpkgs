@@ -1,0 +1,5 @@
+alias(
+    name = "generated",
+    actual = "@external_workspace//:generated",
+    visibility = ["//visibility:public"],
+)

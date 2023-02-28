@@ -1,0 +1,14 @@
+module(
+    name = "transitive",
+    version = "2.1.4",
+    compatibility_level = 2,
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "1.0.1")
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repo.bzl", "nix_repo")
+nix_repo.file(name = "nixpkgs", file = "patched_22_11.nix")
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:pkg.bzl", "nix_pkg")
+nix_pkg.attr(name = "tool", attribute = "tool_only_in_patched", repository = "nixpkgs")
+use_repo(nix_pkg, "nixpkgs_packages")

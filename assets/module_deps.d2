@@ -1,0 +1,40 @@
+rules_nixpkgs_core: rules_nixpkgs_core 1.0.1 {
+    shape: package
+    style.font-size: 16
+}
+
+transitive_1: transitive 1.1.3 {
+    shape: package
+    style.font-size: 16
+}
+
+transitive_1 -> rules_nixpkgs_core
+
+transitive_2: transitive 2.1.4 {
+    shape: package
+    style.font-size: 16
+}
+
+transitive_2 -> rules_nixpkgs_core
+
+direct_a: direct_a 1.2.5 {
+    shape: package
+    style.font-size: 16
+}
+
+direct_a -> transitive_1
+
+direct_b: direct_b 1.2.6 {
+    shape: package
+    style.font-size: 16
+}
+
+direct_b -> transitive_2
+
+root: root 1.3.7 {
+    shape: package
+    style.font-size: 16
+}
+
+root -> direct_a
+root -> direct_b

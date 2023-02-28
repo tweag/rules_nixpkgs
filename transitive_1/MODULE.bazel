@@ -1,0 +1,17 @@
+module(
+    name = "transitive",
+    version = "1.1.3",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "1.0.1")
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repo.bzl", "nix_repo")
+nix_repo.version(name = "nixpkgs", version = "21.04")
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:pkg.bzl", "nix_pkg")
+nix_pkg.attr(name = "tool", attribute = "tool_only_in_21.04", repository = "nixpkgs")
+use_repo(nix_pkg, "nixpkgs_packages")
+
+non_module_deps = use_extension("//:extensions.bzl", "non_module_deps")
+use_repo(non_module_deps, "external_workspace")
