@@ -32,6 +32,7 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
         toolchains/nodejs
         toolchains/posix
         toolchains/rust
+        toolchains/python
     )
     declare -ra test_dirs=(
         testing/core
@@ -40,6 +41,7 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
         testing/nodejs
         testing/posix
         testing/rust
+        testing/python
     )
     declare -ra extra_flags=(
         --config=bzlmod
@@ -64,6 +66,7 @@ else
         testing/nodejs
         testing/posix
         testing/rust
+        testing/python
     )
     declare -ra extra_flags=(
     )
