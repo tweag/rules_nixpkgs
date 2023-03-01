@@ -106,9 +106,11 @@ def nixpkgs_git_repository(
     )
 
 def _nixpkgs_local_repository_impl(repository_ctx):
-    if not bool(repository_ctx.attr.nix_file) != \
-       bool(repository_ctx.attr.nix_file_content):
-        fail("Specify one of 'nix_file' or 'nix_file_content' (but not both).")
+    if bool(repository_ctx.attr.nix_file) and bool(repository_ctx.attr.nix_file_content) or \
+       bool(repository_ctx.attr.nix_file) and bool(repository_ctx.attr.nix_flake_lock_file) or \
+       bool(repository_ctx.attr.nix_flake_lock_file) and bool(repository_ctx.attr.nix_file_content):
+        fail("Specify only one of 'nix_file', 'nix_file_content' or 'nix_flake_lock_file'.")
+
     if repository_ctx.attr.nix_file_content:
         target = "default.nix"
         repository_ctx.file(
@@ -116,8 +118,30 @@ def _nixpkgs_local_repository_impl(repository_ctx):
             content = repository_ctx.attr.nix_file_content,
             executable = False,
         )
-    else:
+    elif repository_ctx.attr.nix_file:
         target = cp(repository_ctx, repository_ctx.attr.nix_file)
+    elif repository_ctx.attr.nix_flake_lock_file:
+        lock_filename = cp(repository_ctx, repository_ctx.attr.nix_flake_lock_file)
+        target = "nixpkgs.nix"
+        repository_ctx.file(
+            target,
+            content = """
+let
+  lock = builtins.fromJSON (builtins.readFile ./{});
+  src = lock.nodes.nixpkgs.locked;
+  nixpkgs =
+    assert src.type == "github";
+    fetchTarball {{
+      url = "https://github.com/${{src.owner}}/${{src.repo}}/archive/${{src.rev}}.tar.gz";
+      sha256 = src.narHash;
+    }};
+in
+import nixpkgs
+            """.format(lock_filename),
+            executable = False,
+        )
+    else:
+        fail("Specify at least one of 'nix_file', 'nix_file_content' or 'nix_flake_lock_file'.")
 
     repository_files = [target]
     for dep in repository_ctx.attr.nix_file_deps:
@@ -149,6 +173,7 @@ _nixpkgs_local_repository = repository_rule(
         "nix_file": attr.label(allow_single_file = [".nix"]),
         "nix_file_deps": attr.label_list(),
         "nix_file_content": attr.string(),
+        "nix_flake_lock_file": attr.label(allow_single_file = [".lock"]),
     },
 )
 
@@ -158,6 +183,7 @@ def nixpkgs_local_repository(
         nix_file = None,
         nix_file_deps = None,
         nix_file_content = None,
+        nix_flake_lock_file = None,
         **kwargs):
     """Create an external repository representing the content of Nixpkgs.
 
@@ -177,6 +203,9 @@ def nixpkgs_local_repository(
       nix_file_content: String
 
         An expression for a Nix derivation.
+      nix_flake_lock_file: String
+
+        A flake lock file that can be used on the provided nixpkgs repository.
       **kwargs: Additional arguments to forward to the underlying repository rule.
     """
     _nixpkgs_local_repository(
@@ -185,6 +214,7 @@ def nixpkgs_local_repository(
         nix_file = nix_file,
         nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
+        nix_flake_lock_file = nix_flake_lock_file,
         **kwargs
     )
 
