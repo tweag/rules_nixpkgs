@@ -70,26 +70,29 @@ Support the import of Nix repositories, i.e. collections of files containing
 Nix expressions, most commonly [nixpkgs].
 
 * Import from
-  * Local file, e.g. `nixpkgs.nix`, with optional file dependencies.
+  * Local file, e.g. `nixpkgs.nix`, with optional file dependencies.\
+    Migration target for `nixpkgs_local_repository` with `nix_file`.
+  * Inline Nix expression.\
+    Migration target for `nixpkgs_local_repository` with `nix_file_content`.
   * HTTP URL, e.g. GitHub source archive.\
-    (The current `nixpkgs_git_repository` is a special case of this that only
-    supports GitHub source archives.)
-  * (low-priority) Inline Nix expression, to support the `nix_file_content`
-    use-case.
+    Generalization of `nixpkgs_git_repository`.
+  * Github archive.\
+    Convenience wrapper around HTTP URL.\
+    Migration target for `nixpkgs_git_repository`.
   * (to-consider) Nix channel, e.g. `nixos-22.11`, with recommended pinning.
   * (to-consider) Git archive, similar to Bazel's own `git_repository`.\
     (Git archive imports tend to be costly, a Nix expression that fetches from
     Git may be the better choice.)
 * Expose by
-  * Name to other module extensions, such as a Nix package tag, e.g. `name =
-    "nixpkgs-stable"`.\
-    (To avoid collisions these may have to be scoped on the module level.)
-  * [`NIX_PATH` entry][nix-path] to Nix expressions to support angle-bracket
-    references, e.g. `import <nixpkgs>`.
-  * (to-consider) Define alias tags that map a repository to another `NIX_PATH`
-    entry.
-  * (to-consider) Default, e.g. `rules_nixkgs_core` or root could define a
-    default `nixpkgs`.
+  * Name to other module extensions, e.g. Nix package.\
+    E.g. `name = "nixpkgs-stable"`.\
+  * [`NIX_PATH` entry][nix-path] to Nix expressions.\
+    For angle-bracket reference in Nix expression, e.g. `import <nixpkgs>`.
+    E.g. `import_name = "nixpkgs"`.
+    Defaults to `import_name = name`.
+  * (to-consider) Alias tag to map repository to another `NIX_PATH` entry.
+  * (to-consider) Set default repository.\
+    Allowed in root or `rules_nixpkgs_core`.
 
 ### Nix Packages
 
@@ -97,18 +100,23 @@ Support the build, or fetch, and import of Nix deriviations, or store paths,
 into a Bazel project.
 
 * Define by
-  * Nix attribute path, e.g. `pkgs.hello`, into a Nix repository, e.g.
-    `<nixpkgs>`.
-  * Nix file, as the top-level Nix expression or an attribute path into it,
-    support optional file dependencies.
-  * Inline Nix expression, as the top-level Nix expression or an attribute path
-    into it.
+  * Nix attribute path, e.g. `pkgs.hello`.\
+    Migration target for `nixpkgs_package` with `attribute_path`.
+    * Defaults to name of tag.\
+      Migration target for `nixpkgs_package` without `attribute_path`.
+  * Inline Nix expression that provides the attribute.\
+    Migration target for `nix_file_content`.
+    * Defaults to `import <nixpkgs> { config = {}; overlays = []; }`.
+      Migration target for no `nix_file_content` or `nix_file`.
+  * Local file that provides the attribute, with optional file dependencies.\
+    Migration target for `nix_file`.
+  * Optional Nix command-line options.\
+    Migration target for `nixopts`.
 * Depend on
-  * Nix repositories by name, e.g. `"nixpkgs-stable"`.
-  * Nix repositories mapped to `NIX_PATH` entry, e.g. `<nixpkgs>`.\
-    (A repository alias tag may be sufficient instead of a dedicated package
-    attribute.)
-  * A default Nix repository, e.g. `<nixpkgs>`.
+  * A nixpkgs repository.\
+    Migration target for `repository = ...`.
+  * Nix repositories mapped to `NIX_PATH` entry.\
+    Migration target for `repositories = {...}`.
 * Import by
   * Default `BUILD` file
   * Custom `BUILD` file as inline string or in source file.
@@ -118,6 +126,14 @@ into a Bazel project.
     mapping repository could expose a function to turn names into labels.)
   * Predictable name or label to repository rules, e.g. Gazelle bootstrap Go
     toolchain.
+* TODO
+  * The `quiet` attribute, should it become a global setting?
+  * The `fail_not_supported` attribute, should it become a global setting?
+  * The `nix-build` binary, should it be defined by a global setting?
+  * Explicit exec- and target-system configuration.\
+    * To support cross-compilation projects or cross-platform remote execution.
+  * Multi-system configuration.\
+    * To support cross-platform projects.
 
 ### Nix Provided Toolchains
 
