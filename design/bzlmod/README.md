@@ -491,6 +491,80 @@ contains toolchain targets for all imported toolchains. The
 `rules_nixpkgs_LANG` module registers the toolchains
 `@nixpkgs_LANG_toolchains//:all`.
 
+## Implementation
+
+### Module Extensions
+
+The module extensions iterate over each module that uses the extension and
+register the module in a module registry, see below. For each module they
+iterate over the tags defined by the module. For each module they use the
+module registry to verify that the tag-name has not been used, yet, generate a
+fresh name to pass to the underlying repository rule, and instantiate the
+repository rule.
+
+They also generate a hub repository by invoking the corresponding repository
+rule, see below.
+
+### Hub Repositories
+
+The hub repository stores the contents of the module registry, at least the
+part required to expose the generated external workspaces and corresponding
+metadata. It defines an accessor macro by which a module can request a tag that
+it registered under a given tag name.
+
+The repository rule that generates the hub repository is part of the module
+registry.
+
+### Module Registry
+
+The module registry is a Starlark module that factors out the common parts
+needed to register modules requesting an extension and the named tags it
+registers. It provides the following functionality:
+
+* `make(modules)`: Creates a new registry\
+  Note, this will fail if a multi-version override is encountered.\
+  TODO: Support multi-version overrides.\
+  Args:\
+  * `modules`: List of `module` object; All modules that will use the registry.
+
+  Returns:\
+  `registry, error`:
+  * `registry`: The module registry object, or `None` if an error occurred.
+  * `error`: `None` if no error occurred, otherwise an error message as `String`.
+* `new_repository(registry, module, name)`: Registers a new repository under a
+  fresh name.\
+  Note, this will fail if the `name` was already used by the given module.
+  Args:\
+  * `registry`: The module registry object.
+  * `module`: `module` object; The module making the request.
+  * `name`: `String`; Register the new repository within the module's scope under this
+    name.
+
+  Returns:\
+  `repository_name, error`:\
+  * `repository_name`: `String`; The name to pass to the repository rule that
+    defines the new repository, `None` if an error occurred.
+  * `error`: `None` if no error occurred, otherwise an error message as `String`.
+* `all_repositories(registry, name)`: Generates the hub repository.\
+  Generates a file `defs.bzl` that stores the required data for the module
+  registry and exposes a caller-defined getter macro.
+  Args:\
+  * `registry`: The module registry object.
+  * `name`: `String`; The name to use for the new hub repository.
+  * `getter`: `String`; A Starlark code-snippet to place into the `defs.bzl`
+    file.\
+    The following bindings will be in scope:\
+    * `_get_repository_name(module, name)`: Obtain the repository name for a registered tag.\
+      Args:\
+      * `module`: `String`; The name of the requesting module.
+      * `name`: `String`; The name of the requested tag.
+
+      Returns:\
+      `repository_name, error`:\
+      * `repository_name`: `String`; The name of the corresponding external
+        workspace, `None` if an error occurred.
+      * `error`: `None` if no error occurred, otherwise an error message as `String`.
+
 [bzlmod]: https://bazel.build/external/overview#bzlmod
 [module-extension]: https://bazel.build/external/extension
 [repository-rule]: https://bazel.build/extending/repo
