@@ -169,6 +169,8 @@ Support the use of Nix built packages as Bazel toolchains.
     (For example the Python toolchain currently defines a Starlark constant
     holding the label of the Python interpreter for use by repository rules
     like `pip_parse`.)
+* TODO
+  * Expose for usage-cases like `pip_parse`.
 
 ## Constraints
 
@@ -322,6 +324,173 @@ Support the use of Nix built packages as Bazel toolchains.
     take the restrictured visibility mentioned above into account and define a
     hub repository.
 
+## Interface
+
+### Nix Repositories
+
+The `rules_nixpkgs_core` module exposes the module extension
+`nixpkgs_repository` which offers tags to define Nix repositories:
+
+* `file(name, import_name, file, file_deps)`\
+  * `name`: `String`; unique name.
+  * `import_name`: optional, `String`, `NIX_PATH` entry name.\
+    Default: `name`.
+  * `file`: `Label`; the file containing the Nix expression.
+  * `file_deps`: optional, List of `Label`, files required by `file`.
+* `expression(name, import_name, expression)`\
+  * `name`: `String`; unique name.
+  * `import_name`: optional, `String`, `NIX_PATH` entry name.\
+    Default: `name`.
+  * `expression`: `String`; the Nix expression.
+* `http(name, import_name, url, urls, sha256, integrity, strip_prefix)`\
+  * `name`: `String`; unique name.
+  * `import_name`: optional, `String`; `NIX_PATH` entry name.\
+    Default: `name`.
+  * `url`: optional, `String`; URL to download from.\
+    Specify one of `url` or `urls`.
+  * `urls`: optional, `String`; List of URLs to download from.\
+    Specify one of `url` or `urls`.
+  * `sha256`: optional, `String`; The SHA-256 hash of the downloaded archive.
+  * `integrity`: optional, `String`; Expected checksum of the archive, in
+    Subresource Integrity format.
+  * `strip_prefix`: optional, `String`; A directory prefix to strip from the extracted files.
+* `github(name, import_name, org, repo, tag, commit)`\
+  * `name`: `String`; unique name.
+  * `import_name`: optional, `String`; `NIX_PATH` entry name.\
+    Default: `name`.
+  * `org`: optional, `String`; The GitHub organization hosting the repository.\
+    Default: `NixOS`.
+  * `repo`: optional, `String`; The name of the GitHub repository.\
+    Default: `nixpkgs`.
+  * `tag`: optional, `String`; The Git tag to download.\
+    Specify one of `tag` or `commit`.
+  * `commit`: optional, `String`; The Git commit to download.\
+    Specify one of `tag` or `commit`.
+* `alias(name, import_name, actual)`\
+  * `name`: `String`; unique name.
+  * `import_name`: optional, `String`; `NIX_PATH` entry name.\
+    Default: `name`.
+  * `actual`: `String`; Another repository.
+* `default(repository)` (only allowed in root or `rules_nixpkgs_core`)\
+  * `repository`: `String`; The repository to expose as a global default.
+
+All `name` attributes define a unique name for the given Nix repository within
+the scope of the requesting module.
+
+The extension is defined in its own Starlark module under
+`@rules_nixpkgs_core//extensions:repositories.bzl`.
+
+The extension generates a hub repository called `nixpkgs_repositories` that
+exposes a macro from `//:defs.bzl` to access the imported repositories from the
+scope of the calling module:
+
+* `nixpkgs_repository(module, name)`\
+  Attrs:
+  * `module`: `String`; name of the calling Bazel module.\
+    Needed until Bazel offers an API to infer the calling module.
+    See, [#17652][bazel-17652].\
+    Note, this is ambiguous for multi-version overrides.\
+    TODO: Handle multi-version overrides.
+  * `name`: `String`; name of the repository tag.\
+    This is the name used on the `nixpkgs_repository` tag.
+
+  Returns:\
+  `struct(import_name, label)`
+  * `import_name`: `String`; The name for the `NIX_PATH` entry.
+  * `label`: `function(label)`; Accessor for labels inside the repository.\
+    Attrs:
+    * `label`: optional, `String`; The label string to resolve.\
+      Default: The repository's main file.
+
+    Returns:\
+    The resolved `Label` object.
+
+### Nix Packages
+
+The `rules_nixpkgs_core` module exposes the module extension
+`nixpkgs_package` which offers tags to define Nix packages:
+
+* `attribute(name, attribute, repository, build_file, build_file_content)`\
+  * `name`: `String`; unique name.
+  * `attribute`: optional, `String`; the attribute path.\
+    Default: `name`.
+  * `repository`: optional, `String`; repository to import from.\
+    Default: `nixpkgs`.
+  * `build_file`: optional, `Label`; `BUILD` file to write into the external
+    workspace.\
+    Specify at most one of `build_file` or `build_file_content`.
+  * `build_file_content`: optional, `Label`; `BUILD` file content to write into
+    the external workspace.\
+    Specify at most one of `build_file` or `build_file_content`.
+* `file(name, attribute, file, file_deps, repository, repositories)`\
+  * `name`: `String`; unique name.
+  * `attribute`: optional, `String`; the attribute path.\
+    Default: `name`.
+  * `file`: `Label`; the file containing the Nix expression.
+  * `file_deps`: optional, List of `Label`, files required by `file`.
+  * `repository`: optional, `String`; use this Nix repository.
+  * `repositories`: optional, List of `String`; use these Nix repositories.
+  * `build_file`: optional, `Label`; `BUILD` file to write into the external
+    workspace.\
+    Specify at most one of `build_file` or `build_file_content`.
+  * `build_file_content`: optional, `Label`; `BUILD` file content to write into
+    the external workspace.\
+* `expression(name, attribute, expression, repository, repositories)`\
+  * `name`: `String`; unique name.
+  * `attribute`: optional, `String`; the attribute path.\
+    Default: `name`.
+  * `expression`: `String`; the Nix expression.
+  * `repository`: optional, `String`; use this Nix repository.
+  * `repositories`: optional, List of `String`; use these Nix repositories.
+  * `build_file`: optional, `Label`; `BUILD` file to write into the external
+    workspace.\
+    Specify at most one of `build_file` or `build_file_content`.
+  * `build_file_content`: optional, `Label`; `BUILD` file content to write into
+    the external workspace.\
+
+All `name` attributes define a unique name for the given Nix repository within
+the scope of the requesting module.
+
+The extension is defined in its own Starlark module under
+`@rules_nixpkgs_core//extensions:packages.bzl`.
+
+The extension generates a hub repository called `nixpkgs_packages` that exposes
+a macro from `//:defs.bzl` to access the imported packages from the scope of
+the calling module:
+
+* `nixpkgs_package(module, name)`\
+  Attrs:
+  * `module`: `String`; name of the calling Bazel module.\
+    Needed until Bazel offers an API to infer the calling module.
+    See, [#17652][bazel-17652].\
+    Note, this is ambiguous for multi-version overrides.\
+    TODO: Handle multi-version overrides.
+  * `name`: `String`; name of the package tag.\
+    This is the name used on the `nixpkgs_package` tag.
+
+  Returns:\
+  `struct(import_name, label)`
+  * `import_name`: `String`; The name for the `NIX_PATH` entry.
+  * `label`: `function(label)`; Accessor for labels inside the repository.\
+    Attrs:
+    * `label`: `String`; The label string to resolve.
+
+    Returns:\
+    The resolved `Label` object.
+
+### Nix Toolchains
+
+The `rules_nixpkgs_LANG` modules expose module extensions
+`nixpkgs_LANG_toolchain` which offer tags to define toolchains provided by Nix.
+
+TODO: Define the common API for the toolchains. Individual toolchains may
+deviate due to language specific constraints or features.
+
+The extension generates a hub repository called `nixpkgs_LANG_toolchains` that
+contains toolchain targets for all imported toolchains. The
+`rules_nixpkgs_LANG` module registers the toolchains
+`@nixpkgs_LANG_toolchains//:all`.
+
 [bzlmod]: https://bazel.build/external/overview#bzlmod
 [module-extension]: https://bazel.build/external/extension
 [repository-rule]: https://bazel.build/extending/repo
@@ -334,3 +503,4 @@ Support the use of Nix built packages as Bazel toolchains.
 [bzlmod-extension-identifier]: https://github.com/bazelbuild/bazel/issues/17564#issuecomment-1448442715
 [bzlmod-undetected-cycles]: https://github.com/bazelbuild/bazel/issues/17564
 [bzlmod-import]: https://bazelbuild.slack.com/archives/C014RARENH0/p1677600643532639?thread_ts=1677077009.456189&cid=C014RARENH0
+[bazel-17652]: https://github.com/bazelbuild/bazel/issues/17652
