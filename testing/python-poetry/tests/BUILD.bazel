@@ -1,0 +1,18 @@
+load("@nixpkgs_python_toolchain//:defs.bzl", "interpreter")
+load("@nix_pip//:requirements.bzl", "requirement")
+
+package(default_testonly = 1)
+
+py_test(
+    name = "import-poetry-packages",
+    main = "imports_test.py",
+    srcs = ["imports_test.py"],
+    deps = [
+        requirement("cffi"),
+        requirement("pandas"),
+    ],
+    srcs_version = "PY3",
+    python_version = "PY3",
+    size = "small",
+    visibility = ["//visibility:public"],
+)

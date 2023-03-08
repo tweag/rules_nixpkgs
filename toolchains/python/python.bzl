@@ -200,3 +200,184 @@ def nixpkgs_python_configure(
 
     if register:
         native.register_toolchains("@{}//:toolchain".format(name))
+
+
+def _nixpkgs_python_repository_impl(repository_ctx):
+    # 2. read generated json
+    python_modules = repository_ctx.read(repository_ctx.path(repository_ctx.attr.json_deps))
+
+    content = 'load("//:python_module.bzl", "python_module");'
+    for pkg_info in json.decode(python_modules):
+        pkg_name = pkg_info["name"]
+        pkg_store_path = pkg_info["store_path"]
+        deps = pkg_info["deps"]
+        pkg_link_path = "{}-link".format(pkg_name)
+        repository_ctx.symlink(pkg_store_path, pkg_link_path)
+
+        # Bazel chokes on files containing whitespaces, so we exclude them from
+        # the glob, hoping they are not important
+        content += """
+python_module(
+    name = "{name}",
+    store_path = "{link}",
+    files = glob(["{link}/**"], exclude=["{link}/**/* *"]),
+    deps = {deps},
+    visibility = ["//visibility:public"],
+)
+        """.format(name=pkg_name, link=pkg_link_path, deps=deps)
+
+    repository_ctx.file("BUILD.bazel", content)
+
+    # 3. generate BUILD.bazel file,
+    # ... _and_ the symlinks
+    # 4. Generate dummy WORKSPACE
+    # repository_ctx.file("WORKSPACE", "")
+
+    repository_ctx.file("python_module.bzl", """
+def _python_module_impl(ctx):
+    import_depsets = []
+    store = ctx.file.store_path
+    runfiles = ctx.runfiles(files = [store])
+
+    for dep in ctx.attr.deps:
+        runfiles = runfiles.merge(dep[DefaultInfo].data_runfiles)
+        import_depsets.append(dep[PyInfo].imports)
+
+    # HACK(danny): for some unforunate reason, short_path returns ../ when operating in external
+    # repositories. I don't know why. It breaks rules_python's assumptions though.
+    fixed_path = store.short_path[3:]
+    import_path = "/".join([ctx.workspace_name, store.short_path])
+
+    return [
+        DefaultInfo(
+            files = depset(ctx.files.files),
+            default_runfiles = ctx.runfiles(ctx.files.files, collect_default = True),
+        ),
+        PyInfo(
+            imports = depset(direct = [import_path], transitive = import_depsets),
+            transitive_sources = depset(transitive = [
+                dep[PyInfo].transitive_sources
+                for dep in ctx.attr.deps
+            ]),
+        ),
+    ]
+
+python_module = rule(
+    implementation = _python_module_impl,
+    attrs = {
+        "store_path": attr.label(
+            allow_single_file = True,
+            doc = "nix store path of python package",
+        ),
+        "files": attr.label_list(
+            allow_files = True,
+        ),
+        "deps": attr.label_list(
+            providers = [PyInfo],
+        ),
+    },
+    executable = False,
+    test = False,
+)
+""",
+    )
+
+    # 5. generate //:requirements.bzl for later import.
+    repository_ctx.file("requirements.bzl", """
+def requirement(package_name):
+    return "@{}//:{{}}".format(package_name)
+""".format(repository_ctx.name),
+    )
+
+    # TODO: make it lazy in the packages themselves ?
+
+
+_nixpkgs_python_repository = repository_rule(
+    _nixpkgs_python_repository_impl,
+    attrs = {
+        "json_deps": attr.label(),
+    },
+)
+
+
+def nixpkgs_python_repository(
+        name,
+        repository = None,
+        repositories = {},
+        nix_file = None,
+        nix_file_deps = [],
+        quiet = False,
+        ):
+    """Define a collection of python modules.
+
+    Args:
+      name: The name for the created module set.
+      repository: See [`nixpkgs_package`](#nixpkgs_package-repository).
+      repositories: See [`nixpkgs_package`](#nixpkgs_package-repositories).
+      nix_file: See [`nixpkgs_package`](#nixpkgs_package-nix_file).
+      nix_file_deps: See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+    """
+
+    generated_deps_name = "_generated_{}_deps".format(name)
+
+    nixpkgs_package(
+        name = generated_deps_name,
+        nix_file_content = """
+{ nix_file }:
+let
+  nixpkgs = import <nixpkgs> {};
+  pythonExpr = import nix_file;
+  inherit (pythonExpr) python pkgs;
+
+  isPythonModule = drv: drv ? pythonModule && drv ? pythonPath;
+  filterPythonModules = builtins.filter isPythonModule;
+
+  # Ensure the dependency list is unique, otherwise bazel complains about
+  # duplicate names in the generated python_module() rule
+  unique = list: builtins.attrNames (builtins.listToAttrs (builtins.map (x: {
+    name = x;
+    value = null;
+  }) list));
+
+  # Build the list of python modules from the initial set in `pkgs`.
+  # Each key is the package name, and the value is the derivation itself.
+  toClosureFormat = builtins.map (drv: {
+    key = drv.pname;
+    value = drv // { _pythonModules = filterPythonModules drv.propagatedBuildInputs; };
+  });
+  startSet = toClosureFormat pkgs;
+  closure = builtins.genericClosure {
+    inherit startSet;
+    operator = item: toClosureFormat (filterPythonModules item.value.propagatedBuildInputs);
+  };
+
+  # Using the information generated above, map the package information into
+  # a list, described in the Output description at the top of this file.
+  packages = builtins.map ({key, value}: {
+    name = key;
+    store_path = "${value}/${python.sitePackages}";
+    deps = unique (builtins.map (dep: dep.pname) value._pythonModules);
+  }) closure;
+in
+  (nixpkgs.writeTextFile {
+    name = "python-requirements";
+    destination = "/requirements.json";
+    text = builtins.toJSON packages;
+  }) // {
+    inherit python pkgs;
+  }
+    """,
+    repository = repository,
+    repositories = repositories,
+    nix_file_deps = nix_file_deps + [ nix_file ],
+    nixopts = [ "--arg", "nix_file", "$(location {})".format(nix_file) ],
+    quiet = quiet,
+    )
+
+    _nixpkgs_python_repository(
+        name = name,
+        json_deps = "@{}//:requirements.json".format(generated_deps_name),
+    )
+
+
+
