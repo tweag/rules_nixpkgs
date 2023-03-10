@@ -308,7 +308,40 @@ def nixpkgs_python_repository(
         nix_file_deps = [],
         quiet = False,
         ):
-    """Define a collection of python modules.
+    """Define a collection of python modules based on a nix file.
+
+    The only entry point is a [`nix_file`](#nixpkgs_python_repository-nix_file)
+    which should expose a `pkgs` and a `python` attributes. `python` is the
+    python interpreter, and `pkgs` a set of python packages that will be made
+    available to bazel.
+
+    :warning: All the packages in `pkgs` are built by this rule. It is
+    therefore not a good idea to expose something as big as `pkgs.python3` as
+    provided by nixpkgs.
+
+    This rule is instead intended to expose an ad-hoc set of packages for your
+    project, as can be built by poetry2nix, mach-nix, dream2nix or by manually
+    picking the python packages you need from nixpkgs.
+
+    The format is generic to support the many ways to generate such packages
+    sets with nixpkgs. See our python [`tests`](/testing/toolchains/python) and
+    [examples](`/examples/toolchains/python`) to get started.
+
+    This rule is intended to mimic as closely as possible the [rules_python
+    API](https://github.com/bazelbuild/rules_python#using-the-package-installation-rules).
+    `nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
+    As such, it also provides a `requirement` function to perform the name
+    mangling. Using the `requirement` fucntion inherits the same advantages and
+    limitations as the one in rules_python. All the function does is create a
+    label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
+    While depending on such a label directly will work, the layout may change
+    in the future. To be on the safe side, define and import your own
+    `requirement` function if you need to play with these labels.
+
+    :warning: packages names exposed by this rule are determined by the `pname`
+    attribute of the nix packages. These may vary slightly from names used by
+    rules_python. Should this be a problem, you can provide you own
+    `requirement` function.
 
     Args:
       name: The name for the created module set.
@@ -316,6 +349,7 @@ def nixpkgs_python_repository(
       repositories: See [`nixpkgs_package`](#nixpkgs_package-repositories).
       nix_file: See [`nixpkgs_package`](#nixpkgs_package-nix_file).
       nix_file_deps: See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+      quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
     """
 
     generated_deps_name = "_generated_{}_deps".format(name)
