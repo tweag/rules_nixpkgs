@@ -8,13 +8,13 @@
 let
   nixpkgs = import <nixpkgs> {};
   pythonExpr = import nix_file;
-  inherit (pythonExpr) python pkgs;
 
   isPythonModule = drv: drv ? pythonModule && drv ? pythonPath;
   filterPythonModules = builtins.filter isPythonModule;
 
   # Ensure the dependency list is unique, otherwise bazel complains about
   # duplicate names in the generated python_module() rule
+  # Should be faster than nixpkgs lib.lists.unique as it uses an attr set.
   unique = list: builtins.attrNames (builtins.listToAttrs (builtins.map (x: {
     name = x;
     value = null;
@@ -26,24 +26,23 @@ let
     key = drv.pname;
     value = drv // { _pythonModules = filterPythonModules drv.propagatedBuildInputs; };
   });
-  startSet = toClosureFormat pkgs;
+  startSet = toClosureFormat pythonExpr.pkgs;
   closure = builtins.genericClosure {
     inherit startSet;
     operator = item: toClosureFormat (filterPythonModules item.value.propagatedBuildInputs);
   };
 
   # Using the information generated above, map the package information into
-  # a list, described in the Output description at the top of this file.
+  # a list of entries containing the name, the output path, and the name of
+  # python runtime dependencies, to later generate a valid BUILD file.
   packages = builtins.map ({key, value}: {
     name = key;
-    store_path = "${value}/${python.sitePackages}";
+    store_path = "${value}/${pythonExpr.python.sitePackages}";
     deps = unique (builtins.map (dep: dep.pname) value._pythonModules);
   }) closure;
 in
-  (nixpkgs.writeTextFile {
-    name = "python-requirements";
-    destination = "/requirements.json";
-    text = builtins.toJSON packages;
-  }) // {
-    inherit python pkgs;
-  }
+nixpkgs.writeTextFile {
+  name = "python-requirements";
+  destination = "/requirements.json";
+  text = builtins.toJSON packages;
+}
