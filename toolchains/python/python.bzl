@@ -235,7 +235,7 @@ python_package(
     repository_ctx.file("requirements.bzl", """
 def requirement(package_name):
     return "@{}//:{{}}".format(package_name)
-""".format(repository_ctx.name),
+""".format(repository_ctx.attr.unmangled_name),
     )
 
     # TODO: make it lazy in the packages themselves ?
@@ -245,6 +245,7 @@ _nixpkgs_python_repository = repository_rule(
     _nixpkgs_python_repository_impl,
     attrs = {
         "json_deps": attr.label(),
+        "unmangled_name": attr.string(),
     },
 )
 
@@ -301,7 +302,7 @@ def nixpkgs_python_repository(
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
     """
 
-    generated_deps_name = "_generated_{}_deps".format(name)
+    generated_deps_name = "generated_{}_deps".format(name)
 
     nixpkgs_package(
         name = generated_deps_name,
@@ -315,6 +316,7 @@ def nixpkgs_python_repository(
 
     _nixpkgs_python_repository(
         name = name,
+        unmangled_name = name,
         json_deps = "@{}//:requirements.json".format(generated_deps_name),
     )
 
