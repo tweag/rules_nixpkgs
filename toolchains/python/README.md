@@ -2,11 +2,12 @@
 
 <!-- Edit the docstring in `toolchains/python/python.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
 
-Rules for importing a Python toolchain from Nixpkgs.
+Rules to import Python toolchains and packages from Nixpkgs.
 
 # Rules
 
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
+* [nixpkgs_python_repository](#nixpkgs_python_repository)
 
 
 # Reference documentation
@@ -229,6 +230,145 @@ Constraints for the target platform.
 optional.
 default is <code>True</code>
 
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<a id="#nixpkgs_python_repository"></a>
+
+### nixpkgs_python_repository
+
+<pre>
+nixpkgs_python_repository(<a href="#nixpkgs_python_repository-name">name</a>, <a href="#nixpkgs_python_repository-repository">repository</a>, <a href="#nixpkgs_python_repository-repositories">repositories</a>, <a href="#nixpkgs_python_repository-nix_file">nix_file</a>, <a href="#nixpkgs_python_repository-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_python_repository-quiet">quiet</a>)
+</pre>
+
+Define a collection of python packages based on a nix file.
+
+The only entry point is a [`nix_file`](#nixpkgs_python_repository-nix_file)
+which should expose a `pkgs` and a `python` attributes. `python` is the
+python interpreter, and `pkgs` a set of python packages that will be made
+available to bazel.
+
+:warning: All the packages in `pkgs` are built by this rule. It is
+therefore not a good idea to expose something as big as `pkgs.python3` as
+provided by nixpkgs.
+
+This rule is instead intended to expose an ad-hoc set of packages for your
+project, as can be built by poetry2nix, mach-nix, dream2nix or by manually
+picking the python packages you need from nixpkgs.
+
+The format is generic to support the many ways to generate such packages
+sets with nixpkgs. See our python [`tests`](/testing/toolchains/python) and
+[examples](`/examples/toolchains/python`) to get started.
+
+This rule is intended to mimic as closely as possible the [rules_python
+API](https://github.com/bazelbuild/rules_python#using-the-package-installation-rules).
+`nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
+As such, it also provides a `requirement` function to perform the name
+mangling. Using the `requirement` fucntion inherits the same advantages and
+limitations as the one in rules_python. All the function does is create a
+label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
+While depending on such a label directly will work, the layout may change
+in the future. To be on the safe side, define and import your own
+`requirement` function if you need to play with these labels.
+
+:warning: packages names exposed by this rule are determined by the `pname`
+attribute of the nix packages. These may vary slightly from names used by
+rules_python. Should this be a problem, you can provide you own
+`requirement` function.
+
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_python_repository-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+The name for the created package set.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_python_repository-repository">
+<td><code>repository</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+See [`nixpkgs_package`](#nixpkgs_package-repository).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_python_repository-repositories">
+<td><code>repositories</code></td>
+<td>
+
+optional.
+default is <code>{}</code>
+
+<p>
+
+See [`nixpkgs_package`](#nixpkgs_package-repositories).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_python_repository-nix_file">
+<td><code>nix_file</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+See [`nixpkgs_package`](#nixpkgs_package-nix_file).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_python_repository-nix_file_deps">
+<td><code>nix_file_deps</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+<p>
+
+See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_python_repository-quiet">
+<td><code>quiet</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+See [`nixpkgs_package`](#nixpkgs_package-quiet).
+
+</p>
 </td>
 </tr>
 </tbody>
