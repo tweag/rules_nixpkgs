@@ -1,7 +1,7 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_local_repository")
 load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
 load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
-load("@rules_nixpkgs_python//:python.bzl", "nixpkgs_python_configure")
+load("@rules_nixpkgs_python//:python.bzl", "nixpkgs_python_configure", "nixpkgs_python_repository")
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 
 def nixpkgs_repositories(*, bzlmod):
@@ -39,4 +39,14 @@ def nixpkgs_repositories(*, bzlmod):
         python2_attribute_path = "python2",
         repository = "@nixpkgs",
         register = not bzlmod,
+    )
+
+    nixpkgs_python_repository(
+        name = "poetry_packages",
+        repository = "@nixpkgs",
+        nix_file = "//:poetry.nix",
+        nix_file_deps = [
+            "//:pyproject.toml",
+            "//:poetry.lock",
+        ],
     )
