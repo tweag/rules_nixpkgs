@@ -1,5 +1,6 @@
 load("@nixpkgs_python_toolchain//:defs.bzl", "interpreter")
 load("@poetry_packages//:requirements.bzl", poetry_requirement = "requirement")
+load("@mach_nix_packages//:requirements.bzl", mach_nix_requirement = "requirement")
 package(default_testonly = 1)
 
 # Test nixpkgs_python_configure() by running some Python code.
@@ -29,6 +30,20 @@ py_test(
     deps = [
         poetry_requirement("cffi"),
         poetry_requirement("pandas"),
+    ],
+    srcs_version = "PY3",
+    python_version = "PY3",
+    size = "small",
+    visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "import-mach-nix-packages",
+    main = "import_packages_test.py",
+    srcs = ["import_packages_test.py"],
+    deps = [
+        mach_nix_requirement("cffi"),
+        mach_nix_requirement("pandas"),
     ],
     srcs_version = "PY3",
     python_version = "PY3",

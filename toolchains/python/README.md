@@ -266,18 +266,26 @@ sets with nixpkgs. See our python [`tests`](/testing/toolchains/python) and
 This rule is intended to mimic as closely as possible the [rules_python
 API](https://github.com/bazelbuild/rules_python#using-the-package-installation-rules).
 `nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
-As such, it also provides a `requirement` function to perform the name
-mangling. Using the `requirement` fucntion inherits the same advantages and
+As such, it also provides a `requirement` function.
+
+:warning: Using the `requirement` fucntion inherits the same advantages and
 limitations as the one in rules_python. All the function does is create a
 label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
 While depending on such a label directly will work, the layout may change
 in the future. To be on the safe side, define and import your own
 `requirement` function if you need to play with these labels.
 
+:warning: Just as with rules_python, nothing is done to enforce consistency
+between the version of python used to generate this repository and the one
+configured in your toolchain, even if you use nixpkgs_python_toolchain. You
+should ensure they both use the same python from the same nixpkgs version.
+While nixpkgs_python_repository could also register the toolchain used to
+generate the package set, this is not implemented yet.
+
 :warning: packages names exposed by this rule are determined by the `pname`
-attribute of the nix packages. These may vary slightly from names used by
-rules_python. Should this be a problem, you can provide you own
-`requirement` function.
+attribute of the corresponding nix package. These may vary slightly from
+names used by rules_python. Should this be a problem, you can provide you
+own `requirement` function, for example one that lowercases its argument.
 
 
 #### Parameters

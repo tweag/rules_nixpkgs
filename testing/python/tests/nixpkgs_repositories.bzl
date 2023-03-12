@@ -50,3 +50,12 @@ def nixpkgs_repositories(*, bzlmod):
             "//:poetry.lock",
         ],
     )
+
+    nixpkgs_python_repository(
+        name = "mach_nix_packages",
+        repository = "@nixpkgs",
+        nix_file = "//:mach-nix.nix",
+        nix_file_deps = [
+            "//:requirements.txt",
+        ],
+    )

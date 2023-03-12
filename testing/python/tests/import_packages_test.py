@@ -1,3 +1,7 @@
+import sys, pprint
+print("python path = ", end="")
+pprint.pprint(sys.path)
+
 import cffi
 print("cffi version = ", cffi.__version__)
 
