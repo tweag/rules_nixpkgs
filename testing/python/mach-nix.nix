@@ -1,7 +1,9 @@
 let
   mach-nix = import (builtins.fetchGit {
     url = "https://github.com/DavHau/mach-nix";
-    ref = "f60b9833469adb18e57b4c9e8fc4804fce82e3da";
+    ref = "master";
+    rev = "f60b9833469adb18e57b4c9e8fc4804fce82e3da";
+    narHash = "sha256-LGFLMTf9gEPYzLuny3idKQOGiZFVhmjR2VGvio4chMI=";
   }) {
     # ** Extremely important! **
     # You want to use the same python version as your main nixpkgs.
@@ -12,7 +14,7 @@ let
     requirements = builtins.readFile ./requirements.txt;
     providers._default = "nixpkgs";
   };
-  python = pythonWithPackages; #.python;
+  python = pythonWithPackages.python;
   # Beloved hacks !
   # Extract the subset of packages that have been requested by mach-nix.
   # By default, python.pkgs contains all the packages known by nixpkgs,
