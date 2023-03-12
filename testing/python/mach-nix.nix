@@ -1,14 +1,15 @@
 let
-  mach-nix = import (builtins.fetchGit {
-    url = "https://github.com/DavHau/mach-nix";
-    ref = "master";
+  nixpkgs = import <nixpkgs> {};
+  mach-nix = import (nixpkgs.fetchFromGitHub {
+    owner = "DavHau";
+    repo = "mach-nix";
     rev = "f60b9833469adb18e57b4c9e8fc4804fce82e3da";
-    narHash = "sha256-LGFLMTf9gEPYzLuny3idKQOGiZFVhmjR2VGvio4chMI=";
+    hash = "sha256-LGFLMTf9gEPYzLuny3idKQOGiZFVhmjR2VGvio4chMI=";
   }) {
     # ** Extremely important! **
     # You want to use the same python version as your main nixpkgs.
     # Bazel does not enforce this, and it will fail for binary packages.
-    pkgs = import <nixpkgs> {};
+    pkgs = nixpkgs;
   };
   pythonWithPackages = mach-nix.mkPython {
     requirements = builtins.readFile ./requirements.txt;
