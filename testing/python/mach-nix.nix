@@ -3,13 +3,17 @@ let
   mach-nix = import (nixpkgs.fetchFromGitHub {
     owner = "DavHau";
     repo = "mach-nix";
-    rev = "68a85753555ed67ff53f0d0320e5ac3c725c7400";
-    hash = "sha256-YIcQtXNQSofFSRDO8Y/uCtXAMguc8HqpY83TstgkH+k=";
-  }) { };
+    rev = "f60b9833469adb18e57b4c9e8fc4804fce82e3da";
+    hash = "sha256-LGFLMTf9gEPYzLuny3idKQOGiZFVhmjR2VGvio4chMI=";
+  }) {
+    # ** Extremely important! **
+    # You want to use the same python version as your main nixpkgs.
+    # Bazel does not enforce this, and it will fail for binary packages.
+    pkgs = nixpkgs;
+  };
   pythonWithPackages = mach-nix.mkPython {
     requirements = builtins.readFile ./requirements.txt;
-    # Keep this aligned with whatever nixpkgs.python is in flake.nix.
-    python = "python310";
+    providers._default = "nixpkgs";
   };
   python = pythonWithPackages.python;
   # Beloved hacks !
