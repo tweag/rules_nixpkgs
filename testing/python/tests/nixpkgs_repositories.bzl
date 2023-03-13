@@ -59,3 +59,9 @@ def nixpkgs_repositories(*, bzlmod):
             "//:requirements.txt",
         ],
     )
+
+    nixpkgs_python_repository(
+        name = "vanilla_packages",
+        repository = "@nixpkgs",
+        nix_file = "//:vanilla.nix",
+    )
