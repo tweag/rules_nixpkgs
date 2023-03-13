@@ -16,6 +16,7 @@ let
   };
   pythonWithPackages = mach-nix.mkPython {
     requirements = builtins.readFile ./requirements.txt;
+    providers._default = "nixpkgs,wheel";
   };
   python = pythonWithPackages.python;
   # Beloved hacks !
@@ -24,6 +25,7 @@ let
   # plus the onse configured by mach-nix.
   # This retrives the `extraLibs` attribute that mach-nix configured.
   pkgs = (pythonWithPackages.override (old: {
+    # ignoreCollisions happens to tolerate this abuse
     ignoreCollisions = old.extraLibs;
   })).ignoreCollisions;
 in {
