@@ -28,8 +28,7 @@ py_test(
     main = "import_packages_test.py",
     srcs = ["import_packages_test.py"],
     deps = [
-        poetry_requirement("cffi"),
-        poetry_requirement("pandas"),
+        poetry_requirement("flask"),
     ],
     srcs_version = "PY3",
     python_version = "PY3",
@@ -42,8 +41,7 @@ py_test(
     main = "import_packages_test.py",
     srcs = ["import_packages_test.py"],
     deps = [
-        mach_nix_requirement("cffi"),
-        mach_nix_requirement("pandas"),
+        mach_nix_requirement("flask"),
     ],
     srcs_version = "PY3",
     python_version = "PY3",

@@ -2,13 +2,10 @@ import sys, pprint
 print("python path = ", end="")
 pprint.pprint(sys.path)
 
-import cffi
-print("cffi version = ", cffi.__version__)
-
-import pandas
-print("pandas version = ", pandas.__version__)
+import flask
+print("flask version = ", flask.__version__)
 
 # Also test that numpy is available.
 # nixpkgs_python_repository should provide the dependencies closure.
-import numpy
-print("numpy version = ", numpy.__version__)
+import click
+print("click version = ", click.__version__)

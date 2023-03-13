@@ -1,2 +1,1 @@
-cffi
-pandas
+flask >= 2.2.0
