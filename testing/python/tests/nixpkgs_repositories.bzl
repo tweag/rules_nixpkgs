@@ -52,15 +52,6 @@ def nixpkgs_repositories(*, bzlmod):
     )
 
     nixpkgs_python_repository(
-        name = "mach_nix_packages",
-        repository = "@nixpkgs",
-        nix_file = "//:mach-nix.nix",
-        nix_file_deps = [
-            "//:requirements.txt",
-        ],
-    )
-
-    nixpkgs_python_repository(
         name = "vanilla_packages",
         repository = "@nixpkgs",
         nix_file = "//:vanilla.nix",

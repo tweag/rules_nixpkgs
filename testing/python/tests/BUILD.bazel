@@ -1,6 +1,5 @@
 load("@nixpkgs_python_toolchain//:defs.bzl", "interpreter")
 load("@poetry_packages//:requirements.bzl", poetry_requirement = "requirement")
-load("@mach_nix_packages//:requirements.bzl", mach_nix_requirement = "requirement")
 load("@vanilla_packages//:requirements.bzl", vanilla_requirement = "requirement")
 package(default_testonly = 1)
 
@@ -30,19 +29,6 @@ py_test(
     srcs = ["import_packages_test.py"],
     deps = [
         poetry_requirement("flask"),
-    ],
-    srcs_version = "PY3",
-    python_version = "PY3",
-    size = "small",
-    visibility = ["//visibility:public"],
-)
-
-py_test(
-    name = "import-mach-nix-packages",
-    main = "import_packages_test.py",
-    srcs = ["import_packages_test.py"],
-    deps = [
-        mach_nix_requirement("flask"),
     ],
     srcs_version = "PY3",
     python_version = "PY3",
