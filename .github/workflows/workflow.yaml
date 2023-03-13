@@ -53,6 +53,7 @@ jobs:
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
         run: |
+          nix-build -A pkgs testing/python/mach-nix.nix -v
           nix-shell --pure \
             --keep GITHUB_REPOSITORY \
             --keep BZLMOD_ENABLED \
