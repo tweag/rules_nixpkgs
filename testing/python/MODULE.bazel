@@ -50,3 +50,8 @@ use_repo(non_module_deps, "nixpkgs_python_toolchain")
 use_repo(non_module_deps, "nixpkgs_python_configure_test")
 use_repo(non_module_deps, "nixpkgs_python_toolchain_python3")
 register_toolchains("@nixpkgs_python_toolchain//:all")
+
+use_repo(non_module_deps, "generated_poetry_packages_deps")
+use_repo(non_module_deps, "poetry_packages")
+use_repo(non_module_deps, "generated_vanilla_packages_deps")
+use_repo(non_module_deps, "vanilla_packages")

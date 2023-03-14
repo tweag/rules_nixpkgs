@@ -1,10 +1,11 @@
 """<!-- Edit the docstring in `toolchains/python/python.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
 
-Rules for importing a Python toolchain from Nixpkgs.
+Rules to import Python toolchains and packages from Nixpkgs.
 
 # Rules
 
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
+* [nixpkgs_python_repository](#nixpkgs_python_repository)
 """
 
 load(
@@ -200,3 +201,130 @@ def nixpkgs_python_configure(
 
     if register:
         native.register_toolchains("@{}//:toolchain".format(name))
+
+
+def _nixpkgs_python_repository_impl(repository_ctx):
+    # Read generated json
+    python_packages = repository_ctx.read(repository_ctx.path(repository_ctx.attr.json_deps))
+
+    # Generate BUILD.bazel content from the json data
+    content = 'load("@rules_nixpkgs_python//:python_package.bzl", "python_package");'
+    for pkg_info in json.decode(python_packages):
+        pkg_name = pkg_info["name"]
+        pkg_store_path = pkg_info["store_path"]
+        deps = pkg_info["deps"]
+        pkg_link_path = "{}-link".format(pkg_name)
+        repository_ctx.symlink(pkg_store_path, pkg_link_path)
+
+        # Bazel chokes on files containing whitespaces, so we exclude them from
+        # the glob, hoping they are not important
+        content += """
+python_package(
+    name = "{name}",
+    store_path = "{link}",
+    files = glob(["{link}/**"], exclude=["{link}/**/* *"]),
+    deps = {deps},
+    visibility = ["//visibility:public"],
+)
+        """.format(name=pkg_name, link=pkg_link_path, deps=deps)
+
+    # Write the content to the file
+    repository_ctx.file("BUILD.bazel", content)
+
+    # Generate //:requirements.bzl to provide `requirement` like rules_python
+    repository_ctx.file("requirements.bzl", """
+def requirement(package_name):
+    return "@{}//:{{}}".format(package_name)
+""".format(repository_ctx.attr.unmangled_name),
+    )
+
+    # TODO: make it lazy in the packages themselves ?
+
+
+_nixpkgs_python_repository = repository_rule(
+    _nixpkgs_python_repository_impl,
+    attrs = {
+        "json_deps": attr.label(),
+        "unmangled_name": attr.string(),
+    },
+)
+
+
+def nixpkgs_python_repository(
+        name,
+        repository = None,
+        repositories = {},
+        nix_file = None,
+        nix_file_deps = [],
+        quiet = False,
+        ):
+    """Define a collection of python packages based on a nix file.
+
+    The only entry point is a [`nix_file`](#nixpkgs_python_repository-nix_file)
+    which should expose a `pkgs` and a `python` attributes. `python` is the
+    python interpreter, and `pkgs` a set of python packages that will be made
+    available to bazel.
+
+    :warning: All the packages in `pkgs` are built by this rule. It is
+    therefore not a good idea to expose something as big as `pkgs.python3` as
+    provided by nixpkgs.
+
+    This rule is instead intended to expose an ad-hoc set of packages for your
+    project, as can be built by poetry2nix, mach-nix, dream2nix or by manually
+    picking the python packages you need from nixpkgs.
+
+    The format is generic to support the many ways to generate such packages
+    sets with nixpkgs. See our python [`tests`](/testing/toolchains/python) and
+    [examples](`/examples/toolchains/python`) to get started.
+
+    This rule is intended to mimic as closely as possible the [rules_python
+    API](https://github.com/bazelbuild/rules_python#using-the-package-installation-rules).
+    `nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
+    As such, it also provides a `requirement` function.
+
+    :warning: Using the `requirement` fucntion inherits the same advantages and
+    limitations as the one in rules_python. All the function does is create a
+    label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
+    While depending on such a label directly will work, the layout may change
+    in the future. To be on the safe side, define and import your own
+    `requirement` function if you need to play with these labels.
+
+    :warning: Just as with rules_python, nothing is done to enforce consistency
+    between the version of python used to generate this repository and the one
+    configured in your toolchain, even if you use nixpkgs_python_toolchain. You
+    should ensure they both use the same python from the same nixpkgs version.
+
+    :warning: packages names exposed by this rule are determined by the `pname`
+    attribute of the corresponding nix package. These may vary slightly from
+    names used by rules_python. Should this be a problem, you can provide you
+    own `requirement` function, for example one that lowercases its argument.
+
+    Args:
+      name: The name for the created package set.
+      repository: See [`nixpkgs_package`](#nixpkgs_package-repository).
+      repositories: See [`nixpkgs_package`](#nixpkgs_package-repositories).
+      nix_file: See [`nixpkgs_package`](#nixpkgs_package-nix_file).
+      nix_file_deps: See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+      quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
+    """
+
+    generated_deps_name = "generated_{}_deps".format(name)
+
+    nixpkgs_package(
+        name = generated_deps_name,
+        nix_file = "@rules_nixpkgs_python//:package_set_to_json.nix",
+        repository = repository,
+        repositories = repositories,
+        nix_file_deps = nix_file_deps + [ nix_file ],
+        nixopts = [ "--arg", "nix_file", "$(location {})".format(nix_file) ],
+        quiet = quiet,
+    )
+
+    _nixpkgs_python_repository(
+        name = name,
+        unmangled_name = name,
+        json_deps = "@{}//:requirements.json".format(generated_deps_name),
+    )
+
+
+

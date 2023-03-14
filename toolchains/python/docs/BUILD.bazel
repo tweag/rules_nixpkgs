@@ -3,6 +3,9 @@ load("@rules_nixpkgs_docs//:stardoc.bzl", "generate_documentation")
 generate_documentation(
     name = "README.md",
     input = "//:python.bzl",
-    symbol_names = ["nixpkgs_python_configure"],
+    symbol_names = [
+        "nixpkgs_python_configure",
+        "nixpkgs_python_repository",
+    ],
     deps = ["//:python"],
 )
