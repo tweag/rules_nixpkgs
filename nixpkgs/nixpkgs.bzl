@@ -32,6 +32,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_java_configure](#nixpkgs_java_configure)
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
+* [nixpkgs_python_repository](#nixpkgs_python_repository)
 * [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
 * [nixpkgs_rust_configure](#nixpkgs_rust_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
@@ -130,6 +131,7 @@ load(
 load(
     "@rules_nixpkgs_python//:python.bzl",
     _nixpkgs_python_configure = "nixpkgs_python_configure",
+    _nixpkgs_python_repository = "nixpkgs_python_repository",
 )
 load(
     "@rules_nixpkgs_java//:java.bzl",
@@ -158,6 +160,7 @@ nixpkgs_git_repository = _nixpkgs_git_repository
 nixpkgs_local_repository = _nixpkgs_local_repository
 nixpkgs_package = _nixpkgs_package
 nixpkgs_python_configure = _nixpkgs_python_configure
+nixpkgs_python_repository = _nixpkgs_python_repository
 nixpkgs_java_configure = _nixpkgs_java_configure
 nixpkgs_cc_configure = _nixpkgs_cc_configure
 nixpkgs_rust_configure = _nixpkgs_rust_configure

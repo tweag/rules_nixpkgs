@@ -18,6 +18,7 @@ generate_documentation(
         "nixpkgs_go_configure",
         "nixpkgs_java_configure",
         "nixpkgs_python_configure",
+        "nixpkgs_python_repository",
         "nixpkgs_rust_configure",
         "nixpkgs_sh_posix_configure",
         "nixpkgs_nodejs_configure",
