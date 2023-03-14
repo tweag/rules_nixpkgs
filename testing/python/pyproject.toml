@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "import_packages_test"
+version = "0.1.0"
+description = "Test of python packages imports in Bazel"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+flask = "^2.2.0"
+
+[build-system]
+requires = ["poetry-core>=1"]
+build-backend = "poetry.core.masonry.api"
