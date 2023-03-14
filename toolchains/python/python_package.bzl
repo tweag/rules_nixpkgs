@@ -3,9 +3,10 @@ def _python_package_impl(ctx):
     transitive_runfiles = []
     transitive_sources = []
 
-    # HACK(danny): for some unforunate reason, short_path returns ../ when operating in external
-    # repositories. I don't know why. It breaks rules_python's assumptions though.
-    # See https://github.com/bazelbuild/bazel-skylib/issues/303 for some discussion.
+    # HACK: short_path returns ../ when operating in external
+    # repositories, but this breaks rules_python's assumptions.
+    # See https://github.com/bazelbuild/bazel-skylib/issues/303
+    # for some discussion.
     store = ctx.file.store_path
     fixed_path = store.short_path[3:]
     import_path = "/".join([ctx.workspace_name, store.short_path])

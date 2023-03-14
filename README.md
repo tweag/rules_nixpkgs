@@ -1880,8 +1880,6 @@ in the future. To be on the safe side, define and import your own
 between the version of python used to generate this repository and the one
 configured in your toolchain, even if you use nixpkgs_python_toolchain. You
 should ensure they both use the same python from the same nixpkgs version.
-While nixpkgs_python_repository could also register the toolchain used to
-generate the package set, this is not implemented yet.
 
 :warning: packages names exposed by this rule are determined by the `pname`
 attribute of the corresponding nix package. These may vary slightly from

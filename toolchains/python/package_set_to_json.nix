@@ -1,6 +1,6 @@
 {
   # A file to be later `import`ed, and providing two attributes: 
-  # - `python`: used to obtain the valie of `sitePackages`
+  # - `python`: used to obtain the value of `sitePackages`
   # - `pkgs`: a set of python packages whose closure will be exposed in the
   #   generated json file, and consumed by `nixpkgs_python_repository` rule.
   nix_file
