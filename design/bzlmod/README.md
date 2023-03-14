@@ -192,6 +192,9 @@ Support the use of Nix built packages as Bazel toolchains.
     separate Bazel module as laid out above on module separation. Instead,
     repositories will need to be exposed through an intermediary and imported
     into the package and toolchain repositories through that intermediary.
+    A known repository that provides a macro to convert tag names into resolved
+    labels to the repository could be such an intermediary, i.e. a hub
+    repository, see below.
 
 ### Module Extensions Have Global Scope
 
