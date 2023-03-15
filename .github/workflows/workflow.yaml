@@ -135,5 +135,5 @@ jobs:
           pushd examples/cc-template
           echo
           echo "::group::Running $(head -n1 README.md) with Nix"
-          nix-shell --command 'bazel run --config=nix //src:hello-world'
+          nix develop --command bazel run //src:hello-world
           popd
