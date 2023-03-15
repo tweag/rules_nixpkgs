@@ -10,7 +10,7 @@ One may wish to use a C++ toolchain to compile certain libraries written in
 non-C++ languages. For instance, Clang/LLVM can be used to compile CUDA or HIP
 code targeting GPUs. This can be achieved by:
 
-  1. passing `cc_lang = "none"` in `nixpkgs_cc_configure` below 
+  1. passing `cc_lang = "none"` in `nixpkgs_cc_configure` below
   2. using a rule invocation of the form `cc_library(..., copts="-x cuda")`
   when defining individual libraries or executables
 
