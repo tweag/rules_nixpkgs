@@ -1,5 +1,6 @@
 queue_rules:
   - name: default
+    merge_method: merge
     conditions:
       - check-success~=Build & Test - Nixpkgs - .*
       - check-success~=Build & Test - Examples \(.*\)
@@ -15,6 +16,7 @@ pull_request_rules:
     actions:
       queue:
         name: default
+        method: merge
   - name: remove from merge-queue after merge
     conditions:
       - merged
