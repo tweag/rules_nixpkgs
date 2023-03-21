@@ -11,6 +11,7 @@ generate_documentation(
     input = "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
     symbol_names = [
         "nixpkgs_git_repository",
+        "nixpkgs_http_repository",
         "nixpkgs_local_repository",
         "nixpkgs_package",
         "nixpkgs_cc_configure",

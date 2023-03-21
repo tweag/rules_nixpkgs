@@ -28,6 +28,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 ## Rules
 
 * [nixpkgs_git_repository](#nixpkgs_git_repository)
+* [nixpkgs_http_repository](#nixpkgs_http_repository)
 * [nixpkgs_local_repository](#nixpkgs_local_repository)
 * [nixpkgs_package](#nixpkgs_package)
 
