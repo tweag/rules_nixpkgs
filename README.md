@@ -616,6 +616,217 @@ Additional arguments to forward to the underlying repository rule.
 </table>
 
 
+<a id="#nixpkgs_http_repository"></a>
+
+### nixpkgs_http_repository
+
+<pre>
+nixpkgs_http_repository(<a href="#nixpkgs_http_repository-name">name</a>, <a href="#nixpkgs_http_repository-url">url</a>, <a href="#nixpkgs_http_repository-urls">urls</a>, <a href="#nixpkgs_http_repository-auth">auth</a>, <a href="#nixpkgs_http_repository-strip_prefix">strip_prefix</a>, <a href="#nixpkgs_http_repository-integrity">integrity</a>, <a href="#nixpkgs_http_repository-sha256">sha256</a>, <a href="#nixpkgs_http_repository-kwargs">kwargs</a>)
+</pre>
+
+Download a Nixpkgs repository over HTTP.
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_http_repository-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+String
+
+A unique name for this repository.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-url">
+<td><code>url</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+
+A URL to download the repository from.
+
+This must be a file, http or https URL. Redirections are followed.
+
+More flexibility can be achieved by the urls parameter that allows
+to specify alternative URLs to fetch from.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-urls">
+<td><code>urls</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+List of String
+
+A list of URLs to download the repository from.
+
+Each entry must be a file, http or https URL. Redirections are followed.
+
+URLs are tried in order until one succeeds, so you should list local mirrors first.
+If all downloads fail, the rule will fail.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-auth">
+<td><code>auth</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Dict of String
+
+An optional dict mapping host names to custom authorization patterns.
+
+If a URL's host name is present in this dict the value will be used as a pattern when
+generating the authorization header for the http request. This enables the use of custom
+authorization schemes used in a lot of common cloud storage providers.
+
+The pattern currently supports 2 tokens: <code>&lt;login&gt;</code> and
+<code>&lt;password&gt;</code>, which are replaced with their equivalent value
+in the netrc file for the same host name. After formatting, the result is set
+as the value for the <code>Authorization</code> field of the HTTP request.
+
+Example attribute and netrc for a http download to an oauth2 enabled API using a bearer token:
+
+<pre>
+auth_patterns = {
+    "storage.cloudprovider.com": "Bearer &lt;password&gt;"
+}
+</pre>
+
+netrc:
+
+<pre>
+machine storage.cloudprovider.com
+        password RANDOM-TOKEN
+</pre>
+
+The final HTTP request would have the following header:
+
+<pre>
+Authorization: Bearer RANDOM-TOKEN
+</pre>
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-strip_prefix">
+<td><code>strip_prefix</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+
+A directory prefix to strip from the extracted files.
+
+Many archives contain a top-level directory that contains all of the useful
+files in archive. This field can be used to strip it from all of the
+extracted files.
+
+For example, suppose you are using `nixpkgs-22.11.zip`, which contains
+the directory `nixpkgs-22.11/` under which there is the `default.nix`
+file and the `pkgs/` directory. Specify `strip_prefix =
+"nixpkgs-22.11"` to use the `nixpkgs-22.11` directory as your top-level
+directory.
+
+Note that if there are files outside of this directory, they will be
+discarded and inaccessible (e.g., a top-level license file). This includes
+files/directories that start with the prefix but are not in the directory
+(e.g., `nixpkgs-22.11.release-notes`). If the specified prefix does not
+match a directory in the archive, Bazel will return an error.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-integrity">
+<td><code>integrity</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+
+Expected checksum in Subresource Integrity format of the file downloaded.
+
+This must match the checksum of the file downloaded. _It is a security risk
+to omit the checksum as remote files can change._ At best omitting this
+field will make your build non-hermetic. It is optional to make development
+easier but either this attribute or `sha256` should be set before shipping.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-sha256">
+<td><code>sha256</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+String
+The expected SHA-256 of the file downloaded.
+
+This must match the SHA-256 of the file downloaded. _It is a security risk
+to omit the SHA-256 as remote files can change._ At best omitting this
+field will make your build non-hermetic. It is optional to make development
+easier but should be set before shipping.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_http_repository-kwargs">
+<td><code>kwargs</code></td>
+<td>
+
+optional.
+
+<p>
+
+Additional arguments to forward to the underlying repository rule.
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
 <a id="#nixpkgs_java_configure"></a>
 
 ### nixpkgs_java_configure
