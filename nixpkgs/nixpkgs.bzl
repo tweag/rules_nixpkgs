@@ -26,6 +26,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 ## Rules
 
 * [nixpkgs_git_repository](#nixpkgs_git_repository)
+* [nixpkgs_http_repository](#nixpkgs_http_repository)
 * [nixpkgs_local_repository](#nixpkgs_local_repository)
 * [nixpkgs_package](#nixpkgs_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
@@ -118,6 +119,7 @@ load(
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
     _nixpkgs_git_repository = "nixpkgs_git_repository",
+    _nixpkgs_http_repository = "nixpkgs_http_repository",
     _nixpkgs_local_repository = "nixpkgs_local_repository",
     _nixpkgs_package = "nixpkgs_package",
 )
@@ -157,6 +159,7 @@ load(
 
 # aliases for backwards compatibility prior to `bzlmod`
 nixpkgs_git_repository = _nixpkgs_git_repository
+nixpkgs_http_repository = _nixpkgs_http_repository
 nixpkgs_local_repository = _nixpkgs_local_repository
 nixpkgs_package = _nixpkgs_package
 nixpkgs_python_configure = _nixpkgs_python_configure
