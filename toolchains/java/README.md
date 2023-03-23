@@ -1,6 +1,6 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-<!-- Edit the docstring in `toolchains/java/java.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+<!-- Edit the docstring in `toolchains/java/java.bzl` and run `cd docs; bazel run :update-README.md` to change this repository's `README.md`. -->
 
 # Rules for importing a Java toolchain from Nixpkgs
 

@@ -1,4 +1,4 @@
-"""<!-- Edit the docstring in `toolchains/python/python.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
+"""<!-- Edit the docstring in `toolchains/python/python.bzl` and run `cd docs; bazel run :update-README.md` to change this repository's `README.md`. -->
 
 Rules to import Python toolchains and packages from Nixpkgs.
 
