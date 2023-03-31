@@ -2,6 +2,27 @@ load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
+def err(return_value, prefix = None):
+    """Fail if the given return value indicates an error.
+
+    Args:
+      return_value: Pair; If the second element is not `None` this indicates an error.
+      prefix: optional, String; A prefix for the error message contained in `return_value`.
+
+    Returns:
+      The first element of `return_value` if no error was indicated.
+    """
+    result, err = return_value
+
+    if err:
+        if prefix:
+            msg = prefix + err
+        else:
+            msg = err
+        fail(msg)
+
+    return result
+
 def is_supported_platform(repository_ctx):
     return repository_ctx.which("nix-build") != None
 
