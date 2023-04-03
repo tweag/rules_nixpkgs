@@ -26,6 +26,11 @@ local_repository(
 )
 
 local_repository(
+    name = "nixpkgs_packages",
+    path = "workspace_nixpkgs_packages",
+)
+
+local_repository(
     name = "nixpkgs_location_expansion_test_file",
     path = "tests/location_expansion/test_repo",
 )
