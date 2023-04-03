@@ -23,12 +23,15 @@ nix_repo.github(
     sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
 )
 
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+use_repo(nix_pkg, "nixpkgs_packages")
+nix_pkg.attr(attr = "hello")
+nix_pkg.local_attr(name = "attribute-test", attr = "hello")
+
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "http_nixpkgs")
 use_repo(non_module_deps, "nixpkgs_content")
-use_repo(non_module_deps, "hello")
 use_repo(non_module_deps, "expr-test")
-use_repo(non_module_deps, "attribute-test")
 use_repo(non_module_deps, "expr-attribute-test")
 use_repo(non_module_deps, "extra-args-test")
 use_repo(non_module_deps, "nix-file-test")
