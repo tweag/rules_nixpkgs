@@ -40,6 +40,12 @@ def nixpkgs_repositories(*, bzlmod):
             repository = nixpkgs,
         )
 
+        nixpkgs_package(
+            name = "nixpkgs-git-repository-test",
+            attribute_path = "hello",
+            repositories = {"nixpkgs": remote_nixpkgs},
+        )
+
     nixpkgs_http_repository(
         name = "http_nixpkgs",
         url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
@@ -97,12 +103,6 @@ def nixpkgs_repositories(*, bzlmod):
         nix_file = "//tests:hello.nix",
         nix_file_deps = ["//tests:pkgname.nix"],
         repository = nixpkgs,
-    )
-
-    nixpkgs_package(
-        name = "nixpkgs-git-repository-test",
-        attribute_path = "hello",
-        repositories = {"nixpkgs": remote_nixpkgs},
     )
 
     nixpkgs_package(
