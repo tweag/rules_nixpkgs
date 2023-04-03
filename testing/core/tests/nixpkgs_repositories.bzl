@@ -1,3 +1,4 @@
+load("@nixpkgs_repositories//:defs.bzl", "nix_repo")
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
     "nixpkgs_git_repository",
@@ -6,19 +7,25 @@ load(
     "nixpkgs_package",
 )
 
-def nixpkgs_repositories():
-    nixpkgs_local_repository(
-        name = "nixpkgs",
-        nix_file = "//:nixpkgs.nix",
-        nix_file_deps = ["//:flake.lock"],
-    )
+def nixpkgs_repositories(*, bzlmod):
+    if bzlmod:
+        nixpkgs = nix_repo("rules_nixpkgs_core_testing", "nixpkgs")
+        remote_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "remote_nixpkgs")
+    else:
+        nixpkgs = "@nixpkgs"
+        nixpkgs_local_repository(
+            name = "nixpkgs",
+            nix_file = "//:nixpkgs.nix",
+            nix_file_deps = ["//:flake.lock"],
+        )
 
-    nixpkgs_git_repository(
-        name = "remote_nixpkgs",
-        remote = "https://github.com/NixOS/nixpkgs",
-        revision = "22.05",
-        sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
-    )
+        remote_nixpkgs = "@remote_nixpkgs"
+        nixpkgs_git_repository(
+            name = "remote_nixpkgs",
+            remote = "https://github.com/NixOS/nixpkgs",
+            revision = "22.05",
+            sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+        )
 
     nixpkgs_http_repository(
         name = "http_nixpkgs",
@@ -40,7 +47,7 @@ def nixpkgs_repositories():
     nixpkgs_package(
         name = "hello",
         # Deliberately not repository, to test whether repositories works.
-        repositories = {"nixpkgs": "@nixpkgs"},
+        repositories = {"nixpkgs": nixpkgs},
     )
 
     nixpkgs_package(
@@ -54,14 +61,14 @@ def nixpkgs_repositories():
     nixpkgs_package(
         name = "attribute-test",
         attribute_path = "hello",
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
         name = "expr-attribute-test",
         attribute_path = "hello",
         nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
@@ -74,27 +81,27 @@ def nixpkgs_repositories():
             "packagePath",
             "hello",
         ],
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
         name = "nix-file-test",
         attribute_path = "hello",
         nix_file = "//tests:nixpkgs.nix",
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
         name = "nix-file-deps-test",
         nix_file = "//tests:hello.nix",
         nix_file_deps = ["//tests:pkgname.nix"],
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
         name = "nixpkgs-git-repository-test",
         attribute_path = "hello",
-        repositories = {"nixpkgs": "@remote_nixpkgs"},
+        repositories = {"nixpkgs": remote_nixpkgs},
     )
 
     nixpkgs_package(
@@ -118,13 +125,13 @@ def nixpkgs_repositories():
             "//:nixpkgs.nix",
             "//tests:relative_imports/nixpkgs.nix",
         ],
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
         name = "output-filegroup-test",
         nix_file = "//tests:output.nix",
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
@@ -137,7 +144,7 @@ filegroup(
 )
     """,
         nix_file = "//tests:output.nix",
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
 
     nixpkgs_package(
@@ -165,7 +172,7 @@ filegroup(
             "argstr_external_file",
             "$(location @nixpkgs_location_expansion_test_file//:test_file)",
         ],
-        repository = "@remote_nixpkgs",
+        repository = remote_nixpkgs,
     )
 
     # TODO this is currently untested,
@@ -181,5 +188,5 @@ filegroup(
             "//:nixpkgs.nix",
             "//tests:relative_imports/nixpkgs.nix",
         ],
-        repository = "@nixpkgs",
+        repository = nixpkgs,
     )
