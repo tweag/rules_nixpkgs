@@ -503,7 +503,7 @@ def _nixpkgs_package_impl(repository_ctx):
     else:
         default_nix_substs = {
             "%{def}": "import <nixpkgs> { config = {}; overlays = []; }",
-            "%{maybe_attr}": maybe_attr if maybe_attr else "." + repository_ctx.attr.name,
+            "%{maybe_attr}": maybe_attr if maybe_attr else _sanitize_attribute_path(repository_ctx.attr.name),
         }
 
     nix_file_deps = {}
