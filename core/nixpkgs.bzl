@@ -398,7 +398,7 @@ def _sanitize_attribute_path(attribute_path):
     if attribute_path:
         attrs = []
         for attr in attribute_path.split("."):
-            attrs.append("\"%s\"" % attr)
+            attrs.append("\"%s\"" % attr.split("~")[-1])
         maybe_attr = "." + ".".join(attrs)
     return maybe_attr
 
