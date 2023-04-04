@@ -481,18 +481,18 @@ def _nixpkgs_package_impl(repository_ctx):
     if repository_ctx.attr.nix_file:
         nix_file = cp(repository_ctx, repository_ctx.attr.nix_file)
         default_nix_substs = {
-            "%{def}": "import %s" % repository_ctx.path(nix_file),
-            "%{maybe_attr}": (".%s" % attribute_path) if attribute_path else "",
+            "%{def}": "import /${\"%s\"}" % repository_ctx.path(nix_file),
+            "%{maybe_attr}": (".\"%s\"" % attribute_path) if attribute_path else "",
         }
     elif repository_ctx.attr.nix_file_content:
         default_nix_substs = {
             "%{def}": repository_ctx.attr.nix_file_content,
-            "%{maybe_attr}": (".%s" % attribute_path) if attribute_path else "",
+            "%{maybe_attr}": (".\"%s\"" % attribute_path) if attribute_path else "",
         }
     else:
         default_nix_substs = {
             "%{def}": "import <nixpkgs> { config = {}; overlays = []; }",
-            "%{maybe_attr}": ".%s" % (attribute_path or repository_ctx.attr.name),
+            "%{maybe_attr}": ".\"%s\"" % (attribute_path or repository_ctx.attr.name),
         }
 
     nix_file_deps = {}
