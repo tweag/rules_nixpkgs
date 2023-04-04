@@ -392,6 +392,16 @@ def _nixopts_args(nixopts):
                 arg_opt, arg_name = None, None
     return result
 
+def _sanitize_attribute_path(attribute_path):
+    # Wrap attribute path in strings for special characters if it exisits
+    maybe_attr = ""
+    if attribute_path:
+        attrs = []
+        for attr in attribute_path.split("."):
+            attrs.append("\"%s\"" % attr)
+        maybe_attr = "." + ".".join(attrs)
+    return maybe_attr
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
@@ -478,21 +488,22 @@ def _nixpkgs_package_impl(repository_ctx):
 
     # Create a default.nix and BUILD file in bazel-support for external
     # reference.
+    maybe_attr = _sanitize_attribute_path(attribute_path)
     if repository_ctx.attr.nix_file:
         nix_file = cp(repository_ctx, repository_ctx.attr.nix_file)
         default_nix_substs = {
             "%{def}": "import /${\"%s\"}" % repository_ctx.path(nix_file),
-            "%{maybe_attr}": (".\"%s\"" % attribute_path) if attribute_path else "",
+            "%{maybe_attr}": maybe_attr,
         }
     elif repository_ctx.attr.nix_file_content:
         default_nix_substs = {
             "%{def}": repository_ctx.attr.nix_file_content,
-            "%{maybe_attr}": (".\"%s\"" % attribute_path) if attribute_path else "",
+            "%{maybe_attr}": maybe_attr,
         }
     else:
         default_nix_substs = {
             "%{def}": "import <nixpkgs> { config = {}; overlays = []; }",
-            "%{maybe_attr}": ".\"%s\"" % (attribute_path or repository_ctx.attr.name),
+            "%{maybe_attr}": maybe_attr if maybe_attr else "." + repository_ctx.attr.name,
         }
 
     nix_file_deps = {}
