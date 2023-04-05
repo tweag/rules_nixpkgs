@@ -56,6 +56,25 @@ def _github_repo(github):
         strip_prefix = strip_prefix,
     )
 
+def _http_repo(http):
+    url_set = bool(http.url)
+    urls_set = bool(http.urls)
+
+    if url_set and urls_set:
+        fail("Specify only one of `url` or `urls`.")
+
+    if not url_set and not urls_set:
+        fail("Missing URL. Specify one of `url` or `urls`.")
+
+    return partial.make(
+        nixpkgs_http_repository,
+        url = http.url if url_set else None,
+        urls = http.urls if urls_set else None,
+        integrity = http.integrity,
+        sha256 = http.sha256,
+        strip_prefix = http.strip_prefix,
+    )
+
 def _nix_repo_impl(module_ctx):
     r = registry.make()
 
@@ -77,6 +96,17 @@ def _nix_repo_impl(module_ctx):
                     repo = _github_repo(github),
                 ),
                 prefix = "Cannot import GitHub repository: ",
+            )
+
+        for http in mod.tags.http:
+            fail_on_err(
+                registry.add_local_repo(
+                    r,
+                    key = key,
+                    name = http.name,
+                    repo = _http_repo(http),
+                ),
+                prefix = "Cannot import HTTP repository: ",
             )
 
         for override in mod.tags.override:
@@ -145,6 +175,21 @@ _GITHUB_ATTRS = {
     ),
 }
 
+_HTTP_ATTRS = {
+    "url": attr.string(
+        doc = "URL to download from. Specify one of `url` or `urls`.",
+        mandatory = False,
+    ),
+    "urls": attr.string_list(
+        doc = "List of URLs to download from. Specify one of `url` or `urls`.",
+        mandatory = False,
+    ),
+    "strip_prefix": attr.string(
+        doc = "A directory prefix to strip from the extracted files.",
+        mandatory = False,
+    ),
+}
+
 _OVERRIDE_ATTRS = {
     "name": attr.string(
         doc = "The name of the global default repository to set.",
@@ -162,6 +207,11 @@ _github_tag = tag_class(
     doc = "Import a Nix repository from Github.",
 )
 
+_http_tag = tag_class(
+    attrs = dicts.add(_NAME_ATTRS, _HTTP_ATTRS, _INTEGRITY_ATTRS),
+    doc = "Import a Nix repository from an HTTP URL.",
+)
+
 _override_tag = tag_class(
     attrs = _OVERRIDE_ATTRS,
     doc = "Define the global default Nix repository. May only be used in the root module or rules_nixpkgs_core.",
@@ -172,6 +222,7 @@ nix_repo = module_extension(
     tag_classes = {
         "default": _default_tag,
         "github": _github_tag,
+        "http": _http_tag,
         "override": _override_tag,
     },
 )
