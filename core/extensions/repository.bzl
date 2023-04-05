@@ -1,7 +1,7 @@
 """Defines the nix_repo module extension.
 """
 
-load("//:nixpkgs.bzl", "nixpkgs_http_repository")
+load("//:nixpkgs.bzl", "nixpkgs_http_repository", "nixpkgs_local_repository")
 load("//:util.bzl", "fail_on_err")
 load("//private:module_registry.bzl", "registry")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
@@ -75,6 +75,13 @@ def _http_repo(http):
         strip_prefix = http.strip_prefix,
     )
 
+def _file_repo(file):
+    return partial.make(
+        nixpkgs_local_repository,
+        nix_file = file.file,
+        nix_file_deps = file.file_deps,
+    )
+
 def _nix_repo_impl(module_ctx):
     r = registry.make()
 
@@ -107,6 +114,17 @@ def _nix_repo_impl(module_ctx):
                     repo = _http_repo(http),
                 ),
                 prefix = "Cannot import HTTP repository: ",
+            )
+
+        for file in mod.tags.file:
+            fail_on_err(
+                registry.add_local_repo(
+                    r,
+                    key = key,
+                    name = file.name,
+                    repo = _file_repo(file),
+                ),
+                prefix = "Cannot import file repository: ",
             )
 
         for override in mod.tags.override:
@@ -190,6 +208,18 @@ _HTTP_ATTRS = {
     ),
 }
 
+_FILE_ATTRS = {
+    "file": attr.label(
+        doc = "The file containing the Nix expression.",
+        mandatory = True,
+        allow_single_file = True,
+    ),
+    "file_deps": attr.label_list(
+        doc = "List of files required by the Nix expression.",
+        mandatory = False,
+    ),
+}
+
 _OVERRIDE_ATTRS = {
     "name": attr.string(
         doc = "The name of the global default repository to set.",
@@ -212,6 +242,11 @@ _http_tag = tag_class(
     doc = "Import a Nix repository from an HTTP URL.",
 )
 
+_file_tag = tag_class(
+    attrs = dicts.add(_NAME_ATTRS, _FILE_ATTRS),
+    doc = "Import a Nix repository from a local file.",
+)
+
 _override_tag = tag_class(
     attrs = _OVERRIDE_ATTRS,
     doc = "Define the global default Nix repository. May only be used in the root module or rules_nixpkgs_core.",
@@ -223,6 +258,7 @@ nix_repo = module_extension(
         "default": _default_tag,
         "github": _github_tag,
         "http": _http_tag,
+        "file": _file_tag,
         "override": _override_tag,
     },
 )
