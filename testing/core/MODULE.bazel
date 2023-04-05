@@ -22,6 +22,12 @@ nix_repo.github(
     tag = "22.05",
     sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
 )
+nix_repo.http(
+    name = "http_nixpkgs",
+    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
+    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    strip_prefix = "nixpkgs-22.05",
+)
 
 nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 use_repo(nix_pkg, "nixpkgs_packages")
@@ -30,7 +36,6 @@ nix_pkg.local_attr(name = "attribute-test", attr = "hello")
 nix_pkg.local_attr(name = "nixpkgs-git-repository-test", attr = "hello", repo = "remote_nixpkgs")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "http_nixpkgs")
 use_repo(non_module_deps, "nixpkgs_content")
 use_repo(non_module_deps, "expr-test")
 use_repo(non_module_deps, "expr-attribute-test")

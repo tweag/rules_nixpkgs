@@ -12,6 +12,7 @@ def nixpkgs_repositories(*, bzlmod):
     if bzlmod:
         nixpkgs = nix_repo("rules_nixpkgs_core_testing", "nixpkgs")
         remote_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "remote_nixpkgs")
+        http_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "http_nixpkgs")
     else:
         nixpkgs = "@nixpkgs"
         nixpkgs_local_repository(
@@ -25,6 +26,14 @@ def nixpkgs_repositories(*, bzlmod):
             name = "remote_nixpkgs",
             remote = "https://github.com/NixOS/nixpkgs",
             revision = "22.05",
+            sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+        )
+
+        http_nixpkgs = "@http_nixpkgs"
+        nixpkgs_http_repository(
+            name = "http_nixpkgs",
+            url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
+            strip_prefix = "nixpkgs-22.05",
             sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
         )
 
@@ -45,13 +54,6 @@ def nixpkgs_repositories(*, bzlmod):
             attribute_path = "hello",
             repositories = {"nixpkgs": remote_nixpkgs},
         )
-
-    nixpkgs_http_repository(
-        name = "http_nixpkgs",
-        url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
-        strip_prefix = "nixpkgs-22.05",
-        sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
-    )
 
     # same as @nixpkgs but using the `nix_file_content` parameter
     nixpkgs_local_repository(
@@ -108,7 +110,7 @@ def nixpkgs_repositories(*, bzlmod):
     nixpkgs_package(
         name = "nixpkgs-http-repository-test",
         attribute_path = "hello",
-        repositories = {"nixpkgs": "@http_nixpkgs"},
+        repositories = {"nixpkgs": http_nixpkgs},
     )
 
     nixpkgs_package(
