@@ -21,6 +21,16 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
 local_repository(
+    name = "nixpkgs_repositories",
+    path = "workspace_nixpkgs_repositories",
+)
+
+local_repository(
+    name = "nixpkgs_packages",
+    path = "workspace_nixpkgs_packages",
+)
+
+local_repository(
     name = "nixpkgs_location_expansion_test_file",
     path = "tests/location_expansion/test_repo",
 )
@@ -30,7 +40,7 @@ load(
     "nixpkgs_repositories",
 )
 
-nixpkgs_repositories()
+nixpkgs_repositories(bzlmod = False)
 
 local_repository(
     name = "rules_nixpkgs_java",
