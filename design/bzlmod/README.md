@@ -517,7 +517,7 @@ offers tags to define Nix repositories:
   * `file_deps`: optional, List of `Label`, files required by `file`.
 * `expr(name, expression)`\
   * `name`: `String`; unique name.
-  * `expression`: `String`; the Nix expression.
+  * `expr`: `String`; the Nix expression.
 * `override(repo)` (only allowed in rules\_nixpkgs\_core and root)\
   * `repo`: `String`; The name of the repository to override.
 
