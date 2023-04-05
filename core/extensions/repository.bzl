@@ -82,6 +82,12 @@ def _file_repo(file):
         nix_file_deps = file.file_deps,
     )
 
+def _expr_repo(expr):
+    return partial.make(
+        nixpkgs_local_repository,
+        nix_file_content = expr.expr,
+    )
+
 def _nix_repo_impl(module_ctx):
     r = registry.make()
 
@@ -125,6 +131,17 @@ def _nix_repo_impl(module_ctx):
                     repo = _file_repo(file),
                 ),
                 prefix = "Cannot import file repository: ",
+            )
+
+        for expr in mod.tags.expr:
+            fail_on_err(
+                registry.add_local_repo(
+                    r,
+                    key = key,
+                    name = expr.name,
+                    repo = _expr_repo(expr),
+                ),
+                prefix = "Cannot import expression repository: ",
             )
 
         for override in mod.tags.override:
@@ -220,6 +237,13 @@ _FILE_ATTRS = {
     ),
 }
 
+_EXPR_ATTRS = {
+    "expr": attr.string(
+        doc = "The Nix expression.",
+        mandatory = True,
+    ),
+}
+
 _OVERRIDE_ATTRS = {
     "name": attr.string(
         doc = "The name of the global default repository to set.",
@@ -247,6 +271,11 @@ _file_tag = tag_class(
     doc = "Import a Nix repository from a local file.",
 )
 
+_expr_tag = tag_class(
+    attrs = dicts.add(_NAME_ATTRS, _EXPR_ATTRS),
+    doc = "Import a Nix repository from a Nix expression.",
+)
+
 _override_tag = tag_class(
     attrs = _OVERRIDE_ATTRS,
     doc = "Define the global default Nix repository. May only be used in the root module or rules_nixpkgs_core.",
@@ -259,6 +288,7 @@ nix_repo = module_extension(
         "github": _github_tag,
         "http": _http_tag,
         "file": _file_tag,
+        "expr": _expr_tag,
         "override": _override_tag,
     },
 )
