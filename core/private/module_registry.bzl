@@ -292,7 +292,7 @@ def _get_all_module_scopes(r):
     return module_scopes, None
 
 _NIXPKGS_REPOSITORIES_DEFS = '''\
-load("@rules_nixpkgs_core//:util.bzl", _err = "err")
+load("@rules_nixpkgs_core//:util.bzl", _fail_on_err = "fail_on_err")
 
 {accessor}
 

@@ -2,7 +2,7 @@
 """
 
 load("//:nixpkgs.bzl", "nixpkgs_http_repository")
-load("//:util.bzl", "err")
+load("//:util.bzl", "fail_on_err")
 load("//private:module_registry.bzl", "registry")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:partial.bzl", "partial")
@@ -22,7 +22,7 @@ def nix_repo(module_name, name):
 
     [bazel-17652]: https://github.com/bazelbuild/bazel/issues/17652
     """
-    resolved = _err(
+    resolved = _fail_on_err(
         _get_repository(module_name, name),
         prefix = "Invalid Nix repository, you must use the nix_repo extension and request a global repository or register a local repository: ",
     )
@@ -60,16 +60,16 @@ def _nix_repo_impl(module_ctx):
     r = registry.make()
 
     for mod in module_ctx.modules:
-        key = err(registry.add_module(r, name = mod.name, version = mod.version))
+        key = fail_on_err(registry.add_module(r, name = mod.name, version = mod.version))
 
         for default in mod.tags.default:
-            err(
+            fail_on_err(
                 registry.use_global_repo(r, key = key, name = default.name),
                 prefix = "Cannot use global default repository: ",
             )
 
         for github in mod.tags.github:
-            err(
+            fail_on_err(
                 registry.add_local_repo(
                     r,
                     key = key,
@@ -81,12 +81,12 @@ def _nix_repo_impl(module_ctx):
 
         for override in mod.tags.override:
             prefix = "Cannot override global default repository: "
-            repo = err(
+            repo = fail_on_err(
                 registry.pop_local_repo(r, key = key, name = override.name),
                 prefix = prefix,
             )
             registry.set_default_global_repo(r, name = override.name, repo = repo)
-            err(
+            fail_on_err(
                 registry.use_global_repo(r, key = key, name = default.name),
                 prefix = prefix,
             )
@@ -94,7 +94,7 @@ def _nix_repo_impl(module_ctx):
     for repo_name, repo in registry.get_all_repositories(r).items():
         partial.call(repo, name = repo_name)
 
-    err(
+    fail_on_err(
         registry.hub_repo(r, name = "nixpkgs_repositories", accessor = _ACCESSOR),
         prefix = "Failed to generate `nixpkgs_repositories`: ",
     )

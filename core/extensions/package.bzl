@@ -2,7 +2,7 @@
 """
 
 load("//:nixpkgs.bzl", "nixpkgs_package")
-load("//:util.bzl", "err")
+load("//:util.bzl", "fail_on_err")
 load("//private:module_registry.bzl", "registry")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:partial.bzl", "partial")
@@ -26,7 +26,7 @@ def nix_pkg(module_name, name, label):
 
     [bazel-17652]: https://github.com/bazelbuild/bazel/issues/17652
     """
-    resolved = _err(
+    resolved = _fail_on_err(
         _get_repository(module_name, name),
         prefix = "Invalid Nix repository, you must use the nix_repo extension and request a global repository or register a local repository: ",
     )
@@ -87,16 +87,16 @@ def _nix_pkg_impl(module_ctx):
     r = registry.make()
 
     for mod in module_ctx.modules:
-        key = err(registry.add_module(r, name = mod.name, version = mod.version))
+        key = fail_on_err(registry.add_module(r, name = mod.name, version = mod.version))
 
         for attr in mod.tags.attr:
             name = _name_from_attr(attr.attr)
-            err(
+            fail_on_err(
                 registry.use_global_repo(r, key = key, name = name),
                 prefix = "Cannot use unified Nix package: ",
             )
             if not registry.has_global_repo(r, name = name):
-                err(
+                fail_on_err(
                     registry.add_global_repo(
                         r,
                         name = name,
@@ -106,7 +106,7 @@ def _nix_pkg_impl(module_ctx):
                 )
 
         for local_attr in mod.tags.local_attr:
-            err(
+            fail_on_err(
                 registry.add_local_repo(
                     r,
                     key = key,
@@ -119,7 +119,7 @@ def _nix_pkg_impl(module_ctx):
     for repo_name, repo in registry.get_all_repositories(r).items():
         partial.call(repo, name = repo_name)
 
-    err(
+    fail_on_err(
         registry.hub_repo(r, name = "nixpkgs_packages", accessor = _ACCESSOR),
         prefix = "Failed to generate `nixpkgs_packages`: ",
     )
