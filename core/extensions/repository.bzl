@@ -86,6 +86,7 @@ def _expr_repo(expr):
     return partial.make(
         nixpkgs_local_repository,
         nix_file_content = expr.expr,
+        nix_file_deps = expr.file_deps,
     )
 
 def _nix_repo_impl(module_ctx):
@@ -225,15 +226,18 @@ _HTTP_ATTRS = {
     ),
 }
 
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "List of files required by the Nix expression.",
+        mandatory = False,
+    ),
+}
+
 _FILE_ATTRS = {
     "file": attr.label(
         doc = "The file containing the Nix expression.",
         mandatory = True,
         allow_single_file = True,
-    ),
-    "file_deps": attr.label_list(
-        doc = "List of files required by the Nix expression.",
-        mandatory = False,
     ),
 }
 
@@ -267,12 +271,12 @@ _http_tag = tag_class(
 )
 
 _file_tag = tag_class(
-    attrs = dicts.add(_NAME_ATTRS, _FILE_ATTRS),
+    attrs = dicts.add(_NAME_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS),
     doc = "Import a Nix repository from a local file.",
 )
 
 _expr_tag = tag_class(
-    attrs = dicts.add(_NAME_ATTRS, _EXPR_ATTRS),
+    attrs = dicts.add(_NAME_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS),
     doc = "Import a Nix repository from a Nix expression.",
 )
 
