@@ -59,9 +59,14 @@ nix_pkg.local_file(
     file = "//tests:hello.nix",
     file_deps = ["//tests:pkgname.nix"],
 )
+nix_pkg.local_expr(
+    name = "expr-test",
+    expr = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+    # Deliberately not nixpkgs, to test whether explict repository works.
+    repos = {"nixpkgs": "file_nixpkgs"},
+)
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "expr-test")
 use_repo(non_module_deps, "expr-attribute-test")
 use_repo(non_module_deps, "extra-args-test")
 use_repo(non_module_deps, "nixpkgs-http-repository-test")

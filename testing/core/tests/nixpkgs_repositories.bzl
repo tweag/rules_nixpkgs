@@ -90,13 +90,13 @@ def nixpkgs_repositories(*, bzlmod):
             repository = nixpkgs,
         )
 
-    nixpkgs_package(
-        name = "expr-test",
-        nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
-        nix_file_deps = ["//:flake.lock"],
-        # Deliberately not @nixpkgs, to test whether explict file works.
-        repositories = {"nixpkgs": "//:nixpkgs.nix"},
-    )
+        nixpkgs_package(
+            name = "expr-test",
+            nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+            nix_file_deps = ["//:flake.lock"],
+            # Deliberately not @nixpkgs, to test whether explict file works.
+            repositories = {"nixpkgs": "//:nixpkgs.nix"},
+        )
 
     nixpkgs_package(
         name = "expr-attribute-test",

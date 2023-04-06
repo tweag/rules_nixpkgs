@@ -24,6 +24,7 @@ expand_location_unit_test_suite()
         "nixpkgs-git-repository-test",
         "nix-file-test",
         "nix-file-deps-test",
+        "expr-test",
     ]
 ] + [
     # All of these tests use the "hello" binary to see
@@ -37,7 +38,6 @@ expand_location_unit_test_suite()
         data = ["@{0}//:bin".format(test)],
     )
     for test in [
-        "expr-test",
         "expr-attribute-test",
         "extra-args-test",
         "nixpkgs-http-repository-test",
