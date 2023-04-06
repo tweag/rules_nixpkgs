@@ -125,6 +125,46 @@ def _local_file_pkg(key, local_file):
         **kwargs
     )
 
+def _local_expr_pkg(key, local_expr):
+    kwargs = {}
+
+    if bool(local_expr.attr):
+        kwargs["attribute_path"] = local_expr.attr
+    else:
+        kwargs["attribute_path"] = local_expr.name
+
+    repo_set = bool(local_expr.repo)
+    repos_set = bool(local_expr.repos)
+
+    if repo_set and repos_set:
+        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
+    elif repo_set:
+        kwargs["repository"] = nix_repo(key, local_expr.repo)
+    elif repos_set:
+        kwargs["repositories"] = {
+            name: nix_repo(key, repo)
+            for name, repo in local_expr.repos.items()
+        }
+    else:
+        kwargs["repository"] = nix_repo(key, "nixpkgs")
+
+    kwargs["nix_file_content"] = local_expr.expr
+
+    build_file_set = bool(local_expr.build_file)
+    build_file_content_set = bool(local_expr.build_file_content)
+
+    if build_file_set and build_file_content_set:
+        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
+    elif build_file_set:
+        kwargs["build_file"] = local_expr.build_file
+    elif build_file_content_set:
+        kwargs["build_file_content"] = local_expr.build_file_content
+
+    return partial.make(
+        nixpkgs_package,
+        **kwargs
+    )
+
 def _nix_pkg_impl(module_ctx):
     r = registry.make()
 
@@ -169,6 +209,17 @@ def _nix_pkg_impl(module_ctx):
                 prefix = "Cannot use Nix package: ",
             )
 
+        for local_expr in mod.tags.local_expr:
+            fail_on_err(
+                registry.add_local_repo(
+                    r,
+                    key = key,
+                    name = local_expr.name,
+                    repo = _local_expr_pkg(key, local_expr),
+                ),
+                prefix = "Cannot use Nix package: ",
+            )
+
     for repo_name, repo in registry.get_all_repositories(r).items():
         partial.call(repo, name = repo_name)
 
@@ -203,6 +254,13 @@ _FILE_ATTRS = {
     "file_deps": attr.label_list(
         doc = "Files required by the Nix expression file.",
         mandatory = False,
+    ),
+}
+
+_EXPR_ATTRS = {
+    "expr": attr.string(
+        doc = "The Nix expression.",
+        mandatory = True,
     ),
 }
 
@@ -283,11 +341,17 @@ _local_file_tag = tag_class(
     doc = "Import a Nix package from a local file.",
 )
 
+_local_expr_tag = tag_class(
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS),
+    doc = "Import a Nix package from a local expression.",
+)
+
 nix_pkg = module_extension(
     _nix_pkg_impl,
     tag_classes = {
         "attr": _attr_tag,
         "local_attr": _local_attr_tag,
         "local_file": _local_file_tag,
+        "local_expr": _local_expr_tag,
     },
 )
