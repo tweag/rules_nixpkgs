@@ -571,7 +571,6 @@ offers tags to define Nix packages:
 * `local_file(name, attr, file, file_deps, repo, repos)`\
   * `name`: `String`; unique name.
   * `attr`: optional, `String`; the attribute path.\
-    Default: `name`.
   * `file`: `Label`; the file containing the Nix expression.
   * `file_deps`: optional, List of `Label`, files required by `file`.
   * `repo`: optional, `String`; use this `nixpkgs` repository.
@@ -589,7 +588,6 @@ offers tags to define Nix packages:
 * `local_expr(name, attr, expr, repo, repos)`\
   * `name`: `String`; unique name.
   * `attr`: optional, `String`; the attribute path.\
-    Default: `name`.
   * `expr`: `String`; the Nix expression.
   * `repo`: optional, `String`; use this `nixpkgs` repository.
     Equivalent to `repos = {"nixpkgs": repo}`.

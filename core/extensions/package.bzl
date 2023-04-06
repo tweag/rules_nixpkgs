@@ -238,13 +238,24 @@ _ATTR_ATTRS = {
     ),
 }
 
-_COMMON_ATTRS = {
+_LOCAL_ATTR_ATTRS = {
     "name": attr.string(
         doc = "A unique name for this package. The name must be unique within the requesting module.",
         mandatory = True,
     ),
     "attr": attr.string(
         doc = "The attribute path of the package to import. Defaults to `name`.",
+        mandatory = False,
+    ),
+}
+
+_COMMON_ATTRS = {
+    "name": attr.string(
+        doc = "A unique name for this package. The name must be unique within the requesting module.",
+        mandatory = True,
+    ),
+    "attr": attr.string(
+        doc = "The attribute path of the package to import.",
         mandatory = False,
     ),
 }
@@ -338,7 +349,7 @@ _attr_tag = tag_class(
 )
 
 _local_attr_tag = tag_class(
-    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS),
+    attrs = dicts.add(_LOCAL_ATTR_ATTRS, _REPO_ATTRS, _BUILD_ATTRS),
     doc = "Import a Nix package by attribute path.",
 )
 
