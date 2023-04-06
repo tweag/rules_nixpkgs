@@ -98,12 +98,12 @@ def nixpkgs_repositories(*, bzlmod):
             repositories = {"nixpkgs": "//:nixpkgs.nix"},
         )
 
-    nixpkgs_package(
-        name = "expr-attribute-test",
-        attribute_path = "hello",
-        nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "expr-attribute-test",
+            attribute_path = "hello",
+            nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
+            repository = nixpkgs,
+        )
 
     nixpkgs_package(
         name = "extra-args-test",
