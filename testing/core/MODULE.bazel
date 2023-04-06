@@ -35,6 +35,14 @@ nix_repo.file(
         "//:flake.lock",
     ],
 )
+nix_repo.expr(
+    name = "nixpkgs_content",
+    expr = "import ./nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.nix",
+        "//:flake.lock",
+    ],
+)
 
 nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 use_repo(nix_pkg, "nixpkgs_packages")
@@ -43,7 +51,6 @@ nix_pkg.local_attr(name = "attribute-test", attr = "hello")
 nix_pkg.local_attr(name = "nixpkgs-git-repository-test", attr = "hello", repo = "remote_nixpkgs")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "nixpkgs_content")
 use_repo(non_module_deps, "expr-test")
 use_repo(non_module_deps, "expr-attribute-test")
 use_repo(non_module_deps, "extra-args-test")
