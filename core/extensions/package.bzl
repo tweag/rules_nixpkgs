@@ -133,8 +133,6 @@ def _local_expr_pkg(key, local_expr):
 
     if bool(local_expr.attr):
         kwargs["attribute_path"] = local_expr.attr
-    else:
-        kwargs["attribute_path"] = local_expr.name
 
     repo_set = bool(local_expr.repo)
     repos_set = bool(local_expr.repos)
@@ -152,8 +150,8 @@ def _local_expr_pkg(key, local_expr):
         kwargs["repository"] = nix_repo(key, "nixpkgs")
 
     kwargs["nix_file_content"] = local_expr.expr
-    if bool(local_file.file_deps):
-        kwargs["nix_file_deps"] = local_file.file_deps
+    if bool(local_expr.file_deps):
+        kwargs["nix_file_deps"] = local_expr.file_deps
 
     build_file_set = bool(local_expr.build_file)
     build_file_content_set = bool(local_expr.build_file_content)
