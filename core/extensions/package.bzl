@@ -88,8 +88,6 @@ def _local_file_pkg(key, local_file):
 
     if bool(local_file.attr):
         kwargs["attribute_path"] = local_file.attr
-    else:
-        kwargs["attribute_path"] = local_file.name
 
     repo_set = bool(local_file.repo)
     repos_set = bool(local_file.repos)
