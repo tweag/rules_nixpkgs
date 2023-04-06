@@ -78,6 +78,9 @@ def _local_attr_pkg(key, local_attr):
     elif build_file_content_set:
         kwargs["build_file"] = local_attr.build_file_content
 
+    if bool(local_attr.nixopts):
+        kwargs["nixopts"] = local_attr.nixopts
+
     return partial.make(
         nixpkgs_package,
         **kwargs
@@ -123,6 +126,9 @@ def _local_file_pkg(key, local_file):
     elif build_file_content_set:
         kwargs["build_file_content"] = local_file.build_file_content
 
+    if bool(local_file.nixopts):
+        kwargs["nixopts"] = local_file.nixopts
+
     return partial.make(
         nixpkgs_package,
         **kwargs
@@ -162,6 +168,9 @@ def _local_expr_pkg(key, local_expr):
         kwargs["build_file"] = local_expr.build_file
     elif build_file_content_set:
         kwargs["build_file_content"] = local_expr.build_file_content
+
+    if bool(local_expr.nixopts):
+        kwargs["nixopts"] = local_expr.nixopts
 
     return partial.make(
         nixpkgs_package,
@@ -343,23 +352,31 @@ Specify at most one of `build_file` or `build_file_content`.
     ),
 }
 
+_OPTS_ATTRS = {
+    "nixopts": attr.string_list(
+        doc = "Extra flags to pass when calling Nix.",
+        mandatory = False,
+        # TODO[AH] Document location expansion once supported.
+    ),
+}
+
 _attr_tag = tag_class(
     attrs = _ATTR_ATTRS,
     doc = "Import a globally unified Nix package. If multiple Bazel modules import the same nixpkgs attribute, then they will all use the same external Bazel repository that imports the Nix package.",
 )
 
 _local_attr_tag = tag_class(
-    attrs = dicts.add(_LOCAL_ATTR_ATTRS, _REPO_ATTRS, _BUILD_ATTRS),
+    attrs = dicts.add(_LOCAL_ATTR_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _OPTS_ATTRS),
     doc = "Import a Nix package by attribute path.",
 )
 
 _local_file_tag = tag_class(
-    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS),
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
     doc = "Import a Nix package from a local file.",
 )
 
 _local_expr_tag = tag_class(
-    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS),
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
     doc = "Import a Nix package from a local expression.",
 )
 
