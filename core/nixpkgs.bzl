@@ -630,12 +630,24 @@ def nixpkgs_package(
       quiet: Whether to hide the output of the Nix command.
       fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
     """
+    if kwargs.pop("_bzlmod", None):
+        # The workaround to map canonicalized labels to the user provided
+        # string representation to enable location expansion does not work when
+        # nixpkgs_package is invoked from a module extension, because module
+        # extension tags cannot be wrapped in macros.
+        # Until we find a solution to this issue, we provide the canonicalized
+        # label as a string. Location expansion will have to be performed on
+        # canonicalized labels until a better solution is found.
+        # TODO[AH] Support proper location expansion in module extension.
+        nix_file_deps = {dep: str(dep) for dep in nix_file_deps} if nix_file_deps else {}
+    else:
+        nix_file_deps = {dep: dep for dep in nix_file_deps} if nix_file_deps else {}
     kwargs.update(
         name = name,
         unmangled_name = name,
         attribute_path = attribute_path,
         nix_file = nix_file,
-        nix_file_deps = {dep: dep for dep in nix_file_deps} if nix_file_deps else {},
+        nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
         repository = repository,
         repositories = repositories,

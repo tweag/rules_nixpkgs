@@ -86,6 +86,11 @@ def _local_attr_pkg(key, local_attr):
 def _local_file_pkg(key, local_file):
     kwargs = {}
 
+    # Inidicate that nixpkgs_package is called from a module extension to
+    # enable required workarounds.
+    # TODO[AH] Remove this once the workarounds are no longer required.
+    kwargs["_bzlmod"] = True
+
     if bool(local_file.attr):
         kwargs["attribute_path"] = local_file.attr
 
