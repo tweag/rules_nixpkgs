@@ -49,6 +49,7 @@ use_repo(nix_pkg, "nixpkgs_packages")
 nix_pkg.attr(attr = "hello")
 nix_pkg.local_attr(name = "attribute-test", attr = "hello")
 nix_pkg.local_attr(name = "nixpkgs-git-repository-test", attr = "hello", repo = "remote_nixpkgs")
+nix_pkg.local_attr(name = "nixpkgs-http-repository-test", attr = "hello", repo = "http_nixpkgs")
 nix_pkg.local_file(
     name = "nix-file-test",
     attr = "hello",
@@ -58,6 +59,31 @@ nix_pkg.local_file(
     name = "nix-file-deps-test",
     file = "//tests:hello.nix",
     file_deps = ["//tests:pkgname.nix"],
+)
+nix_pkg.local_file(
+    name = "relative-imports",
+    attr = "hello",
+    file = "//tests:relative_imports.nix",
+    file_deps = [
+        "//:flake.lock",
+        "//:nixpkgs.nix",
+        "//tests:relative_imports/nixpkgs.nix",
+    ],
+)
+nix_pkg.local_file(
+    name = "output-filegroup-test",
+    file = "//tests:output.nix",
+)
+nix_pkg.local_file(
+    name = "output-filegroup-manual-test",
+    file = "//tests:output.nix",
+    build_file_content = """
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+    name = "manual-filegroup",
+    srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
+)
+""",
 )
 nix_pkg.local_expr(
     name = "expr-test",
@@ -70,13 +96,17 @@ nix_pkg.local_expr(
     attr = "hello",
     expr = "import <nixpkgs> { config = {}; overlays = []; }",
 )
+nix_pkg.local_expr(
+    name = "nixpkgs-file-repository-test",
+    expr = "with import <nixpkgs> {}; hello",
+    repo = "file_nixpkgs",
+)
+nix_pkg.local_expr(
+    name = "nixpkgs-local-repository-test",
+    expr = "with import <nixpkgs> {}; hello",
+    repo = "nixpkgs_content",
+)
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "extra-args-test")
-use_repo(non_module_deps, "nixpkgs-http-repository-test")
-use_repo(non_module_deps, "nixpkgs-file-repository-test")
-use_repo(non_module_deps, "nixpkgs-local-repository-test")
-use_repo(non_module_deps, "relative-imports")
-use_repo(non_module_deps, "output-filegroup-test")
-use_repo(non_module_deps, "output-filegroup-manual-test")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")
