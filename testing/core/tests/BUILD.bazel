@@ -30,19 +30,6 @@ expand_location_unit_test_suite()
         "expr-test",
         "expr-attribute-test",
         "relative-imports",
-    ]
-] + [
-    # All of these tests use the "hello" binary to see
-    # whether different invocations of `nixpkgs_package`
-    # produce a valid bazel repository.
-    sh_test(
-        name = "run-{0}".format(test),
-        timeout = "short",
-        srcs = ["test_bin.sh"],
-        args = ["$(location @{0}//:bin)".format(test)],
-        data = ["@{0}//:bin".format(test)],
-    )
-    for test in [
         "extra-args-test",
     ]
 ] + [

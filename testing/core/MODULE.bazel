@@ -106,7 +106,11 @@ nix_pkg.local_expr(
     expr = "with import <nixpkgs> {}; hello",
     repo = "nixpkgs_content",
 )
+nix_pkg.local_expr(
+    name = "extra-args-test",
+    expr = "{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}",
+    nixopts = ["--argstr", "packagePath", "hello"],
+)
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "extra-args-test")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")

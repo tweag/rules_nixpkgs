@@ -154,18 +154,18 @@ filegroup(
             repository = nixpkgs,
         )
 
-    nixpkgs_package(
-        name = "extra-args-test",
-        nix_file_content = """
-    { packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}
-        """,
-        nixopts = [
-            "--argstr",
-            "packagePath",
-            "hello",
-        ],
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "extra-args-test",
+            nix_file_content = """
+{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}
+            """,
+            nixopts = [
+                "--argstr",
+                "packagePath",
+                "hello",
+            ],
+            repository = nixpkgs,
+        )
 
     nixpkgs_package(
         name = "nixpkgs_location_expansion_test",
