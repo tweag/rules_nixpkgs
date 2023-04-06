@@ -76,6 +76,20 @@ def nixpkgs_repositories(*, bzlmod):
             repositories = {"nixpkgs": remote_nixpkgs},
         )
 
+        nixpkgs_package(
+            name = "nix-file-test",
+            attribute_path = "hello",
+            nix_file = "//tests:nixpkgs.nix",
+            repository = nixpkgs,
+        )
+
+        nixpkgs_package(
+            name = "nix-file-deps-test",
+            nix_file = "//tests:hello.nix",
+            nix_file_deps = ["//tests:pkgname.nix"],
+            repository = nixpkgs,
+        )
+
     nixpkgs_package(
         name = "expr-test",
         nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
@@ -101,20 +115,6 @@ def nixpkgs_repositories(*, bzlmod):
             "packagePath",
             "hello",
         ],
-        repository = nixpkgs,
-    )
-
-    nixpkgs_package(
-        name = "nix-file-test",
-        attribute_path = "hello",
-        nix_file = "//tests:nixpkgs.nix",
-        repository = nixpkgs,
-    )
-
-    nixpkgs_package(
-        name = "nix-file-deps-test",
-        nix_file = "//tests:hello.nix",
-        nix_file_deps = ["//tests:pkgname.nix"],
         repository = nixpkgs,
     )
 

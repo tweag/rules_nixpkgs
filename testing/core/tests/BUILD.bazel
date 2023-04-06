@@ -22,6 +22,8 @@ expand_location_unit_test_suite()
         "hello",
         "attribute-test",
         "nixpkgs-git-repository-test",
+        "nix-file-test",
+        "nix-file-deps-test",
     ]
 ] + [
     # All of these tests use the "hello" binary to see
@@ -38,8 +40,6 @@ expand_location_unit_test_suite()
         "expr-test",
         "expr-attribute-test",
         "extra-args-test",
-        "nix-file-test",
-        "nix-file-deps-test",
         "nixpkgs-http-repository-test",
         "nixpkgs-file-repository-test",
         "nixpkgs-local-repository-test",
