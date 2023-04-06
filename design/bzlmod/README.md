@@ -568,6 +568,7 @@ offers tags to define Nix packages:
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
     Specify at most one of `build_file` or `build_file_content`.
+  * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 * `local_file(name, attr, file, file_deps, repo, repos)`\
   * `name`: `String`; unique name.
   * `attr`: optional, `String`; the attribute path.\
@@ -585,6 +586,7 @@ offers tags to define Nix packages:
     Specify at most one of `build_file` or `build_file_content`.
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
+  * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 * `local_expr(name, attr, expr, repo, repos)`\
   * `name`: `String`; unique name.
   * `attr`: optional, `String`; the attribute path.\
@@ -601,8 +603,7 @@ offers tags to define Nix packages:
     Specify at most one of `build_file` or `build_file_content`.
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
-
-TODO: Handle `nixopts`.
+  * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 
 All `name` attributes define a unique name for the given Nix repository within
 the scope of the requesting module.
