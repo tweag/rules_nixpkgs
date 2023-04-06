@@ -602,6 +602,8 @@ offers tags to define Nix packages:
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
 
+TODO: Handle `nixopts`.
+
 All `name` attributes define a unique name for the given Nix repository within
 the scope of the requesting module.
 
