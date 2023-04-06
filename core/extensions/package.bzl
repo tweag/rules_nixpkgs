@@ -152,6 +152,8 @@ def _local_expr_pkg(key, local_expr):
         kwargs["repository"] = nix_repo(key, "nixpkgs")
 
     kwargs["nix_file_content"] = local_expr.expr
+    if bool(local_file.file_deps):
+        kwargs["nix_file_deps"] = local_file.file_deps
 
     build_file_set = bool(local_expr.build_file)
     build_file_content_set = bool(local_expr.build_file_content)
@@ -249,14 +251,17 @@ _COMMON_ATTRS = {
     ),
 }
 
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "Files required by the Nix expression file.",
+        mandatory = False,
+    ),
+}
+
 _FILE_ATTRS = {
     "file": attr.label(
         doc = "The file containing the Nix expression.",
         mandatory = True,
-    ),
-    "file_deps": attr.label_list(
-        doc = "Files required by the Nix expression file.",
-        mandatory = False,
     ),
 }
 
@@ -340,12 +345,12 @@ _local_attr_tag = tag_class(
 )
 
 _local_file_tag = tag_class(
-    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS),
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS),
     doc = "Import a Nix package from a local file.",
 )
 
 _local_expr_tag = tag_class(
-    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS),
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS),
     doc = "Import a Nix package from a local expression.",
 )
 
