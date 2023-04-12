@@ -12,6 +12,9 @@ def nixpkgs_repositories(*, bzlmod):
     if bzlmod:
         nixpkgs = nix_repo("rules_nixpkgs_core_testing", "nixpkgs")
         remote_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "remote_nixpkgs")
+        http_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "http_nixpkgs")
+        file_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "file_nixpkgs")
+        nixpkgs_content = nix_repo("rules_nixpkgs_core_testing", "nixpkgs_content")
     else:
         nixpkgs = "@nixpkgs"
         nixpkgs_local_repository(
@@ -26,6 +29,33 @@ def nixpkgs_repositories(*, bzlmod):
             remote = "https://github.com/NixOS/nixpkgs",
             revision = "22.05",
             sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+        )
+
+        http_nixpkgs = "@http_nixpkgs"
+        nixpkgs_http_repository(
+            name = "http_nixpkgs",
+            url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
+            strip_prefix = "nixpkgs-22.05",
+            sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+        )
+
+        # same as @nixpkgs, only needed for bzlmod tests to distinguish `default` and `file`.
+        file_nixpkgs = "@file_nixpkgs"
+        nixpkgs_local_repository(
+            name = "file_nixpkgs",
+            nix_file = "//:nixpkgs.nix",
+            nix_file_deps = ["//:flake.lock"],
+        )
+
+        # same as @nixpkgs but using the `nix_file_content` parameter
+        nixpkgs_content = "@nixpkgs_content"
+        nixpkgs_local_repository(
+            name = "nixpkgs_content",
+            nix_file_content = "import ./nixpkgs.nix",
+            nix_file_deps = [
+                "//:nixpkgs.nix",
+                "//:flake.lock",
+            ],
         )
 
         nixpkgs_package(
@@ -45,23 +75,6 @@ def nixpkgs_repositories(*, bzlmod):
             attribute_path = "hello",
             repositories = {"nixpkgs": remote_nixpkgs},
         )
-
-    nixpkgs_http_repository(
-        name = "http_nixpkgs",
-        url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
-        strip_prefix = "nixpkgs-22.05",
-        sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
-    )
-
-    # same as @nixpkgs but using the `nix_file_content` parameter
-    nixpkgs_local_repository(
-        name = "nixpkgs_content",
-        nix_file_content = "import ./nixpkgs.nix",
-        nix_file_deps = [
-            "//:nixpkgs.nix",
-            "//:flake.lock",
-        ],
-    )
 
     nixpkgs_package(
         name = "expr-test",
@@ -108,13 +121,19 @@ def nixpkgs_repositories(*, bzlmod):
     nixpkgs_package(
         name = "nixpkgs-http-repository-test",
         attribute_path = "hello",
-        repositories = {"nixpkgs": "@http_nixpkgs"},
+        repositories = {"nixpkgs": http_nixpkgs},
+    )
+
+    nixpkgs_package(
+        name = "nixpkgs-file-repository-test",
+        nix_file_content = "with import <nixpkgs> {}; hello",
+        repositories = {"nixpkgs": file_nixpkgs},
     )
 
     nixpkgs_package(
         name = "nixpkgs-local-repository-test",
         nix_file_content = "with import <nixpkgs> {}; hello",
-        repositories = {"nixpkgs": "@nixpkgs_content"},
+        repositories = {"nixpkgs": nixpkgs_content},
     )
 
     nixpkgs_package(

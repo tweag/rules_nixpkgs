@@ -41,6 +41,7 @@ expand_location_unit_test_suite()
         "nix-file-test",
         "nix-file-deps-test",
         "nixpkgs-http-repository-test",
+        "nixpkgs-file-repository-test",
         "nixpkgs-local-repository-test",
         "relative-imports",
     ]
