@@ -242,7 +242,7 @@ def _nix_pkg_impl(module_ctx):
 
 _ATTR_ATTRS = {
     "attr": attr.string(
-        doc = "The attribute path of the package to import.",
+        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots.",
         mandatory = True,
     ),
 }
@@ -253,7 +253,7 @@ _LOCAL_ATTR_ATTRS = {
         mandatory = True,
     ),
     "attr": attr.string(
-        doc = "The attribute path of the package to import. Defaults to `name`.",
+        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots. Defaults to `name`.",
         mandatory = False,
     ),
 }
@@ -264,14 +264,14 @@ _COMMON_ATTRS = {
         mandatory = True,
     ),
     "attr": attr.string(
-        doc = "The attribute path of the package to import.",
+        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots. Import the top-level Nix expression if empty.",
         mandatory = False,
     ),
 }
 
 _FILE_DEPS_ATTRS = {
     "file_deps": attr.label_list(
-        doc = "Files required by the Nix expression file.",
+        doc = "Files required by the Nix expression.",
         mandatory = False,
     ),
 }
@@ -354,7 +354,7 @@ Specify at most one of `build_file` or `build_file_content`.
 
 _OPTS_ATTRS = {
     "nixopts": attr.string_list(
-        doc = "Extra flags to pass when calling Nix.",
+        doc = "Extra flags to pass when calling Nix. Note, this does not currently support location expansion.",
         mandatory = False,
         # TODO[AH] Document location expansion once supported.
     ),
