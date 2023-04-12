@@ -38,6 +38,68 @@ def _name_from_attr(attr):
     """
     return attr
 
+def _handle_common_attrs(attrs):
+    kwargs = {}
+
+    if bool(attrs.attr):
+        kwargs["attribute_path"] = attrs.attr
+
+    return kwargs
+
+def _handle_file_attrs(attrs):
+    kwargs = {"nix_file": attrs.file}
+
+    if bool(attrs.file_deps):
+        kwargs["nix_file_deps"] = attrs.file_deps
+
+    return kwargs
+
+def _handle_expr_attrs(attrs):
+    kwargs = {"nix_file_content": attrs.expr}
+
+    if bool(attrs.file_deps):
+        kwargs["nix_file_deps"] = attrs.file_deps
+
+    return kwargs
+
+def _handle_repo_attrs(key, attrs):
+    kwargs = {}
+
+    repo_set = bool(attrs.repo)
+    repos_set = bool(attrs.repos)
+
+    if repo_set and repos_set:
+        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
+    elif repo_set:
+        kwargs["repository"] = nix_repo(key, attrs.repo)
+    elif repos_set:
+        kwargs["repositories"] = {
+            name: nix_repo(key, repo)
+            for name, repo in attrs.repos.items()
+        }
+    else:
+        kwargs["repository"] = nix_repo(key, "nixpkgs")
+
+    return kwargs
+
+def _handle_build_attrs(attrs):
+    kwargs = {}
+
+    build_file_set = bool(attrs.build_file)
+    build_file_content_set = bool(attrs.build_file_content)
+
+    if build_file_set and build_file_content_set:
+        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
+    elif build_file_set:
+        kwargs["build_file"] = attrs.build_file
+    elif build_file_content_set:
+        kwargs["build_file_content"] = attrs.build_file_content
+
+    return kwargs
+
+def _handle_opts_attrs(attrs):
+    return {"nixopts": attrs.nixopts or []}
+
 def _attr_pkg(attr):
     return partial.make(
         nixpkgs_package,
@@ -53,33 +115,9 @@ def _local_attr_pkg(key, local_attr):
     else:
         kwargs["attribute_path"] = local_attr.name
 
-    repo_set = bool(local_attr.repo)
-    repos_set = bool(local_attr.repos)
-
-    if repo_set and repos_set:
-        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
-    elif repo_set:
-        kwargs["repository"] = nix_repo(key, local_attr.repo)
-    elif repos_set:
-        kwargs["repositories"] = {
-            name: nix_repo(key, repo)
-            for name, repo in local_attr.repos.items()
-        }
-    else:
-        kwargs["repository"] = nix_repo(key, "nixpkgs")
-
-    build_file_set = bool(local_attr.build_file)
-    build_file_content_set = bool(local_attr.build_file_content)
-
-    if build_file_set and build_file_content_set:
-        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
-    elif build_file_set:
-        kwargs["build_file"] = local_attr.build_file
-    elif build_file_content_set:
-        kwargs["build_file"] = local_attr.build_file_content
-
-    if bool(local_attr.nixopts):
-        kwargs["nixopts"] = local_attr.nixopts
+    kwargs.update(_handle_repo_attrs(key, local_attr))
+    kwargs.update(_handle_build_attrs(local_attr))
+    kwargs.update(_handle_opts_attrs(local_attr))
 
     return partial.make(
         nixpkgs_package,
@@ -87,47 +125,16 @@ def _local_attr_pkg(key, local_attr):
     )
 
 def _local_file_pkg(key, local_file):
-    kwargs = {}
+    kwargs = _handle_common_attrs(local_file)
+    kwargs.update(_handle_repo_attrs(key, local_file))
+    kwargs.update(_handle_build_attrs(local_file))
+    kwargs.update(_handle_file_attrs(local_file))
+    kwargs.update(_handle_opts_attrs(local_file))
 
     # Inidicate that nixpkgs_package is called from a module extension to
     # enable required workarounds.
     # TODO[AH] Remove this once the workarounds are no longer required.
     kwargs["_bzlmod"] = True
-
-    if bool(local_file.attr):
-        kwargs["attribute_path"] = local_file.attr
-
-    repo_set = bool(local_file.repo)
-    repos_set = bool(local_file.repos)
-
-    if repo_set and repos_set:
-        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
-    elif repo_set:
-        kwargs["repository"] = nix_repo(key, local_file.repo)
-    elif repos_set:
-        kwargs["repositories"] = {
-            name: nix_repo(key, repo)
-            for name, repo in local_file.repos.items()
-        }
-    else:
-        kwargs["repository"] = nix_repo(key, "nixpkgs")
-
-    kwargs["nix_file"] = local_file.file
-    if bool(local_file.file_deps):
-        kwargs["nix_file_deps"] = local_file.file_deps
-
-    build_file_set = bool(local_file.build_file)
-    build_file_content_set = bool(local_file.build_file_content)
-
-    if build_file_set and build_file_content_set:
-        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
-    elif build_file_set:
-        kwargs["build_file"] = local_file.build_file
-    elif build_file_content_set:
-        kwargs["build_file_content"] = local_file.build_file_content
-
-    if bool(local_file.nixopts):
-        kwargs["nixopts"] = local_file.nixopts
 
     return partial.make(
         nixpkgs_package,
@@ -135,42 +142,11 @@ def _local_file_pkg(key, local_file):
     )
 
 def _local_expr_pkg(key, local_expr):
-    kwargs = {}
-
-    if bool(local_expr.attr):
-        kwargs["attribute_path"] = local_expr.attr
-
-    repo_set = bool(local_expr.repo)
-    repos_set = bool(local_expr.repos)
-
-    if repo_set and repos_set:
-        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
-    elif repo_set:
-        kwargs["repository"] = nix_repo(key, local_expr.repo)
-    elif repos_set:
-        kwargs["repositories"] = {
-            name: nix_repo(key, repo)
-            for name, repo in local_expr.repos.items()
-        }
-    else:
-        kwargs["repository"] = nix_repo(key, "nixpkgs")
-
-    kwargs["nix_file_content"] = local_expr.expr
-    if bool(local_expr.file_deps):
-        kwargs["nix_file_deps"] = local_expr.file_deps
-
-    build_file_set = bool(local_expr.build_file)
-    build_file_content_set = bool(local_expr.build_file_content)
-
-    if build_file_set and build_file_content_set:
-        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
-    elif build_file_set:
-        kwargs["build_file"] = local_expr.build_file
-    elif build_file_content_set:
-        kwargs["build_file_content"] = local_expr.build_file_content
-
-    if bool(local_expr.nixopts):
-        kwargs["nixopts"] = local_expr.nixopts
+    kwargs = _handle_common_attrs(local_expr)
+    kwargs.update(_handle_repo_attrs(key, local_expr))
+    kwargs.update(_handle_build_attrs(local_expr))
+    kwargs.update(_handle_expr_attrs(local_expr))
+    kwargs.update(_handle_opts_attrs(local_expr))
 
     return partial.make(
         nixpkgs_package,
