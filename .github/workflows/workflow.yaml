@@ -96,6 +96,12 @@ jobs:
             read -a ${1} <<< $(echo ${!p//$2})
           }
 
+          pushd examples/cc-template
+          echo
+          echo "::group::Running $(head -n1 README.md) with Nix"
+          nix develop --command bazel run //src:hello-world
+          popd
+
           pushd examples/toolchains
           with_nix=( $(ls) )
           without_nix=( cc go java )
@@ -131,9 +137,3 @@ jobs:
             nix-shell --command 'bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello'
             popd
           fi
-
-          pushd examples/cc-template
-          echo
-          echo "::group::Running $(head -n1 README.md) with Nix"
-          nix develop --command bazel run //src:hello-world
-          popd
