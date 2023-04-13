@@ -37,6 +37,10 @@ defined in a language also called Nix. A sizeable collection of such package
 definitions is available in the Nixpkgs repository, which can then be used
 freely from Bazel.
 
+### Supported systems
+
+This guide only targets Linux at present. Most of it should work in a macOS environment (tracked at [#371](https://github.com/tweag/rules_nixpkgs/issues/371)): please open an issue if something doesn't work!
+
 ## A basic Bazel project
 
 Let's start with a simple example, on the Bazel "happy path": building a simple
