@@ -397,15 +397,17 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # load rules_nixpkgs
 http_archive(
     name = "io_tweag_rules_nixpkgs",
-    strip_prefix = "rules_nixpkgs-9f08fb2322050991dead17c8d10d453650cf92b7",
-    urls = ["https://github.com/tweag/rules_nixpkgs/archive/9f08fb2322050991dead17c8d10d453650cf92b7.tar.gz"],
-    sha256 = "46aa0ca80b77848492aa1564e9201de9ed79588ca1284f8a4f76deb7a0eeccb9",
+    strip_prefix = "rules_nixpkgs-0.9.0",
+    urls = ["https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.9.0.tar.gz"],
+    sha256 = "b01f170580f646ee3cde1ea4c117d00e561afaf3c59eda604cf09194a824ff10",
 )
 
 # load everything that rules_nixpkgs rules need to work
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
 rules_nixpkgs_dependencies()
 ```
+(The `sha256` attribute is optional, but adding it guarantees the stability of the release tarball.)
 
 Now we can tell rules\_nixpkgs to use our `nixpkgs.nix` above to import this
 Nixpkgs collection into Bazel:
