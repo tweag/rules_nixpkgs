@@ -1,22 +1,25 @@
-# Replace with http_archive if using outside of this repository:
+# Replace the local_repository call below with http_archive if using this
+# outside of this repository as a template for your own project:
 # see https://github.com/tweag/rules_nixpkgs/#setup
 #
-# You will need to add the load() for the http_archive rule itself, followed
+# You will need a load() for the http_archive rule itself, followed
 # by an http_archive() pointing to a specific commit or tag.
 #
-# As an example, for a release tag, you may want something like:
+# As an example, for a release tag X.Y.Z, you may want something like:
 #
 # load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # http_archive(
 #     name = "io_tweag_rules_nixpkgs",
 #     strip_prefix = "rules_nixpkgs-X.Y.Z",
 #     urls = ["https://github.com/tweag/rules_nixpkgs/archive/refs/tags/vX.Y.Z.tar.gz"],
-#     # this is optional
+#     # this is optional but recommended
+#     # to find the hash for the release/commit you picked, you can leave this
+#     # as-is and run `bazel run`, which will mention the correct hash in the
+#     # error message
 #     sha256 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 # )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 local_repository(
     name = "io_tweag_rules_nixpkgs",
     path = "../../",

@@ -407,7 +407,9 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_depende
 
 rules_nixpkgs_dependencies()
 ```
-(The `sha256` attribute is optional, but adding it guarantees the stability of the release tarball.)
+(The `sha256` attribute is optional, but adding it guarantees the stability of the release tarball. It can be found by supplying something incorrect in that field
+and running (say) `bazel run`, which will produce an error message indicating the
+correct hash that it expected to find.)
 
 Now we can tell rules\_nixpkgs to use our `nixpkgs.nix` above to import this
 Nixpkgs collection into Bazel:
