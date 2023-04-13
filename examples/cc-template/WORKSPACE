@@ -1,12 +1,23 @@
-# load the http_archive rule itself
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# Replace with http_archive if using outside of this repository:
+# see https://github.com/tweag/rules_nixpkgs/#setup
+#
+# You will need to add the load() for the http_archive rule itself, followed
+# by an http_archive() pointing to a specific commit or tag.
+#
+# As an example, for a release tag, you may want something like:
+#
+# load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# http_archive(
+#     name = "io_tweag_rules_nixpkgs",
+#     strip_prefix = "rules_nixpkgs-X.Y.Z",
+#     urls = ["https://github.com/tweag/rules_nixpkgs/archive/refs/tags/vX.Y.Z.tar.gz"],
+#     # this is optional
+#     sha256 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+# )
 
-# load rules_nixpkgs
-http_archive(
+local_repository(
     name = "io_tweag_rules_nixpkgs",
-    strip_prefix = "rules_nixpkgs-0.9.0",
-    urls = ["https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.9.0.tar.gz"],
-    sha256 = "b01f170580f646ee3cde1ea4c117d00e561afaf3c59eda604cf09194a824ff10",
+    path = "../../../",
 )
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
