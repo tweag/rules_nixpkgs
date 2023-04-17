@@ -131,7 +131,7 @@ def _local_file_pkg(key, local_file):
     kwargs.update(_handle_file_attrs(local_file))
     kwargs.update(_handle_opts_attrs(local_file))
 
-    # Inidicate that nixpkgs_package is called from a module extension to
+    # Indicate that nixpkgs_package is called from a module extension to
     # enable required workarounds.
     # TODO[AH] Remove this once the workarounds are no longer required.
     kwargs["_bzlmod"] = True
