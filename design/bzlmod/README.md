@@ -568,10 +568,10 @@ offers tags to define Nix packages:
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
     Specify at most one of `build_file` or `build_file_content`.
+  * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 * `local_file(name, attr, file, file_deps, repo, repos)`\
   * `name`: `String`; unique name.
   * `attr`: optional, `String`; the attribute path.\
-    Default: `name`.
   * `file`: `Label`; the file containing the Nix expression.
   * `file_deps`: optional, List of `Label`, files required by `file`.
   * `repo`: optional, `String`; use this `nixpkgs` repository.
@@ -586,10 +586,10 @@ offers tags to define Nix packages:
     Specify at most one of `build_file` or `build_file_content`.
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
+  * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 * `local_expr(name, attr, expr, repo, repos)`\
   * `name`: `String`; unique name.
   * `attr`: optional, `String`; the attribute path.\
-    Default: `name`.
   * `expr`: `String`; the Nix expression.
   * `repo`: optional, `String`; use this `nixpkgs` repository.
     Equivalent to `repos = {"nixpkgs": repo}`.
@@ -603,6 +603,7 @@ offers tags to define Nix packages:
     Specify at most one of `build_file` or `build_file_content`.
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
+  * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 
 All `name` attributes define a unique name for the given Nix repository within
 the scope of the requesting module.

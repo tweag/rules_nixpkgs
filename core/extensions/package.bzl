@@ -38,6 +38,68 @@ def _name_from_attr(attr):
     """
     return attr
 
+def _handle_common_attrs(attrs):
+    kwargs = {}
+
+    if bool(attrs.attr):
+        kwargs["attribute_path"] = attrs.attr
+
+    return kwargs
+
+def _handle_file_attrs(attrs):
+    kwargs = {"nix_file": attrs.file}
+
+    if bool(attrs.file_deps):
+        kwargs["nix_file_deps"] = attrs.file_deps
+
+    return kwargs
+
+def _handle_expr_attrs(attrs):
+    kwargs = {"nix_file_content": attrs.expr}
+
+    if bool(attrs.file_deps):
+        kwargs["nix_file_deps"] = attrs.file_deps
+
+    return kwargs
+
+def _handle_repo_attrs(key, attrs):
+    kwargs = {}
+
+    repo_set = bool(attrs.repo)
+    repos_set = bool(attrs.repos)
+
+    if repo_set and repos_set:
+        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
+    elif repo_set:
+        kwargs["repository"] = nix_repo(key, attrs.repo)
+    elif repos_set:
+        kwargs["repositories"] = {
+            name: nix_repo(key, repo)
+            for name, repo in attrs.repos.items()
+        }
+    else:
+        kwargs["repository"] = nix_repo(key, "nixpkgs")
+
+    return kwargs
+
+def _handle_build_attrs(attrs):
+    kwargs = {}
+
+    build_file_set = bool(attrs.build_file)
+    build_file_content_set = bool(attrs.build_file_content)
+
+    if build_file_set and build_file_content_set:
+        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
+    elif build_file_set:
+        kwargs["build_file"] = attrs.build_file
+    elif build_file_content_set:
+        kwargs["build_file_content"] = attrs.build_file_content
+
+    return kwargs
+
+def _handle_opts_attrs(attrs):
+    return {"nixopts": attrs.nixopts or []}
+
 def _attr_pkg(attr):
     return partial.make(
         nixpkgs_package,
@@ -53,30 +115,38 @@ def _local_attr_pkg(key, local_attr):
     else:
         kwargs["attribute_path"] = local_attr.name
 
-    repo_set = bool(local_attr.repo)
-    repos_set = bool(local_attr.repos)
+    kwargs.update(_handle_repo_attrs(key, local_attr))
+    kwargs.update(_handle_build_attrs(local_attr))
+    kwargs.update(_handle_opts_attrs(local_attr))
 
-    if repo_set and repos_set:
-        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
-    elif repo_set:
-        kwargs["repository"] = nix_repo(key, local_attr.repo)
-    elif repos_set:
-        kwargs["repositories"] = {
-            name: nix_repo(key, repo)
-            for name, repo in local_attr.repos.items()
-        }
-    else:
-        kwargs["repository"] = nix_repo(key, "nixpkgs")
+    return partial.make(
+        nixpkgs_package,
+        **kwargs
+    )
 
-    build_file_set = bool(local_attr.build_file)
-    build_file_content_set = bool(local_attr.build_file_content)
+def _local_file_pkg(key, local_file):
+    kwargs = _handle_common_attrs(local_file)
+    kwargs.update(_handle_repo_attrs(key, local_file))
+    kwargs.update(_handle_build_attrs(local_file))
+    kwargs.update(_handle_file_attrs(local_file))
+    kwargs.update(_handle_opts_attrs(local_file))
 
-    if build_file_set and build_file_content_set:
-        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
-    elif build_file_set:
-        kwargs["build_file"] = local_attr.build_file
-    elif build_file_content_set:
-        kwargs["build_file"] = local_attr.build_file_content
+    # Indicate that nixpkgs_package is called from a module extension to
+    # enable required workarounds.
+    # TODO[AH] Remove this once the workarounds are no longer required.
+    kwargs["_bzlmod"] = True
+
+    return partial.make(
+        nixpkgs_package,
+        **kwargs
+    )
+
+def _local_expr_pkg(key, local_expr):
+    kwargs = _handle_common_attrs(local_expr)
+    kwargs.update(_handle_repo_attrs(key, local_expr))
+    kwargs.update(_handle_build_attrs(local_expr))
+    kwargs.update(_handle_expr_attrs(local_expr))
+    kwargs.update(_handle_opts_attrs(local_expr))
 
     return partial.make(
         nixpkgs_package,
@@ -116,6 +186,28 @@ def _nix_pkg_impl(module_ctx):
                 prefix = "Cannot use Nix package: ",
             )
 
+        for local_file in mod.tags.local_file:
+            fail_on_err(
+                registry.add_local_repo(
+                    r,
+                    key = key,
+                    name = local_file.name,
+                    repo = _local_file_pkg(key, local_file),
+                ),
+                prefix = "Cannot use Nix package: ",
+            )
+
+        for local_expr in mod.tags.local_expr:
+            fail_on_err(
+                registry.add_local_repo(
+                    r,
+                    key = key,
+                    name = local_expr.name,
+                    repo = _local_expr_pkg(key, local_expr),
+                ),
+                prefix = "Cannot use Nix package: ",
+            )
+
     for repo_name, repo in registry.get_all_repositories(r).items():
         partial.call(repo, name = repo_name)
 
@@ -126,8 +218,19 @@ def _nix_pkg_impl(module_ctx):
 
 _ATTR_ATTRS = {
     "attr": attr.string(
-        doc = "The attribute path of the package to import.",
+        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots.",
         mandatory = True,
+    ),
+}
+
+_LOCAL_ATTR_ATTRS = {
+    "name": attr.string(
+        doc = "A unique name for this package. The name must be unique within the requesting module.",
+        mandatory = True,
+    ),
+    "attr": attr.string(
+        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots. Defaults to `name`.",
+        mandatory = False,
     ),
 }
 
@@ -137,8 +240,29 @@ _COMMON_ATTRS = {
         mandatory = True,
     ),
     "attr": attr.string(
-        doc = "The attribute path of the package to import. Defaults to `name`.",
+        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots. Import the top-level Nix expression if empty.",
         mandatory = False,
+    ),
+}
+
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "Files required by the Nix expression.",
+        mandatory = False,
+    ),
+}
+
+_FILE_ATTRS = {
+    "file": attr.label(
+        doc = "The file containing the Nix expression.",
+        mandatory = True,
+    ),
+}
+
+_EXPR_ATTRS = {
+    "expr": attr.string(
+        doc = "The Nix expression.",
+        mandatory = True,
     ),
 }
 
@@ -204,14 +328,32 @@ Specify at most one of `build_file` or `build_file_content`.
     ),
 }
 
+_OPTS_ATTRS = {
+    "nixopts": attr.string_list(
+        doc = "Extra flags to pass when calling Nix. Note, this does not currently support location expansion.",
+        mandatory = False,
+        # TODO[AH] Document location expansion once supported.
+    ),
+}
+
 _attr_tag = tag_class(
     attrs = _ATTR_ATTRS,
     doc = "Import a globally unified Nix package. If multiple Bazel modules import the same nixpkgs attribute, then they will all use the same external Bazel repository that imports the Nix package.",
 )
 
 _local_attr_tag = tag_class(
-    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS),
+    attrs = dicts.add(_LOCAL_ATTR_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _OPTS_ATTRS),
     doc = "Import a Nix package by attribute path.",
+)
+
+_local_file_tag = tag_class(
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
+    doc = "Import a Nix package from a local file.",
+)
+
+_local_expr_tag = tag_class(
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
+    doc = "Import a Nix package from a local expression.",
 )
 
 nix_pkg = module_extension(
@@ -219,5 +361,7 @@ nix_pkg = module_extension(
     tag_classes = {
         "attr": _attr_tag,
         "local_attr": _local_attr_tag,
+        "local_file": _local_file_tag,
+        "local_expr": _local_expr_tag,
     },
 )

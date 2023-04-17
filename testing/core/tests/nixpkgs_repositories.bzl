@@ -76,96 +76,96 @@ def nixpkgs_repositories(*, bzlmod):
             repositories = {"nixpkgs": remote_nixpkgs},
         )
 
-    nixpkgs_package(
-        name = "expr-test",
-        nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
-        nix_file_deps = ["//:flake.lock"],
-        # Deliberately not @nixpkgs, to test whether explict file works.
-        repositories = {"nixpkgs": "//:nixpkgs.nix"},
-    )
+        nixpkgs_package(
+            name = "nix-file-test",
+            attribute_path = "hello",
+            nix_file = "//tests:nixpkgs.nix",
+            repository = nixpkgs,
+        )
 
-    nixpkgs_package(
-        name = "expr-attribute-test",
-        attribute_path = "hello",
-        nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "nix-file-deps-test",
+            nix_file = "//tests:hello.nix",
+            nix_file_deps = ["//tests:pkgname.nix"],
+            repository = nixpkgs,
+        )
 
-    nixpkgs_package(
-        name = "extra-args-test",
-        nix_file_content = """
-    { packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}
-        """,
-        nixopts = [
-            "--argstr",
-            "packagePath",
-            "hello",
-        ],
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "expr-test",
+            nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+            nix_file_deps = ["//:flake.lock"],
+            # Deliberately not @nixpkgs, to test whether explict file works.
+            repositories = {"nixpkgs": "//:nixpkgs.nix"},
+        )
 
-    nixpkgs_package(
-        name = "nix-file-test",
-        attribute_path = "hello",
-        nix_file = "//tests:nixpkgs.nix",
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "expr-attribute-test",
+            attribute_path = "hello",
+            nix_file_content = "import <nixpkgs> { config = {}; overlays = []; }",
+            repository = nixpkgs,
+        )
 
-    nixpkgs_package(
-        name = "nix-file-deps-test",
-        nix_file = "//tests:hello.nix",
-        nix_file_deps = ["//tests:pkgname.nix"],
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "nixpkgs-http-repository-test",
+            attribute_path = "hello",
+            repositories = {"nixpkgs": http_nixpkgs},
+        )
 
-    nixpkgs_package(
-        name = "nixpkgs-http-repository-test",
-        attribute_path = "hello",
-        repositories = {"nixpkgs": http_nixpkgs},
-    )
+        nixpkgs_package(
+            name = "nixpkgs-file-repository-test",
+            nix_file_content = "with import <nixpkgs> {}; hello",
+            repositories = {"nixpkgs": file_nixpkgs},
+        )
 
-    nixpkgs_package(
-        name = "nixpkgs-file-repository-test",
-        nix_file_content = "with import <nixpkgs> {}; hello",
-        repositories = {"nixpkgs": file_nixpkgs},
-    )
+        nixpkgs_package(
+            name = "nixpkgs-local-repository-test",
+            nix_file_content = "with import <nixpkgs> {}; hello",
+            repositories = {"nixpkgs": nixpkgs_content},
+        )
 
-    nixpkgs_package(
-        name = "nixpkgs-local-repository-test",
-        nix_file_content = "with import <nixpkgs> {}; hello",
-        repositories = {"nixpkgs": nixpkgs_content},
-    )
+        nixpkgs_package(
+            name = "relative-imports",
+            attribute_path = "hello",
+            nix_file = "//tests:relative_imports.nix",
+            nix_file_deps = [
+                "//:flake.lock",
+                "//:nixpkgs.nix",
+                "//tests:relative_imports/nixpkgs.nix",
+            ],
+            repository = nixpkgs,
+        )
 
-    nixpkgs_package(
-        name = "relative-imports",
-        attribute_path = "hello",
-        nix_file = "//tests:relative_imports.nix",
-        nix_file_deps = [
-            "//:flake.lock",
-            "//:nixpkgs.nix",
-            "//tests:relative_imports/nixpkgs.nix",
-        ],
-        repository = nixpkgs,
-    )
+        nixpkgs_package(
+            name = "output-filegroup-test",
+            nix_file = "//tests:output.nix",
+            repository = nixpkgs,
+        )
 
-    nixpkgs_package(
-        name = "output-filegroup-test",
-        nix_file = "//tests:output.nix",
-        repository = nixpkgs,
-    )
-
-    nixpkgs_package(
-        name = "output-filegroup-manual-test",
-        build_file_content = """
+        nixpkgs_package(
+            name = "output-filegroup-manual-test",
+            build_file_content = """
 package(default_visibility = [ "//visibility:public" ])
 filegroup(
     name = "manual-filegroup",
     srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
 )
-    """,
-        nix_file = "//tests:output.nix",
-        repository = nixpkgs,
-    )
+        """,
+            nix_file = "//tests:output.nix",
+            repository = nixpkgs,
+        )
+
+        nixpkgs_package(
+            name = "extra-args-test",
+            nix_file_content = """
+{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}
+            """,
+            nixopts = [
+                "--argstr",
+                "packagePath",
+                "hello",
+            ],
+            repository = nixpkgs,
+        )
 
     nixpkgs_package(
         name = "nixpkgs_location_expansion_test",
