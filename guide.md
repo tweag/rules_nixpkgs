@@ -332,7 +332,7 @@ changes.
 ## Using `direnv` with Nix
 
 The use of this feature can be made even more seamless by using
-[direnv](direnv), which has support for the `flake.nix` file we used to describe
+[direnv][direnv], which has support for the `flake.nix` file we used to describe
 the development shell.
 
 Put the following in a file called `.envrc` at the root of the repo:
