@@ -31,6 +31,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 * [nixpkgs_http_repository](#nixpkgs_http_repository)
 * [nixpkgs_local_repository](#nixpkgs_local_repository)
 * [nixpkgs_package](#nixpkgs_package)
+* [nixpkgs_flake_package](#nixpkgs_flake_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_java_configure](#nixpkgs_java_configure)
@@ -511,6 +512,201 @@ default is <code>[]</code>
 Options to forward to the nix command.
 
 </p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<a id="#nixpkgs_flake_package"></a>
+
+### nixpkgs_flake_package
+
+<pre>
+nixpkgs_flake_package(<a href="#nixpkgs_flake_package-name">name</a>, <a href="#nixpkgs_flake_package-nix_flake_file">nix_flake_file</a>, <a href="#nixpkgs_flake_package-nix_flake_lock_file">nix_flake_lock_file</a>, <a href="#nixpkgs_flake_package-nix_flake_file_deps">nix_flake_file_deps</a>, <a href="#nixpkgs_flake_package-package">package</a>,
+                      <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>, <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
+</pre>
+
+Make the content of a local Nix Flake package available in the Bazel workspace.
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_flake_package-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+A unique name for this repository.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-nix_flake_file">
+<td><code>nix_flake_file</code></td>
+<td>
+
+required.
+
+<p>
+
+Label to `flake.nix` that will be evaluated.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-nix_flake_lock_file">
+<td><code>nix_flake_lock_file</code></td>
+<td>
+
+required.
+
+<p>
+
+Label to `flake.lock` that corresponds to `nix_flake_file`.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-nix_flake_file_deps">
+<td><code>nix_flake_file_deps</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+<p>
+
+Additional dependencies of `nix_flake_file` if any.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-package">
+<td><code>package</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Nix Flake package to make available.  The default package will be used if not specified.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-build_file">
+<td><code>build_file</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+The file to use as the BUILD file for this repository.
+
+Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
+
+For common use cases we provide filegroups that expose certain files as targets:
+
+<dl>
+  <dt><code>:bin</code></dt>
+  <dd>Everything in the <code>bin/</code> directory.</dd>
+  <dt><code>:lib</code></dt>
+  <dd>All <code>.so</code>, <code>.dylib</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
+  <dt><code>:include</code></dt>
+  <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>include/</code>.</dd>
+</dl>
+
+If you need different files from the nix package, you can reference them like this:
+```
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+    name = "our-docs",
+    srcs = glob(["share/doc/ourpackage/**/*"]),
+)
+```
+See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-build_file_content">
+<td><code>build_file_content</code></td>
+<td>
+
+optional.
+default is <code>""</code>
+
+<p>
+
+Like `build_file`, but a string of the contents instead of a file name.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-nixopts">
+<td><code>nixopts</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+<p>
+
+Extra flags to pass when calling Nix.
+
+Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
+
+Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Meaning, the result of location expansion may not form a valid Nix path literal. Use `./$${"$(location @for//:example)"}` to work around this limitation if you need to pass a path argument via `--arg`, or pass the resulting path as a string value using `--argstr` and combine it with an additional `--arg workspace_root ./.` argument using `workspace_root + ("/" + path_str)`.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-quiet">
+<td><code>quiet</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+Whether to hide the output of the Nix command.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-fail_not_supported">
+<td><code>fail_not_supported</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-kwargs">
+<td><code>kwargs</code></td>
+<td>
+
+optional.
+
 </td>
 </tr>
 </tbody>

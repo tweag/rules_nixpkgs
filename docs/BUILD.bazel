@@ -14,6 +14,7 @@ generate_documentation(
         "nixpkgs_http_repository",
         "nixpkgs_local_repository",
         "nixpkgs_package",
+        "nixpkgs_flake_package",
         "nixpkgs_cc_configure",
         "nixpkgs_cc_configure_deprecated",
         "nixpkgs_go_configure",
