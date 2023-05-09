@@ -32,6 +32,7 @@ let
       bintools = pkgs.stdenv.cc.bintools.override { inherit postLinkSignHook; };
       extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
         echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
+        echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
         echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
         echo "-isystem ${pkgs.llvmPackages.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
         echo "-F${CoreFoundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
