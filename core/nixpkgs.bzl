@@ -378,6 +378,66 @@ def nixpkgs_local_repository(
         **kwargs
     )
 
+def _nixpkgs_build_file_content(repository_ctx):
+    # Workaround to bazelbuild/bazel#4533
+    repository_ctx.path("BUILD")
+    repository_ctx.path("BUILD.bazel")
+
+    if repository_ctx.attr.build_file:
+        repository_ctx.path(repository_ctx.attr.build_file)
+
+    if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
+        fail("Specify one of 'build_file' or 'build_file_content', but not both.")
+
+    if repository_ctx.attr.build_file:
+        return repository_ctx.read(repository_ctx.attr.build_file)
+    elif repository_ctx.attr.build_file_content:
+        return repository_ctx.attr.build_file_content
+    else:
+        return None
+
+def _nixpkgs_build_and_symlink(repository_ctx, nix_build, build_file_content):
+    # Large enough integer that Bazel can still parse. We don't have
+    # access to MAX_INT and 0 is not a valid timeout so this is as good
+    # as we can do. The value shouldn't be too large to avoid errors on
+    # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
+    timeout = 8640000
+    repository_ctx.report_progress("Building Nix derivation")
+    exec_result = execute_or_fail(
+        repository_ctx,
+        nix_build,
+        failure_message = "Cannot build Nix derivation for package '@{}'.".format(repository_ctx.name),
+        quiet = repository_ctx.attr.quiet,
+        timeout = timeout,
+    )
+    output_path = exec_result.stdout.splitlines()[-1]
+
+    # ensure that the output is a directory
+    test_path = repository_ctx.which("test")
+    execute_or_fail(
+        repository_ctx,
+        [test_path, "-d", output_path],
+        failure_message = "Package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
+            repository_ctx.name,
+        ),
+    )
+
+    # Build a forest of symlinks (like new_local_package() does) to the
+    # Nix store.
+    for target in find_children(repository_ctx, output_path):
+        basename = target.rpartition("/")[-1]
+        repository_ctx.symlink(target, basename)
+
+    # Create a default BUILD file only if it does not exists and is not
+    # provided by `build_file` or `build_file_content`.
+    if not repository_ctx.path("BUILD").exists and not repository_ctx.path("BUILD.bazel").exists:
+        if build_file_content:
+            repository_ctx.file("BUILD", content = build_file_content)
+        else:
+            repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
+    elif build_file_content:
+        fail("One of 'build_file' or 'build_file_content' was specified but Nix derivation already contains 'BUILD' or 'BUILD.bazel'.")
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
@@ -419,8 +479,7 @@ def _nixpkgs_package_impl(repository_ctx):
     # resolve all dependencies of this rule before running cp
     #
     # Remove the following repository_ctx.path() once bazelbuild/bazel#4533 is resolved.
-    if repository_ctx.attr.build_file:
-        repository_ctx.path(repository_ctx.attr.build_file)
+    build_file_content = _nixpkgs_build_file_content(repository_ctx)
 
     if repository_ctx.attr.nix_file:
         repository_ctx.path(repository_ctx.attr.nix_file)
@@ -440,23 +499,6 @@ def _nixpkgs_package_impl(repository_ctx):
         fail("Platform is not supported: nix-build not found in PATH. See attribute fail_not_supported if you don't want to use Nix.")
     elif not_supported:
         return
-
-    # If true, a BUILD file will be created from a template if it does not
-    # exist.
-    # However this will happen AFTER the nix-build command.
-    create_build_file_if_needed = False
-    if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
-        fail("Specify one of 'build_file' or 'build_file_content', but not both.")
-    elif repository_ctx.attr.build_file:
-        repository_ctx.symlink(repository_ctx.attr.build_file, "BUILD")
-    elif repository_ctx.attr.build_file_content:
-        repository_ctx.file("BUILD", content = repository_ctx.attr.build_file_content)
-    else:
-        # No user supplied build file, we may create the default one.
-        create_build_file_if_needed = True
-
-        # Workaround to bazelbuild/bazel#4533
-        repository_ctx.path("BUILD")
 
     if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
@@ -502,45 +544,7 @@ def _nixpkgs_package_impl(repository_ctx):
     )
     nix_build = [nix_build_path] + expr_args
 
-    # Large enough integer that Bazel can still parse. We don't have
-    # access to MAX_INT and 0 is not a valid timeout so this is as good
-    # as we can do. The value shouldn't be too large to avoid errors on
-    # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
-    timeout = 8640000
-    repository_ctx.report_progress("Building Nix derivation")
-    exec_result = execute_or_fail(
-        repository_ctx,
-        nix_build,
-        failure_message = "Cannot build Nix attribute '{}'.".format(
-            repository_ctx.attr.attribute_path,
-        ),
-        quiet = repository_ctx.attr.quiet,
-        timeout = timeout,
-    )
-    output_path = exec_result.stdout.splitlines()[-1]
-
-    # ensure that the output is a directory
-    test_path = repository_ctx.which("test")
-    execute_or_fail(
-        repository_ctx,
-        [test_path, "-d", output_path],
-        failure_message = "nixpkgs_package '@{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
-            repository_ctx.name,
-        ),
-    )
-
-    # Build a forest of symlinks (like new_local_package() does) to the
-    # Nix store.
-    for target in find_children(repository_ctx, output_path):
-        basename = target.rpartition("/")[-1]
-        repository_ctx.symlink(target, basename)
-
-    # Create a default BUILD file only if it does not exists and is not
-    # provided by `build_file` or `build_file_content`.
-    if create_build_file_if_needed:
-        p = repository_ctx.path("BUILD")
-        if not p.exists:
-            repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
+    _nixpkgs_build_and_symlink(repository_ctx, nix_build, build_file_content)
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
@@ -601,7 +605,7 @@ def nixpkgs_package(
         Specify one of `repository` or `repositories`.
       build_file: The file to use as the BUILD file for this repository.
 
-        Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
+        Its contents are copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
 
         For common use cases we provide filegroups that expose certain files as targets:
 
@@ -676,8 +680,7 @@ def _nixpkgs_flake_package_impl(repository_ctx):
     # resolve all dependencies of this rule before running cp
     #
     # Remove the following repository_ctx.path() once bazelbuild/bazel#4533 is resolved.
-    if repository_ctx.attr.build_file:
-        repository_ctx.path(repository_ctx.attr.build_file)
+    build_file_content = _nixpkgs_build_file_content(repository_ctx)
 
     repository_ctx.path(repository_ctx.attr.nix_flake_file)
     repository_ctx.path(external_repository_root(repository_ctx.attr.nix_flake_file))
@@ -698,23 +701,6 @@ def _nixpkgs_flake_package_impl(repository_ctx):
         fail("Platform is not supported: `nix` not found in PATH. See attribute `fail_not_supported` if you don't want to use Nix.")
     elif not_supported:
         return
-
-    # If true, a BUILD file will be created from a template if it does not
-    # exist.
-    # However this will happen AFTER the nix-build command.
-    create_build_file_if_needed = False
-    if repository_ctx.attr.build_file and repository_ctx.attr.build_file_content:
-        fail("Specify one of 'build_file' or 'build_file_content', but not both.")
-    elif repository_ctx.attr.build_file:
-        repository_ctx.symlink(repository_ctx.attr.build_file, "BUILD")
-    elif repository_ctx.attr.build_file_content:
-        repository_ctx.file("BUILD", content = repository_ctx.attr.build_file_content)
-    else:
-        # No user supplied build file, we may create the default one.
-        create_build_file_if_needed = True
-
-        # Workaround to bazelbuild/bazel#4533
-        repository_ctx.path("BUILD")
 
     nix_flake_file_deps = {}
     for dep_lbl, dep_str in repository_ctx.attr.nix_flake_file_deps.items():
@@ -757,43 +743,7 @@ def _nixpkgs_flake_package_impl(repository_ctx):
     )
     nix_build = [nix_path, "build"] + expr_args
 
-    # Large enough integer that Bazel can still parse. We don't have
-    # access to MAX_INT and 0 is not a valid timeout so this is as good
-    # as we can do. The value shouldn't be too large to avoid errors on
-    # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
-    timeout = 8640000
-    repository_ctx.report_progress("Building Nix derivation")
-    exec_result = execute_or_fail(
-        repository_ctx,
-        nix_build,
-        failure_message = "Cannot build Nix Flake '{}'.".format(nix_build_target),
-        quiet = repository_ctx.attr.quiet,
-        timeout = timeout,
-    )
-    output_path = exec_result.stdout.splitlines()[-1]
-
-    # ensure that the output is a directory
-    test_path = repository_ctx.which("test")
-    execute_or_fail(
-        repository_ctx,
-        [test_path, "-d", output_path],
-        failure_message = "Nix Flake '{}' outputs a single file which is not supported by rules_nixpkgs. Please only use directories.".format(
-            nix_build_target,
-        ),
-    )
-
-    # Build a forest of symlinks (like new_local_package() does) to the
-    # Nix store.
-    for target in find_children(repository_ctx, output_path):
-        basename = target.rpartition("/")[-1]
-        repository_ctx.symlink(target, basename)
-
-    # Create a default BUILD file only if it does not exists and is not
-    # provided by `build_file` or `build_file_content`.
-    if create_build_file_if_needed:
-        p = repository_ctx.path("BUILD")
-        if not p.exists:
-            repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
+    _nixpkgs_build_and_symlink(repository_ctx, nix_build, build_file_content)
 
 _nixpkgs_flake_package = repository_rule(
     implementation = _nixpkgs_flake_package_impl,
@@ -832,36 +782,9 @@ def nixpkgs_flake_package(
       nix_flake_lock_file: Label to `flake.lock` that corresponds to `nix_flake_file`.
       nix_flake_file_deps: Additional dependencies of `nix_flake_file` if any.
       package: Nix Flake package to make available.  The default package will be used if not specified.
-      build_file: The file to use as the BUILD file for this repository.
-
-        Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
-
-        For common use cases we provide filegroups that expose certain files as targets:
-
-        <dl>
-          <dt><code>:bin</code></dt>
-          <dd>Everything in the <code>bin/</code> directory.</dd>
-          <dt><code>:lib</code></dt>
-          <dd>All <code>.so</code>, <code>.dylib</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
-          <dt><code>:include</code></dt>
-          <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>include/</code>.</dd>
-        </dl>
-
-        If you need different files from the nix package, you can reference them like this:
-        ```
-        package(default_visibility = [ "//visibility:public" ])
-        filegroup(
-            name = "our-docs",
-            srcs = glob(["share/doc/ourpackage/**/*"]),
-        )
-        ```
-        See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
-      build_file_content: Like `build_file`, but a string of the contents instead of a file name.
-      nixopts: Extra flags to pass when calling Nix.
-
-        Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
-
-        Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Meaning, the result of location expansion may not form a valid Nix path literal. Use `./$${"$(location @for//:example)"}` to work around this limitation if you need to pass a path argument via `--arg`, or pass the resulting path as a string value using `--argstr` and combine it with an additional `--arg workspace_root ./.` argument using `workspace_root + ("/" + path_str)`.
+      build_file: The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package) for more information.
+      build_file_content: Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package) for more information.
+      nixopts: Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package) for more information.
       quiet: Whether to hide the output of the Nix command.
       fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
     """
