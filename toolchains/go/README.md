@@ -171,7 +171,7 @@ default is <code>None</code>
 
 <p>
 
-An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge. Takes precedence over attribute_path.
+An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of package. Takes precedence over attribute_path.
 
 </p>
 </td>
@@ -181,7 +181,7 @@ An expression for a Nix environment derivation. The environment should expose th
 <td>
 
 optional.
-default is <code>None</code>
+default is <code>[]</code>
 
 <p>
 

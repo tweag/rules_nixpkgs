@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - nixpkgs_nodejs_configure_platforms for platform transparent npm_install
   See [#309]
+  
+### Breaking changes
+- rules_nixpkgs_go: Custom derivations passed to `nixpkgs_go_configure` (via `nix-file`, `nix-file-content` or `attribute_path`) must now contain a `version` attribute.
 
 ## [0.9.0] - 2022-07-19
 
