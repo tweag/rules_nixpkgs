@@ -377,9 +377,35 @@ def nixpkgs_local_repository(
         **kwargs
     )
 
+def _nixopts_args(nixopts):
+    result = {}
+    arg_opt, arg_name = None, None
+    for opt in nixopts:
+        if opt == "--arg" or opt == "--argstr":
+            arg_opt, arg_name = opt, None
+        elif arg_opt:
+            if arg_name == None:
+                arg_name = opt
+            else:
+                arg_val = opt if arg_opt == "--arg" else "''%s''" % opt
+                result[arg_name] = arg_val
+                arg_opt, arg_name = None, None
+    return result
+
+def _sanitize_attribute_path(attribute_path):
+    # Wrap attribute path in strings for special characters if it exisits
+    maybe_attr = ""
+    if attribute_path:
+        attrs = []
+        for attr in attribute_path.split("."):
+            attrs.append("\"%s\"" % attr.split("~")[-1])
+        maybe_attr = "." + ".".join(attrs)
+    return maybe_attr
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
+    attribute_path = repository_ctx.attr.attribute_path
 
     expr_args = []
 
@@ -453,26 +479,64 @@ def _nixpkgs_package_impl(repository_ctx):
     else:
         # No user supplied build file, we may create the default one.
         create_build_file_if_needed = True
+
         # Workaround to bazelbuild/bazel#4533
         repository_ctx.path("BUILD")
 
     if repository_ctx.attr.nix_file and repository_ctx.attr.nix_file_content:
         fail("Specify one of 'nix_file' or 'nix_file_content', but not both.")
-    elif repository_ctx.attr.nix_file:
+
+    # Create a default.nix and BUILD file in bazel-support for external
+    # reference.
+    maybe_attr = _sanitize_attribute_path(attribute_path)
+    if repository_ctx.attr.nix_file:
         nix_file = cp(repository_ctx, repository_ctx.attr.nix_file)
-        expr_args.append(repository_ctx.path(nix_file))
+        default_nix_substs = {
+            "%{def}": "import /${\"%s\"}" % repository_ctx.path(nix_file),
+            "%{maybe_attr}": maybe_attr,
+        }
     elif repository_ctx.attr.nix_file_content:
-        expr_args.extend(["-E", repository_ctx.attr.nix_file_content])
+        default_nix_substs = {
+            "%{def}": repository_ctx.attr.nix_file_content,
+            "%{maybe_attr}": maybe_attr,
+        }
     else:
-        expr_args.extend(["-E", "import <nixpkgs> { config = {}; overlays = []; }"])
+        default_nix_substs = {
+            "%{def}": "import <nixpkgs> { config = {}; overlays = []; }",
+            "%{maybe_attr}": maybe_attr if maybe_attr else _sanitize_attribute_path(repository_ctx.attr.name),
+        }
 
     nix_file_deps = {}
     for dep_lbl, dep_str in repository_ctx.attr.nix_file_deps.items():
         nix_file_deps[dep_str] = cp(repository_ctx, dep_lbl)
 
+    nixopts = [
+        expand_location(
+            repository_ctx = repository_ctx,
+            string = opt,
+            labels = nix_file_deps,
+            attr = "nixopts",
+        )
+        for opt in repository_ctx.attr.nixopts
+    ]
+    nixopts_args = _nixopts_args(nixopts)
+    default_nix_substs["%{args_with_defaults}"] = ", ".join([
+        "%s ? %s" % kv
+        for kv in nixopts_args.items()
+    ])
+    default_nix_substs["%{args}"] = " ".join(nixopts_args.keys())
+
+    repository_ctx.template(
+        "bazel-support/default.nix",
+        Label("@rules_nixpkgs_core//:default.nix.tpl"),
+        substitutions = default_nix_substs,
+        executable = False,
+    )
+
+    repository_ctx.file("bazel-support/BUILD", 'exports_files(["nix-out-link"])\nfilegroup(name="bazel-support", srcs=glob(["nix-out-link*/**/*"], exclude=["BUILD"]))')
+
     expr_args.extend([
-        "-A",
-        repository_ctx.attr.attribute_path if repository_ctx.attr.nix_file or repository_ctx.attr.nix_file_content else repository_ctx.attr.attribute_path or repository_ctx.attr.unmangled_name,
+        repository_ctx.path("bazel-support/default.nix"),
         # Creating an out link prevents nix from garbage collecting the store path.
         # nixpkgs uses `nix-support/` for such house-keeping files, so we mirror them
         # and use `bazel-support/`, under the assumption that no nix package has
