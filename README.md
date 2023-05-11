@@ -613,30 +613,7 @@ default is <code>None</code>
 
 <p>
 
-The file to use as the BUILD file for this repository.
-
-Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
-
-For common use cases we provide filegroups that expose certain files as targets:
-
-<dl>
-  <dt><code>:bin</code></dt>
-  <dd>Everything in the <code>bin/</code> directory.</dd>
-  <dt><code>:lib</code></dt>
-  <dd>All <code>.so</code>, <code>.dylib</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
-  <dt><code>:include</code></dt>
-  <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>include/</code>.</dd>
-</dl>
-
-If you need different files from the nix package, you can reference them like this:
-```
-package(default_visibility = [ "//visibility:public" ])
-filegroup(
-    name = "our-docs",
-    srcs = glob(["share/doc/ourpackage/**/*"]),
-)
-```
-See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
+The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.
 
 </p>
 </td>
@@ -650,7 +627,7 @@ default is <code>""</code>
 
 <p>
 
-Like `build_file`, but a string of the contents instead of a file name.
+Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package-build_file_content) for more information.
 
 </p>
 </td>
@@ -664,11 +641,7 @@ default is <code>[]</code>
 
 <p>
 
-Extra flags to pass when calling Nix.
-
-Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file referenced by `LABEL` relative to the workspace root.
-
-Note, labels to external workspaces will resolve to paths that contain `~` characters if the Bazel flag `--enable_bzlmod` is true. Nix does not support `~` characters in path literals at the time of writing, see [#7742](https://github.com/NixOS/nix/issues/7742). Meaning, the result of location expansion may not form a valid Nix path literal. Use `./$${"$(location @for//:example)"}` to work around this limitation if you need to pass a path argument via `--arg`, or pass the resulting path as a string value using `--argstr` and combine it with an additional `--arg workspace_root ./.` argument using `workspace_root + ("/" + path_str)`.
+Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package-nixopts) for more information.
 
 </p>
 </td>
@@ -1946,7 +1919,7 @@ default is <code>None</code>
 
 The file to use as the BUILD file for this repository.
 
-Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
+Its contents are copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
 
 For common use cases we provide filegroups that expose certain files as targets:
 

@@ -782,9 +782,9 @@ def nixpkgs_flake_package(
       nix_flake_lock_file: Label to `flake.lock` that corresponds to `nix_flake_file`.
       nix_flake_file_deps: Additional dependencies of `nix_flake_file` if any.
       package: Nix Flake package to make available.  The default package will be used if not specified.
-      build_file: The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package) for more information.
-      build_file_content: Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package) for more information.
-      nixopts: Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package) for more information.
+      build_file: The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.
+      build_file_content: Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package-build_file_content) for more information.
+      nixopts: Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package-nixopts) for more information.
       quiet: Whether to hide the output of the Nix command.
       fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
     """
