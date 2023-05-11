@@ -116,11 +116,11 @@ nixpkgs_go_helpers = repository_rule(
 )
 
 go_toolchain_func = """
-load("@{rules_go}//go/private:platforms.bzl", "PLATFORMS")
 load("@{rules_go}//go:def.bzl", "go_toolchain")
 
+PLATFORMS = {PLATFORMS}
 def declare_toolchains(host_goos, host_goarch):
-    for p in [p for p in PLATFORMS if not p.cgo]:
+    for p in PLATFORMS:
         link_flags = []
         cgo_link_flags = []
         if host_goos == "darwin":
@@ -129,11 +129,7 @@ def declare_toolchains(host_goos, host_goarch):
             cgo_link_flags.append("-Wl,-whole-archive")
         toolchain_name = "toolchain_go_" + p.name
         impl_name = toolchain_name + "-impl"
-        cgo_constraints = (
-            "@{rules_go}//go/toolchain:cgo_off",
-            "@{rules_go}//go/toolchain:cgo_on",
-        )
-        constraints = [c for c in p.constraints if c not in cgo_constraints]
+        constraints = p.constraints
         go_toolchain(
             name = impl_name,
             goos = p.goos,
@@ -165,9 +161,27 @@ declare_toolchains("{goos}", "{goarch}")
 
 def _nixpkgs_go_toolchain_impl(repository_ctx):
     goos, goarch = _detect_host_platform(repository_ctx)
+
+    # Constraints from rules_go `PLATFORMS` variable are strings referencing the `io_bazel_rules_go` repository.
+    # With bzlmod, rules_go may be visible under a different name (rules_go_repo_name) so we use a canonical name for these constraints.
+    CANONICALIZED_PLATFORMS = [
+        struct(
+            cgo = p.cgo,
+            constraints = [str(Label(c)) for c in p.constraints if c not in (
+                "@io_bazel_rules_go//go/toolchain:cgo_off",
+                "@io_bazel_rules_go//go/toolchain:cgo_on",
+            )],
+            goarch = p.goarch,
+            goos = p.goos,
+            name = p.name,
+        )
+        for p in PLATFORMS
+        if not p.cgo
+    ]
     content = go_toolchain_func.format(
         rules_go = repository_ctx.attr.rules_go_repo_name,
         sdk_repo = repository_ctx.attr.sdk_repo,
+        PLATFORMS = CANONICALIZED_PLATFORMS,
     )
     build_content = go_toolchain_build.format(
         goos = goos,
