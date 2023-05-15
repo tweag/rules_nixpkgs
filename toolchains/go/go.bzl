@@ -71,11 +71,12 @@ def _detect_host_platform(ctx):
 go_helpers_build = """
 load("@{rules_go}//go:def.bzl", "go_sdk")
 
-def go_sdk_for_arch():
+def go_sdk_for_arch(go_version):
     native.filegroup(
         name = "libs",
         srcs = native.glob(
             ["pkg/{goos}_{goarch}/**/*.a"],
+            allow_empty = True,
             exclude = ["pkg/{goos}_{goarch}/**/cmd/**"],
         ),
     )
@@ -91,6 +92,7 @@ def go_sdk_for_arch():
         srcs = [":srcs"],
         tools = [":tools"],
         go = "bin/go{exe}",
+        version = go_version,
     )
 """
 
@@ -211,10 +213,11 @@ load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
 load("@{rules_go}//go/private/rules:sdk.bzl", "package_list")
 load("@{rules_go}//go:def.bzl", "go_sdk")
 load("@{helpers}//:go_sdk.bzl", "go_sdk_for_arch")
+load(":go_version.bzl", "go_version")
 
 package(default_visibility = ["//visibility:public"])
 
-go_sdk_for_arch()
+go_sdk_for_arch(go_version)
 
 filegroup(
     name = "headers",
@@ -265,7 +268,7 @@ def nixpkgs_go_configure(
         repositories = {},
         attribute_path = "go",
         nix_file = None,
-        nix_file_deps = None,
+        nix_file_deps = [],
         nix_file_content = None,
         nixopts = [],
         fail_not_supported = True,
@@ -343,7 +346,7 @@ def nixpkgs_go_configure(
     Args:
       sdk_name: Go sdk name to pass to rules_go
       attribute_path: The nixpkgs attribute path for the `go` to use.
-      nix_file: An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge. Takes precedence over attribute_path.
+      nix_file: An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of package. Takes precedence over attribute_path.
       nix_file_deps: Dependencies of `nix_file` if any.
       nix_file_content: An expression for a Nix environment derivation. Takes precedence over attribute_path.
       repository: A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`.
@@ -362,19 +365,30 @@ def nixpkgs_go_configure(
       rules_go_repo_name: The name of the rules_go repository. Defaults to rules_go under bzlmod and io_bazel_rules_go otherwise.",
     """
 
-    if not nix_file and not nix_file_content:
-        nix_file_content = """
-           with import <nixpkgs> {{ config = {{}}; overlays = []; }}; buildEnv {{
-              name = "bazel-go-toolchain";
-              paths = [
-                {attribute_path}
-              ];
-              postBuild = ''
-                touch $out/ROOT
-                ln -s $out/share/go/{{api,doc,lib,misc,pkg,src}} $out/
-              '';
-            }}
-        """.format(attribute_path = attribute_path)
+    nixopts = list(nixopts)
+    nix_file_deps = list(nix_file_deps)
+
+    custom_nix_expr = None
+    if nix_file and nix_file_content:
+        fail("Cannot specify both 'nix_file' and 'nix_file_content'.")
+    elif nix_file:
+        custom_nix_expr = "import $(location {})".format(nix_file)
+        nix_file_deps.append(nix_file)
+    elif nix_file_content:
+        custom_nix_expr = nix_file_content
+
+    if custom_nix_expr:
+        nixopts.extend([
+            "--arg",
+            "goExpr",
+            custom_nix_expr,
+        ])
+    else:
+        nixopts.extend([
+            "--argstr",
+            "goAttrPath",
+            attribute_path,
+        ])
 
     helpers_repo = sdk_name + "_helpers"
     nixpkgs_go_helpers(
@@ -385,9 +399,8 @@ def nixpkgs_go_configure(
         name = sdk_name,
         repository = repository,
         repositories = repositories,
-        nix_file = nix_file,
+        nix_file = "@rules_nixpkgs_go//:go.nix",
         nix_file_deps = nix_file_deps,
-        nix_file_content = nix_file_content,
         build_file_content = go_sdk_build.format(
             rules_go = rules_go_repo_name,
             helpers = helpers_repo,
