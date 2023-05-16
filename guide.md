@@ -273,7 +273,7 @@ _and_ a default CC toolchain. We've replaced it with `mkShellNoCC`, which, as
 the name suggests, does the same job but without implicitly making a
 Nix-provided CC toolchain available.
 
-To enter the development shell, one can run:
+To enter the development shell, one can run:[^1]
 ```
 $ nix develop
 ```
@@ -575,3 +575,6 @@ directories under
 [template]: ../examples/cc-template
 [flake-post]: https://www.tweag.io/blog/2020-05-25-flakes/
 [go-register-toolchains]: https://github.com/tweag/rules_nixpkgs/blob/56b9cff9d175b916abdb36920a669b1face49e04/examples/toolchains/go/WORKSPACE
+
+[^1]: If you get errors about experimental features being disabled when you run this command,
+      try `echo 'experimental-features = nix-command flakes' >>~/.config/nix/nix.conf`.
