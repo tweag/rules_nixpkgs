@@ -2,6 +2,7 @@ load("@nixpkgs_repositories//:defs.bzl", "nix_repo")
 load("@nixpkgs_packages//:defs.bzl", "nix_pkg")
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
+    "nixpkgs_flake_package",
     "nixpkgs_git_repository",
     "nixpkgs_http_repository",
     "nixpkgs_local_repository",
@@ -209,4 +210,18 @@ filegroup(
             "//tests:relative_imports/nixpkgs.nix",
         ],
         repository = nixpkgs,
+    )
+
+    nixpkgs_flake_package(
+        name = "flake-hello",
+        nix_flake_file = "//:flake.nix",
+        nix_flake_lock_file = "//:flake.lock",
+        package = "hello",
+    )
+
+    nixpkgs_flake_package(
+        name = "flake-hello-with-build-file",
+        nix_flake_file = "//:flake.nix",
+        nix_flake_lock_file = "//:flake.lock",
+        package = "hello-with-build-file",
     )
