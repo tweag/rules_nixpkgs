@@ -90,16 +90,15 @@ def execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kw
     if result.return_code:
         outputs = dict(
             failure_message = failure_message,
-            arguments = arguments,
+            command = " ".join([repr(str(a)) for a in arguments]),
             return_code = result.return_code,
-            stderr = result.stderr,
+            stderr = '      > '.join(('\n'+result.stderr).splitlines(True)),
         )
         fail("""
-{failure_message}
-Command: {arguments}
-Return code: {return_code}
-Error output:
-{stderr}
+  {failure_message}
+    Command: {command}
+    Return code: {return_code}
+    Error output: {stderr}
 """.format(**outputs))
     return result
 
