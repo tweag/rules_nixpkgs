@@ -14,7 +14,7 @@ http_archive(
         "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
         "https://github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
     ],
-    # rules_rust 0.17.0 does not yet support direct
+    # rules_rust 0.22.0 does not yet support direct
     # overriding toolchain used for build of cargo-bazel
     # binary.
     # On non-standard systems (viz. NixOS), that approach
