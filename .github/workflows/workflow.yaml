@@ -29,7 +29,7 @@ jobs:
           - false
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
       - uses: cachix/install-nix-action@v21
         with:
           nix_path: nixpkgs=./docs/nixpkgs.nix
@@ -67,7 +67,7 @@ jobs:
           - macos-11
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
       - uses: cachix/install-nix-action@v21
         with:
           nix_path: nixpkgs=./nixpkgs.nix
