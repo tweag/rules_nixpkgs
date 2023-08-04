@@ -1,5 +1,5 @@
 {
-  "checksum": "59ace66e05f26b5ab71bdc99a930d8b1bafdb232f70f60ad13c15599bc4a49a4",
+  "checksum": "7b9ecdeb4604da8a08e5bb7a2db2abcb1193b450993102bce9e408287cbb0a89",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -56,9 +56,12 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "default"
-        ],
+        "crate_features": {
+          "common": [
+            "default"
+          ],
+          "selects": {}
+        },
         "edition": "2018",
         "version": "1.3.2"
       },
@@ -261,10 +264,13 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "default",
-          "std"
-        ],
+        "crate_features": {
+          "common": [
+            "default",
+            "std"
+          ],
+          "selects": {}
+        },
         "deps": {
           "common": [
             {
@@ -309,12 +315,15 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "alloc",
-          "default",
-          "race",
-          "std"
-        ],
+        "crate_features": {
+          "common": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ],
+          "selects": {}
+        },
         "edition": "2021",
         "version": "1.17.0"
       },
@@ -354,9 +363,12 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "default"
-        ],
+        "crate_features": {
+          "common": [
+            "default"
+          ],
+          "selects": {}
+        },
         "deps": {
           "common": [
             {
@@ -637,10 +649,13 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "default",
-          "proc-macro"
-        ],
+        "crate_features": {
+          "common": [
+            "default",
+            "proc-macro"
+          ],
+          "selects": {}
+        },
         "deps": {
           "common": [
             {
@@ -698,10 +713,13 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "default",
-          "proc-macro"
-        ],
+        "crate_features": {
+          "common": [
+            "default",
+            "proc-macro"
+          ],
+          "selects": {}
+        },
         "deps": {
           "common": [
             {
@@ -759,16 +777,19 @@
         "compile_data_glob": [
           "**"
         ],
-        "crate_features": [
-          "clone-impls",
-          "default",
-          "derive",
-          "full",
-          "parsing",
-          "printing",
-          "proc-macro",
-          "quote"
-        ],
+        "crate_features": {
+          "common": [
+            "clone-impls",
+            "default",
+            "derive",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "quote"
+          ],
+          "selects": {}
+        },
         "deps": {
           "common": [
             {

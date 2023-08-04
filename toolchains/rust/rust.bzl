@@ -107,7 +107,6 @@ pkgs.buildEnv {{
             binary_ext = "${{binary-ext}}",
             staticlib_ext = "${{staticlib-ext}}",
             dylib_ext = "${{dylib-ext}}",
-            os = "${{os}}",
             exec_triple = "${{build-triple}}",
             target_triple = "${{target-triple}}",
             default_edition = "{default_edition}",

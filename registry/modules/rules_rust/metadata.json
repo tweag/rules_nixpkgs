@@ -1,6 +1,6 @@
 {
   "homepage": "https://bazelbuild.github.io/rules_rust/",
   "maintainers": [],
-  "versions": ["0.17.0"],
+  "versions": ["0.22.0"],
   "yanked_versions": []
 }
