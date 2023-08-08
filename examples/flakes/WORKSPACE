@@ -1,0 +1,45 @@
+workspace(name = "bazel-nix-flakes-example")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_cc",
+    sha256 = "4dccbfd22c0def164c8f47458bd50e0c7148f3d92002cdb459c2a96a68498241",
+    urls = [
+        "https://github.com/bazelbuild/rules_cc/releases/download/0.0.1/rules_cc-0.0.1.tar.gz",
+    ],
+)
+
+######################
+# Tweag Nix Support
+######################
+
+# Replace with http_archive: https://github.com/tweag/rules_nixpkgs/#setup
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../../",
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+rules_nixpkgs_dependencies()
+
+# Define nixpkgs version using the flakes lock file.
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_local_repository")
+nixpkgs_local_repository(
+    name = "nixpkgs",
+    nix_flake_lock_file = "//:flake.lock",
+    nix_file_deps = ["//:flake.lock"],
+)
+
+# Configure the C++ toolchain
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure")
+nixpkgs_cc_configure(
+    name = "nixpkgs_config_cc",
+    repository = "@nixpkgs",
+    attribute_path = "clang_13",
+)
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
+
+rules_cc_dependencies()
+
+rules_cc_toolchains()

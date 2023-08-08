@@ -10,12 +10,11 @@ SCRIPT_DIR="${SCRIPT_DIR%/*}"
 
 cd "$( dirname "$SCRIPT_DIR" )"
 
-declare -i FAILED=0
 declare -a FAILURES=( )
 
 function on_exit() {
     echo
-    if [[ "$FAILED" -gt 0 ]]; then
+    if [[ "${#FAILURES[@]}" -gt 0 ]]; then
         echo "error: running tests in ${FAILURES[@]} was not successful"
         exit 1
     elif [[ $? -eq 0 ]]; then
@@ -25,24 +24,77 @@ function on_exit() {
 
 trap on_exit EXIT
 
-declare -ra dirs=(
-    .
-    core
-    toolchains/go
-    toolchains/java
-    toolchains/cc
-    toolchains/python
-    toolchains/posix
-    toolchains/rust
-)
-for dir in "${dirs[@]}"
-do
-    pushd $dir
-    if ! bazel test //... ; then
-        let ++FAILED
+if [[ ${BZLMOD_ENABLED-} = true ]]; then
+    declare -ra build_dirs=(
+        core
+        toolchains/go
+        toolchains/java
+        toolchains/nodejs
+        toolchains/posix
+        toolchains/rust
+        toolchains/python
+    )
+    declare -ra test_dirs=(
+        testing/core
+        testing/go-bzlmod
+        testing/java
+        testing/nodejs
+        testing/posix
+        testing/rust
+        testing/python
+    )
+    declare -ra extra_flags=(
+        --config=bzlmod
+    )
+else
+    declare -ra build_dirs=(
+        core
+    )
+    declare -ra test_dirs=(
+        .
+        docs
+        toolchains/go
+        toolchains/java
+        toolchains/cc
+        toolchains/python
+        toolchains/posix
+        toolchains/rust
+        toolchains/nodejs
+        testing/core
+        testing/go-workspace
+        testing/java
+        testing/nodejs
+        testing/posix
+        testing/rust
+        testing/python
+    )
+    declare -ra extra_flags=(
+    )
+fi
+
+run_command() {
+    local -r cmd=$1
+    local -r dir=$2
+
+    echo "::group::Running \`bazel $1\` in $dir"
+
+    pushd $dir >/dev/null
+    if ! bazel $1 //... "${extra_flags[@]}" ; then
         FAILURES+=( "$dir" )
     fi
     bazel shutdown
-    popd
+    popd >/dev/null
+
+    echo '::endgroup::'
+}
+
+for dir in "${build_dirs[@]}"; do
+    # bazel test //... fails in modules that don't define any test targets, use
+    # bazel build in those instead. Workaround for
+    # https://github.com/bazelbuild/bazel/issues/7291#issuecomment-1283970438
+    run_command build $dir
 done
 
+for dir in "${test_dirs[@]}"; do
+    run_command test $dir
+done

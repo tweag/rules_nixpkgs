@@ -1,0 +1,40 @@
+# NOTE: temporary boilerplate for compatibility with `WORKSPACE` setup!
+# TODO: remove when migration to `bzlmod` is complete
+
+### generic dependencies for rendering documentation
+
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../..",
+)
+
+local_repository(
+    name = "rules_nixpkgs_docs",
+    path = "../../docs",
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
+rules_nixpkgs_dependencies()
+
+load("@rules_nixpkgs_docs//:dependencies_1.bzl", "docs_dependencies_1")
+
+docs_dependencies_1()
+
+load("@rules_nixpkgs_docs//:dependencies_2.bzl", "docs_dependencies_2")
+
+docs_dependencies_2()
+
+### end generic dependencies for rendering documentation
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_nodejs",
+    sha256 = "08337d4fffc78f7fe648a93be12ea2fc4e8eb9795a4e6aa48595b66b34555626",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-core-5.8.0.tar.gz"],
+)
+
+load("//:nodejs.bzl", "nixpkgs_nodejs_configure")
+
+nixpkgs_nodejs_configure(repository = "@nixpkgs")

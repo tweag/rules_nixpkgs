@@ -1,1 +1,3 @@
-core/.bazelrc
+import %workspace%/.bazelrc.common
+import %workspace%/.bazelrc.cc
+import %workspace%/.bazelrc.java

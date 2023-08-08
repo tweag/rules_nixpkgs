@@ -1,0 +1,11 @@
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_test")
+load(":nodejs-test.bzl", "nodejs_test_suite")
+
+package(default_testonly = 1)
+
+nodejs_test(
+    name = "nodejs-test",
+    entry_point = ":nodejs-test.js",
+)
+
+nodejs_test_suite("nodejs-test-suite")

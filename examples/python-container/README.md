@@ -47,15 +47,15 @@ Expect something like this as output:
 
 ## Step 2: Nix-Environment with bazel
 
-We're using Nix 21.11 (stable at the time of writing) and Bazel version 4, so
+We're using Nix 22.05 (stable at the time of writing) and Bazel version 5, so
 create a file `shell.nix` wit the following content:
 
 ```
-{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/refs/tags/21.11.tar.gz") {} }:
+{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz") {} }:
 
-pkgs.mkShell {
+pkgs.mkShellNoCC {
     nativeBuildInputs = [
-       pkgs.bazel_4
+       pkgs.bazel_5
     ];
 }
 ```
@@ -69,7 +69,7 @@ nix-shell --pure --command 'bazel --version'
 You get something like
 
 ```
-bazel 4.2.1- (@non-git)
+bazel 5.1.1- (@non-git)
 ```
 
 ---
@@ -98,12 +98,12 @@ http_archive(
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 rules_nixpkgs_dependencies()
 
-# Define nixpkgs version 21.11
+# Define nixpkgs version 22.05
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
 nixpkgs_git_repository(
     name = "nixpkgs",
-    revision = "21.11",
-    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
+    revision = "22.05",
+    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
 )
 
 # Configure python

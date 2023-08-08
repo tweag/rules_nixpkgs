@@ -1,0 +1,67 @@
+diff --git crate_universe/deps_bootstrap.bzl crate_universe/deps_bootstrap.bzl
+index 28f6d14b..6a930dff 100644
+--- crate_universe/deps_bootstrap.bzl
++++ crate_universe/deps_bootstrap.bzl
+@@ -6,12 +6,19 @@ load("//crate_universe/private:srcs.bzl", "CARGO_BAZEL_SRCS")
+ # buildifier: disable=bzl-visibility
+ load("//rust/private:common.bzl", "rust_common")
+ 
+-def cargo_bazel_bootstrap(name = "cargo_bazel_bootstrap", rust_version = rust_common.default_version):
++def cargo_bazel_bootstrap(
++        name = "cargo_bazel_bootstrap",
++        rust_version = rust_common.default_version,
++        rust_toolchain_cargo_template = "@rust_{system}_{arch}//:bin/{tool}",
++        rust_toolchain_rustc_template = "@rust_{system}_{arch}//:bin/{tool}",
++    ):
+     """An optional repository which bootstraps `cargo-bazel` for use with `crates_repository`
+ 
+     Args:
+         name (str, optional): The name of the `cargo_bootstrap_repository`.
+         rust_version (str, optional): The rust version to use. Defaults to the default of `cargo_bootstrap_repository`.
++        rust_toolchain_cargo_template (str, optional): The template to use for finding the host `cargo` binary.
++        rust_toolchain_rustc_template (str, optional): The template to use for finding the host `rustc` binary.
+     """
+     cargo_bootstrap_repository(
+         name = name,
+@@ -22,4 +29,6 @@ def cargo_bazel_bootstrap(name = "cargo_bazel_bootstrap", rust_version = rust_co
+         version = rust_version,
+         # The increased timeout helps avoid flakes in CI
+         timeout = 900,
++        rust_toolchain_cargo_template = rust_toolchain_cargo_template,
++        rust_toolchain_rustc_template = rust_toolchain_rustc_template,
+     )
+diff --git crate_universe/repositories.bzl crate_universe/repositories.bzl
+index c06e06d9..7b7f3f9e 100644
+--- crate_universe/repositories.bzl
++++ crate_universe/repositories.bzl
+@@ -7,17 +7,28 @@ load("//crate_universe/3rdparty/crates:crates.bzl", _vendor_crate_repositories =
+ load("//crate_universe/private:vendor_utils.bzl", "crates_vendor_deps")
+ load("//crate_universe/tools/cross_installer:cross_installer_deps.bzl", "cross_installer_deps")
+ 
+-def crate_universe_dependencies(rust_version = rust_common.default_version, bootstrap = False):
++def crate_universe_dependencies(
++        rust_version = rust_common.default_version,
++        bootstrap = False,
++        rust_toolchain_cargo_template = "@rust_{system}_{arch}//:bin/{tool}",
++        rust_toolchain_rustc_template = "@rust_{system}_{arch}//:bin/{tool}",
++):
+     """Define dependencies of the `cargo-bazel` Rust target
+ 
+     Args:
+         rust_version (str, optional): The version of rust to use when generating dependencies.
+         bootstrap (bool, optional): If true, a `cargo_bootstrap_repository` target will be generated.
++        rust_toolchain_cargo_template (str, optional): The template to use for finding the host `cargo` binary.
++        rust_toolchain_rustc_template (str, optional): The template to use for finding the host `rustc` binary.
+     """
+     third_party_deps()
+ 
+     if bootstrap:
+-        cargo_bazel_bootstrap(rust_version = rust_version)
++        cargo_bazel_bootstrap(
++            rust_version = rust_version,
++            rust_toolchain_cargo_template = rust_toolchain_cargo_template,
++            rust_toolchain_rustc_template = rust_toolchain_rustc_template,
++        )
+ 
+     _vendor_crate_repositories()
+ 

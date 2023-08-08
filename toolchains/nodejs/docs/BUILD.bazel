@@ -1,0 +1,11 @@
+load("@rules_nixpkgs_docs//:stardoc.bzl", "generate_documentation")
+
+generate_documentation(
+    name = "README.md",
+    input = "//:nodejs.bzl",
+    symbol_names = [
+        "nixpkgs_nodejs_configure",
+        "nixpkgs_nodejs_configure_platforms",
+    ],
+    deps = ["//:nodejs"],
+)

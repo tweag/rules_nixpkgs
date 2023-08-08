@@ -1,8 +1,8 @@
-"""<!-- Edit the docstring in `nixpkgs/nixpkgs.bzl` and run `bazel run //docs:update-readme` to change the project README. -->
+"""<!-- Edit the docstring in `nixpkgs/nixpkgs.bzl` and run `bazel run @rules_nixpkgs_docs//:update-readme` to change the project README. -->
 
 # Nixpkgs rules for Bazel
 
-[![Build status](https://badge.buildkite.com/79bd0a8aa1e47a92e0254ca3afe5f439776e6d389cfbde9d8c.svg?branch=master)](https://buildkite.com/tweag-1/rules-nixpkgs)
+[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
 
 Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
 external dependencies (like system packages) into [Bazel][bazel]
@@ -19,28 +19,34 @@ Links:
 [nixpkgs]: https://github.com/NixOS/nixpkgs
 [bazel]: https://bazel.build
 [blog-bazel-nix]: https://www.tweag.io/posts/2018-03-15-bazel-nix.html
-[youtube-bazel-nix]: https://www.youtube.com/watch?v=hDdDUrty1Gw
+[youtube-bazel-nix]: https://www.youtube.com/watch?v=7-K_RmDasEg&t=2030s
 
 See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with different toolchains.
 
 ## Rules
 
 * [nixpkgs_git_repository](#nixpkgs_git_repository)
+* [nixpkgs_http_repository](#nixpkgs_http_repository)
 * [nixpkgs_local_repository](#nixpkgs_local_repository)
 * [nixpkgs_package](#nixpkgs_package)
+* [nixpkgs_flake_package](#nixpkgs_flake_package)
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
 * [nixpkgs_cc_configure_deprecated](#nixpkgs_cc_configure_deprecated)
 * [nixpkgs_java_configure](#nixpkgs_java_configure)
 * [nixpkgs_python_configure](#nixpkgs_python_configure)
+* [nixpkgs_python_repository](#nixpkgs_python_repository)
 * [nixpkgs_go_configure](toolchains/go/README.md#nixpkgs_go_configure)
 * [nixpkgs_rust_configure](#nixpkgs_rust_configure)
 * [nixpkgs_sh_posix_configure](#nixpkgs_sh_posix_configure)
+* [nixpkgs_nodejs_configure](#nixpkgs_nodejs_configure)
 
 ## Setup
 
 Add the following to your `WORKSPACE` file, and select a `$COMMIT` accordingly.
 
 ```bzl
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
     name = "io_tweag_rules_nixpkgs",
     strip_prefix = "rules_nixpkgs-$COMMIT",
@@ -57,11 +63,11 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure
 
 If you use `rules_nixpkgs` to configure a toolchain, then you will also need to
 configure the build platform to include the
-`@io_tweag_rules_nixpkgs//nixpkgs/constraints:support_nix` constraint. For
+`@rules_nixpkgs_core//constraints:support_nix` constraint. For
 example by adding the following to `.bazelrc`:
 
 ```
-build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build --host_platform=@rules_nixpkgs_core//platforms:host
 ```
 
 ## Example
@@ -113,7 +119,9 @@ load(
 )
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
+    _nixpkgs_flake_package = "nixpkgs_flake_package",
     _nixpkgs_git_repository = "nixpkgs_git_repository",
+    _nixpkgs_http_repository = "nixpkgs_http_repository",
     _nixpkgs_local_repository = "nixpkgs_local_repository",
     _nixpkgs_package = "nixpkgs_package",
 )
@@ -127,6 +135,7 @@ load(
 load(
     "@rules_nixpkgs_python//:python.bzl",
     _nixpkgs_python_configure = "nixpkgs_python_configure",
+    _nixpkgs_python_repository = "nixpkgs_python_repository",
 )
 load(
     "@rules_nixpkgs_java//:java.bzl",
@@ -144,16 +153,26 @@ load(
     "@rules_nixpkgs_posix//:posix.bzl",
     _nixpkgs_sh_posix_configure = "nixpkgs_sh_posix_configure",
 )
+load(
+    "@rules_nixpkgs_nodejs//:nodejs.bzl",
+    _nixpkgs_nodejs_configure = "nixpkgs_nodejs_configure",
+    _nixpkgs_nodejs_configure_platforms = "nixpkgs_nodejs_configure_platforms",
+)
 
 # aliases for backwards compatibility prior to `bzlmod`
 nixpkgs_git_repository = _nixpkgs_git_repository
+nixpkgs_http_repository = _nixpkgs_http_repository
 nixpkgs_local_repository = _nixpkgs_local_repository
 nixpkgs_package = _nixpkgs_package
+nixpkgs_flake_package = _nixpkgs_flake_package
 nixpkgs_python_configure = _nixpkgs_python_configure
+nixpkgs_python_repository = _nixpkgs_python_repository
 nixpkgs_java_configure = _nixpkgs_java_configure
 nixpkgs_cc_configure = _nixpkgs_cc_configure
 nixpkgs_rust_configure = _nixpkgs_rust_configure
 nixpkgs_sh_posix_configure = _nixpkgs_sh_posix_configure
+nixpkgs_nodejs_configure = _nixpkgs_nodejs_configure
+nixpkgs_nodejs_configure_platforms = _nixpkgs_nodejs_configure_platforms
 
 def nixpkgs_cc_autoconf_impl(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)

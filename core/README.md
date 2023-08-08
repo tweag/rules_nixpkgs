@@ -4,7 +4,7 @@
 
 # Nixpkgs rules for Bazel
 
-[![Build status](https://badge.buildkite.com/79bd0a8aa1e47a92e0254ca3afe5f439776e6d389cfbde9d8c.svg?branch=master)](https://buildkite.com/tweag-1/rules-nixpkgs)
+[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
 
 Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
 external dependencies (like system packages) into [Bazel][bazel]
@@ -21,13 +21,14 @@ Links:
 [nixpkgs]: https://github.com/NixOS/nixpkgs
 [bazel]: https://bazel.build
 [blog-bazel-nix]: https://www.tweag.io/posts/2018-03-15-bazel-nix.html
-[youtube-bazel-nix]: https://www.youtube.com/watch?v=hDdDUrty1Gw
+[youtube-bazel-nix]: https://www.youtube.com/watch?v=7-K_RmDasEg&t=2030s
 
 See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with different toolchains.
 
 ## Rules
 
 * [nixpkgs_git_repository](#nixpkgs_git_repository)
+* [nixpkgs_http_repository](#nixpkgs_http_repository)
 * [nixpkgs_local_repository](#nixpkgs_local_repository)
 * [nixpkgs_package](#nixpkgs_package)
 
@@ -39,7 +40,7 @@ See [examples](/examples/toolchains) for how to use `rules_nixpkgs` with differe
 ### nixpkgs_git_repository
 
 <pre>
-nixpkgs_git_repository(<a href="#nixpkgs_git_repository-name">name</a>, <a href="#nixpkgs_git_repository-remote">remote</a>, <a href="#nixpkgs_git_repository-revision">revision</a>, <a href="#nixpkgs_git_repository-sha256">sha256</a>)
+nixpkgs_git_repository(<a href="#nixpkgs_git_repository-name">name</a>, <a href="#nixpkgs_git_repository-remote">remote</a>, <a href="#nixpkgs_git_repository-repo_mapping">repo_mapping</a>, <a href="#nixpkgs_git_repository-revision">revision</a>, <a href="#nixpkgs_git_repository-sha256">sha256</a>)
 </pre>
 
 Name a specific revision of Nixpkgs on GitHub or a local checkout.
@@ -79,6 +80,19 @@ The URI of the remote Git repository. This must be a HTTP URL. There is currentl
 </p>
 </td>
 </tr>
+<tr id="nixpkgs_git_repository-repo_mapping">
+<td><code>repo_mapping</code></td>
+<td>
+
+<a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a>; required
+
+<p>
+
+A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.<p>For example, an entry `"@foo": "@bar"` declares that, for any time this repository depends on `@foo` (such as a dependency on `@foo//some:target`, it should actually resolve that dependency within globally-declared `@bar` (`@bar//some:target`).
+
+</p>
+</td>
+</tr>
 <tr id="nixpkgs_git_repository-revision">
 <td><code>revision</code></td>
 <td>
@@ -114,7 +128,7 @@ The SHA256 used to verify the integrity of the repository.
 ### nixpkgs_local_repository
 
 <pre>
-nixpkgs_local_repository(<a href="#nixpkgs_local_repository-name">name</a>, <a href="#nixpkgs_local_repository-nix_file">nix_file</a>, <a href="#nixpkgs_local_repository-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_local_repository-nix_file_deps">nix_file_deps</a>)
+nixpkgs_local_repository(<a href="#nixpkgs_local_repository-name">name</a>, <a href="#nixpkgs_local_repository-nix_file">nix_file</a>, <a href="#nixpkgs_local_repository-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_local_repository-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_local_repository-repo_mapping">repo_mapping</a>)
 </pre>
 
 Create an external repository representing the content of Nixpkgs, based on a Nix expression stored locally or provided inline. One of `nix_file` or `nix_file_content` must be provided.
@@ -176,6 +190,19 @@ An expression for a Nix derivation.
 <p>
 
 Dependencies of `nix_file` if any.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_local_repository-repo_mapping">
+<td><code>repo_mapping</code></td>
+<td>
+
+<a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a>; required
+
+<p>
+
+A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.<p>For example, an entry `"@foo": "@bar"` declares that, for any time this repository depends on `@foo` (such as a dependency on `@foo//some:target`, it should actually resolve that dependency within globally-declared `@bar` (`@bar//some:target`).
 
 </p>
 </td>
@@ -301,13 +328,13 @@ default is <code>{}</code>
 
 A dictionary mapping `NIX_PATH` entries to repository labels.
 
-  Setting it to
-  ```
-  repositories = { "myrepo" : "//:myrepo" }
-  ```
-  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+Setting it to
+```
+repositories = { "myrepo" : "//:myrepo" }
+```
+for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
 
-  Specify one of `repository` or `repositories`.
+Specify one of `repository` or `repositories`.
 
 </p>
 </td>
@@ -323,28 +350,28 @@ default is <code>None</code>
 
 The file to use as the BUILD file for this repository.
 
-  Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
+Its contents are copied copied into the file `BUILD` in root of the nix output folder. The Label does not need to be named `BUILD`, but can be.
 
-  For common use cases we provide filegroups that expose certain files as targets:
+For common use cases we provide filegroups that expose certain files as targets:
 
-  <dl>
-    <dt><code>:bin</code></dt>
-    <dd>Everything in the <code>bin/</code> directory.</dd>
-    <dt><code>:lib</code></dt>
-    <dd>All <code>.so</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
-    <dt><code>:include</code></dt>
-    <dd>All <code>.h</code> files that can be found in subdirectories of <code>bin/</code>.</dd>
-  </dl>
+<dl>
+  <dt><code>:bin</code></dt>
+  <dd>Everything in the <code>bin/</code> directory.</dd>
+  <dt><code>:lib</code></dt>
+  <dd>All <code>.so</code>, <code>.dylib</code> and <code>.a</code> files that can be found in subdirectories of <code>lib/</code>.</dd>
+  <dt><code>:include</code></dt>
+  <dd>All <code>.h</code>, <code>.hh</code>, <code>.hpp</code> and <code>.hxx</code> files that can be found in subdirectories of <code>include/</code>.</dd>
+</dl>
 
-  If you need different files from the nix package, you can reference them like this:
-  ```
-  package(default_visibility = [ "//visibility:public" ])
-  filegroup(
-      name = "our-docs",
-      srcs = glob(["share/doc/ourpackage/**/*"]),
-  )
-  ```
-  See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
+If you need different files from the nix package, you can reference them like this:
+```
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+    name = "our-docs",
+    srcs = glob(["share/doc/ourpackage/**/*"]),
+)
+```
+See the bazel documentation of [`filegroup`](https://docs.bazel.build/versions/master/be/general.html#filegroup) and [`glob`](https://docs.bazel.build/versions/master/be/functions.html#glob).
 
 </p>
 </td>

@@ -114,6 +114,7 @@ def nixpkgs_java_configure(
         fail_not_supported = True,
         quiet = False,
         toolchain = False,
+        register = None,
         toolchain_name = None,
         toolchain_version = None,
         exec_constraints = None,
@@ -169,6 +170,29 @@ def nixpkgs_java_configure(
     build --tool_java_runtime_version=nixpkgs_java
     ```
 
+    ##### Bazel 6
+
+    Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
+    ```bzl
+    load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
+    nixpkgs_java_configure(
+        attribute_path = "jdk11.home",
+        repository = "@nixpkgs",
+        toolchain = True,
+        toolchain_name = "nixpkgs_java",
+        toolchain_version = "11",
+    )
+    ```
+
+    Add the following configuration to `.bazelrc` to enable this Java runtime:
+    ```
+    build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+    build --java_runtime_version=nixpkgs_java_11
+    build --tool_java_runtime_version=nixpkgs_java_11
+    build --java_language_version=11
+    build --tool_java_language_version=11
+    ```
+
     Args:
       name: The name-prefix for the created external repositories.
       attribute_path: string, The nixpkgs attribute path for `jdk.home`.
@@ -181,7 +205,8 @@ def nixpkgs_java_configure(
       nixopts: See [`nixpkgs_package`](#nixpkgs_package-nixopts).
       fail_not_supported: See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
       quiet: See [`nixpkgs_package`](#nixpkgs_package-quiet).
-      toolchain: Create & register a Bazel toolchain based on the Java runtime.
+      toolchain: Create a Bazel toolchain based on the Java runtime.
+      register: Register the created toolchain. Requires `toolchain` to be `True`. Defaults to the value of `toolchain`.
       toolchain_name: The name of the toolchain that can be used in --java_runtime_version.
       toolchain_version: The version of the toolchain that can be used in --java_runtime_version.
       exec_constraints: Constraints for the execution platform.
@@ -233,4 +258,7 @@ def nixpkgs_java_configure(
             exec_constraints = exec_constraints,
             target_constraints = target_constraints,
         )
-        native.register_toolchains("@{}_toolchain//:all".format(name))
+        if register or register == None:
+            native.register_toolchains("@{}_toolchain//:all".format(name))
+    elif register:
+        fail("toolchain must be True if register is set to True.")

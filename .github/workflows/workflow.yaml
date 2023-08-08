@@ -1,31 +1,62 @@
 name: Continuous integration
-on: [push, pull_request]
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+  workflow_dispatch: # allows manual triggering
+
 jobs:
+  cancel-running-workflows:
+    name: Cancel running workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: cancel running workflows
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
   test-nixpkgs:
-    name: Build & Test - Nixpkgs
+    name: Build & Test - Nixpkgs - ${{ matrix.bzlmodEnabled && 'bzlmod' || 'workspace' }} - ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - ubuntu-latest
           - macos-11
+        bzlmodEnabled:
+          - true
+          - false
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: cachix/install-nix-action@v16
+      - uses: actions/checkout@v3.5.3
+      - uses: cachix/install-nix-action@v22
         with:
-          nix_path: nixpkgs=./core/nixpkgs.nix
+          nix_path: nixpkgs=./docs/nixpkgs.nix
       - name: Configure
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
-          cat >.bazelrc.local <<EOF
+          cp .bazelrc.ci $HOME/.bazelrc
+          if [ -z "$BUILDBUDDY_API_KEY" ]; then
+              cache_setting='build --noremote_upload_local_results'
+          else
+              cache_setting="build --remote_header=x-buildbuddy-api-key=$BUILDBUDDY_API_KEY"
+          fi
+          cat >>$HOME/.bazelrc <<EOF
           common --config=ci
-          build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
+          $cache_setting
+          # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
+          common:ci --announce_rc=false
           EOF
       - name: Build & test
+        env:
+          BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
         run: |
-          nix-shell --pure --keep GITHUB_REPOSITORY --run 'bash .github/build-and-test'
+          nix-shell --pure \
+            --keep GITHUB_REPOSITORY \
+            --keep BZLMOD_ENABLED \
+            --run 'bash .github/build-and-test'
   test-examples:
     name: Build & Test - Examples
     strategy:
@@ -36,17 +67,26 @@ jobs:
           - macos-11
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2.4.0
-      - uses: cachix/install-nix-action@v16
+      - uses: actions/checkout@v3.5.3
+      - uses: cachix/install-nix-action@v22
         with:
           nix_path: nixpkgs=./nixpkgs.nix
       - name: Configure
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
-          cat >.bazelrc.local <<EOF
+          cp .bazelrc.ci $HOME/.bazelrc
+          cp .bazelrc.ci $HOME/.bazelrc
+          if [ -z "$BUILDBUDDY_API_KEY" ]; then
+              cache_setting='build --noremote_upload_local_results'
+          else
+              cache_setting="build --remote_header=x-buildbuddy-api-key=$BUILDBUDDY_API_KEY"
+          fi
+          cat >>$HOME/.bazelrc <<EOF
           common --config=ci
-          build --remote_header=x-buildbuddy-api-key="$BUILDBUDDY_API_KEY"
+          $cache_setting
+          # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
+          common:ci --announce_rc=false
           EOF
       - name: Build & test
         run: |
@@ -56,22 +96,44 @@ jobs:
             read -a ${1} <<< $(echo ${!p//$2})
           }
 
-          cd examples/toolchains
+          pushd examples/cc-template
+          echo
+          echo "::group::Running $(head -n1 README.md) with Nix"
+          nix develop --command bazel run //src:hello-world
+          popd
+
+          pushd examples/toolchains
           with_nix=( $(ls) )
-          without_nix=( cc go java rust )
+          without_nix=( cc go java )
 
           for dir in "${with_nix[@]}"; do
-              cd "$dir"
+              pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) with Nix"
               nix-shell --command 'bazel run --config=nix :hello'
               # TODO: all toolchains should run without Nixpkgs
-              cd ..
+              popd
           done
           for dir in "${without_nix[@]}"; do
-              cd "$dir"
+              pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) without Nix"
               bazel run :hello
-              cd ..
+              popd
           done
+
+          popd
+
+          if [[ ${{ matrix.os }} = ubuntu* ]]; then
+            pushd examples/python-container
+            echo
+            echo "::group::Running $(head -n1 README.md) with Nix"
+            nix-shell --command 'bazel build :hello_image'
+            popd
+
+            pushd examples/flakes
+            echo
+            echo "::group::Running $(head -n1 README.md) with Nix"
+            nix-shell --command 'bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello'
+            popd
+          fi

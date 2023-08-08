@@ -2,6 +2,19 @@
 
 Rules for importing a C++ toolchain from Nixpkgs.
 
+## Compiling non-C++ languages
+
+One may wish to use a C++ toolchain to compile certain libraries written in
+non-C++ languages. For instance, Clang/LLVM can be used to compile CUDA or HIP
+code targeting GPUs. This can be achieved by:
+
+  1. passing `cc_lang = "none"` in `nixpkgs_cc_configure` below
+  2. using a rule invocation of the form `cc_library(..., copts="-x cuda")`
+  when defining individual libraries or executables
+
+It is also possible to override the language used by the toolchain itself,
+using `nixpkgs_cc_configure(..., cc_lang = "cuda")` or similar.
+
 ## Rules
 
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
@@ -162,7 +175,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     )
     if darwin:
         info.tool_paths["gcc"] = "cc_wrapper.sh"
-        info.tool_paths["ar"] = "/usr/bin/libtool"
+        info.tool_paths["ar"] = info.tool_paths["libtool"]
     write_builtin_include_directory_paths(
         repository_ctx,
         info.tool_paths["gcc"],
@@ -290,7 +303,8 @@ def nixpkgs_cc_configure(
         fail_not_supported = True,
         exec_constraints = None,
         target_constraints = None,
-        register = True):
+        register = True,
+        cc_lang = "c++"):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -328,6 +342,13 @@ def nixpkgs_cc_configure(
     )
     ```
     ```
+    # alternate usage without specifying `nix_file` or `nix_file_content`
+    nixpkgs_cc_configure(
+      repository = "@nixpkgs",
+      attribute_path = "gcc11",
+    )
+    ```
+    ```
     # use the `stdenv.cc` compiler (the default of the given @nixpkgs repository)
     nixpkgs_cc_configure(
       repository = "@nixpkgs",
@@ -341,18 +362,19 @@ def nixpkgs_cc_configure(
     this toolchain.
 
     Args:
-      attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
+      attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Uses default repository if no `nix_file` or `nix_file_content` is provided.
       nix_file: optional, Label, Obtain the toolchain from the Nix expression defined in this file. Specify only one of `nix_file` or `nix_file_content`.
       nix_file_content: optional, string, Obtain the toolchain from the given Nix expression. Specify only one of `nix_file` or `nix_file_content`.
       nix_file_deps: optional, list of Label, Additional files that the Nix expression depends on.
       repositories: dict of Label to string, Provides `<nixpkgs>` and other repositories. Specify one of `repositories` or `repository`.
       repository: Label, Provides `<nixpkgs>`. Specify one of `repositories` or `repository`.
-      nixopts: optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
+      nixopts: optional, list of string, Extra flags to pass when calling Nix. See `nixopts` attribute to `nixpkgs_package` for further details.
       quiet: bool, Whether to hide `nix-build` output.
       fail_not_supported: bool, Whether to fail if `nix-build` is not available.
       exec_constraints: Constraints for the execution platform.
       target_constraints: Constraints for the target platform.
       register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
+      cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
     """
 
     nixopts = list(nixopts)
@@ -366,10 +388,11 @@ def nixpkgs_cc_configure(
         nix_file_deps.append(nix_file)
     elif nix_file_content:
         nix_expr = nix_file_content
-
-    if attribute_path and nix_expr == None:
-        fail("'attribute_path' requires one of 'nix_file' or 'nix_file_content'", "attribute_path")
     elif attribute_path:
+        nix_expr = "(import <nixpkgs> {{}}).{0}".format(attribute_path)
+        attribute_path = None
+
+    if attribute_path:
         nixopts.extend([
             "--argstr",
             "ccType",
@@ -380,6 +403,9 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccAttrSet",
             nix_expr,
+            "--argstr",
+            "ccLang",
+            cc_lang,
         ])
     elif nix_expr:
         nixopts.extend([
@@ -389,12 +415,18 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccExpr",
             nix_expr,
+            "--argstr",
+            "ccLang",
+            cc_lang,
         ])
     else:
         nixopts.extend([
             "--argstr",
             "ccType",
             "ccTypeDefault",
+            "--argstr",
+            "ccLang",
+            cc_lang,
         ])
 
     # Invoke `cc.nix` which generates `CC_TOOLCHAIN_INFO`.

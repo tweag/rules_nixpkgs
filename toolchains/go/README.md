@@ -16,8 +16,9 @@ Rules for importing a Go toolchain from Nixpkgs.
 ### nixpkgs_go_configure
 
 <pre>
-nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>,
-                     <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>)
+nixpkgs_go_configure(<a href="#nixpkgs_go_configure-sdk_name">sdk_name</a>, <a href="#nixpkgs_go_configure-repository">repository</a>, <a href="#nixpkgs_go_configure-repositories">repositories</a>, <a href="#nixpkgs_go_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_go_configure-nix_file">nix_file</a>, <a href="#nixpkgs_go_configure-nix_file_deps">nix_file_deps</a>,
+                     <a href="#nixpkgs_go_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_go_configure-nixopts">nixopts</a>, <a href="#nixpkgs_go_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_go_configure-quiet">quiet</a>, <a href="#nixpkgs_go_configure-register">register</a>,
+                     <a href="#nixpkgs_go_configure-rules_go_repo_name">rules_go_repo_name</a>)
 </pre>
 
 Use go toolchain from Nixpkgs.
@@ -136,13 +137,27 @@ default is <code>{}</code>
 
 A dictionary mapping `NIX_PATH` entries to repository labels.
 
-  Setting it to
-  ```
-  repositories = { "myrepo" : "//:myrepo" }
-  ```
-  for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+Setting it to
+```
+repositories = { "myrepo" : "//:myrepo" }
+```
+for example would replace all instances of `<myrepo>` in the called nix code by the path to the target `"//:myrepo"`. See the [relevant section in the nix manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
 
-  Specify one of `path` or `repositories`.
+Specify one of `path` or `repositories`.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-attribute_path">
+<td><code>attribute_path</code></td>
+<td>
+
+optional.
+default is <code>"go"</code>
+
+<p>
+
+The nixpkgs attribute path for the `go` to use.
 
 </p>
 </td>
@@ -156,7 +171,7 @@ default is <code>None</code>
 
 <p>
 
-An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of pacakge.
+An expression for a Nix environment derivation. The environment should expose the whole go SDK (`bin`, `src`, ...) at the root of package. It also must contain a `ROOT` file in the root of package. Takes precedence over attribute_path.
 
 </p>
 </td>
@@ -166,7 +181,7 @@ An expression for a Nix environment derivation. The environment should expose th
 <td>
 
 optional.
-default is <code>None</code>
+default is <code>[]</code>
 
 <p>
 
@@ -184,7 +199,7 @@ default is <code>None</code>
 
 <p>
 
-An expression for a Nix environment derivation.
+An expression for a Nix environment derivation. Takes precedence over attribute_path.
 
 </p>
 </td>
@@ -222,6 +237,34 @@ default is <code>False</code>
 <p>
 
 Whether to hide the output of the Nix command.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+Automatically register the generated toolchain if set to True.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_go_configure-rules_go_repo_name">
+<td><code>rules_go_repo_name</code></td>
+<td>
+
+optional.
+default is <code>"io_bazel_rules_go"</code>
+
+<p>
+
+The name of the rules_go repository. Defaults to rules_go under bzlmod and io_bazel_rules_go otherwise.",
 
 </p>
 </td>

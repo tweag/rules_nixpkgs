@@ -6,13 +6,88 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.9.0...HEAD
+
+### Added
+- nixpkgs_nodejs_configure_platforms for platform transparent npm_install
+  See [#309]
+  
+### Breaking changes
+- rules_nixpkgs_go: Custom derivations passed to `nixpkgs_go_configure` (via `nix-file`, `nix-file-content` or `attribute_path`) must now contain a `version` attribute.
+
+## [0.9.0] - 2022-07-19
+
+[0.9.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.8.0...v0.9.0
 
 ### Added
 
 - nixpkgs_cc_configure gained a flag to disable automatic registration of the
   toolchain it creates.
-  See [#179][#179]
+  See [#179]
+- Support registering a Java toolchain for Bazel 5
+  See [#185]
+- Rust toolchain and example
+  See [#178]
+- python-container example
+  See [#226]
+- Allow to specify platform constraints in `nixpkgs_cc_configure`
+  See [#164]
+- add `fail_not_supported to `nixpkgs_go_configure`
+  See [#167]
+- add exec/target constraints parameters to python toolchain macro
+  See [#169]
+- Support codesigning on MacOs
+  See [#224]
+
+[#179]: https://github.com/tweag/rules_nixpkgs/pull/179
+[#185]: https://github.com/tweag/rules_nixpkgs/pull/185
+[#178]: https://github.com/tweag/rules_nixpkgs/pull/178
+[#226]: https://github.com/tweag/rules_nixpkgs/pull/226
+[#164]: https://github.com/tweag/rules_nixpkgs/pull/164
+[#167]: https://github.com/tweag/rules_nixpkgs/pull/167
+[#169]: https://github.com/tweag/rules_nixpkgs/pull/169
+[#224]: https://github.com/tweag/rules_nixpkgs/pull/224
+
+### Changed
+
+- Split into separate components in preparation for [bzlmod](https://docs.bazel.build/versions/5.2.0/bzlmod.html)
+  See [#182]
+- Detect whether compiler is Clang at nix eval time
+  See [#216]
+
+  *Note*:  If you have previously passed a custom `cc` toolchain to [`nixpkgs_cc_configure`](https://github.com/tweag/rules_nixpkgs#nixpkgs_cc_configure) you need to provide a boolean `isClang` attribute now, e.g.:
+    ```nix
+    pkgs.buildEnv {
+          name = "bazel-nixpkgs-cc";
+          paths = [ cumstom-cc ];
+          pathsToLink = [ "/bin" ];
+          passthru = {
+            isClang = custom-cc.isClang;
+          };
+        }
+    ```
+
+[#182]: https://github.com/tweag/rules_nixpkgs/pull/182
+[#216]: https://github.com/tweag/rules_nixpkgs/pull/216
+
+### Fixed
+
+- Avoid error when include dirs list is empty
+  See [#234]
+- Ensure nixpkgs will work with Bazel build from source
+  See [#231]
+- Fix call to `repository_ctx.file` using `nix_file_content` with `nixpkgs_local_repository`
+  See [#210]
+- Fix python example build on macOS
+  See [#189]
+- `nixpkgs_local_repository` strips executable bit of nix files
+  See [#160]
+
+[#234]: https://github.com/tweag/rules_nixpkgs/pull/234
+[#231]: https://github.com/tweag/rules_nixpkgs/pull/231
+[#210]: https://github.com/tweag/rules_nixpkgs/pull/210
+[#189]: https://github.com/tweag/rules_nixpkgs/pull/189
+[#160]: https://github.com/tweag/rules_nixpkgs/pull/160
 
 ## [0.8.0] - 2021-02-11
 

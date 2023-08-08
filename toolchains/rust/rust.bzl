@@ -20,6 +20,9 @@ let
     os = rust.toTargetOs pkgs.stdenv.targetPlatform;
     build-triple = rust.toRustTargetSpec pkgs.stdenv.buildPlatform;
     target-triple = rust.toRustTargetSpec pkgs.stdenv.targetPlatform;
+    binary-ext = "";
+    staticlib-ext = ".a";
+    dylib-ext = if os == "macos" then ".dylib" else ".so";
 in
 pkgs.buildEnv {{
     extraOutputsToInstall = ["out" "bin" "lib"];
@@ -101,10 +104,9 @@ pkgs.buildEnv {{
             cargo = ":cargo",
             clippy_driver = ":clippy_driver",
             rustc_lib = ":rustc_lib",
-            binary_ext = "{binary_ext}",
-            staticlib_ext = "{staticlib_ext}",
-            dylib_ext = "{dylib_ext}",
-            os = "${{os}}",
+            binary_ext = "${{binary-ext}}",
+            staticlib_ext = "${{staticlib-ext}}",
+            dylib_ext = "${{dylib-ext}}",
             exec_triple = "${{build-triple}}",
             target_triple = "${{target-triple}}",
             default_edition = "{default_edition}",
@@ -159,12 +161,10 @@ def nixpkgs_rust_configure(
         fail_not_supported = True,
         quiet = False,
         exec_constraints = None,
-        target_constraints = None):
+        target_constraints = None,
+        register = True):
     if not nix_file and not nix_file_content:
         nix_file_content = _rust_nix_contents.format(
-            binary_ext = "",
-            dylib_ext = ".so",
-            staticlib_ext = ".a",
             default_edition = default_edition,
             stdlib_linkflags = '["-lpthread", "-ldl"]',
         )
@@ -186,4 +186,5 @@ def nixpkgs_rust_configure(
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
     )
-    native.register_toolchains("@{}_toolchain//:rust_nix".format(name))
+    if register:
+        native.register_toolchains("@{}_toolchain//:rust_nix".format(name))

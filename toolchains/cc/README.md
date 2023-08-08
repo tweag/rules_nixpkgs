@@ -4,6 +4,19 @@
 
 Rules for importing a C++ toolchain from Nixpkgs.
 
+## Compiling non-C++ languages
+
+One may wish to use a C++ toolchain to compile certain libraries written in
+non-C++ languages. For instance, Clang/LLVM can be used to compile CUDA or HIP
+code targeting GPUs. This can be achieved by:
+
+  1. passing `cc_lang = "none"` in `nixpkgs_cc_configure` below
+  2. using a rule invocation of the form `cc_library(..., copts="-x cuda")`
+  when defining individual libraries or executables
+
+It is also possible to override the language used by the toolchain itself,
+using `nixpkgs_cc_configure(..., cc_lang = "cuda")` or similar.
+
 ## Rules
 
 * [nixpkgs_cc_configure](#nixpkgs_cc_configure)
@@ -18,7 +31,7 @@ Rules for importing a C++ toolchain from Nixpkgs.
 <pre>
 nixpkgs_cc_configure(<a href="#nixpkgs_cc_configure-name">name</a>, <a href="#nixpkgs_cc_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_cc_configure-nix_file">nix_file</a>, <a href="#nixpkgs_cc_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_cc_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_cc_configure-repositories">repositories</a>,
                      <a href="#nixpkgs_cc_configure-repository">repository</a>, <a href="#nixpkgs_cc_configure-nixopts">nixopts</a>, <a href="#nixpkgs_cc_configure-quiet">quiet</a>, <a href="#nixpkgs_cc_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_cc_configure-exec_constraints">exec_constraints</a>,
-                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>, <a href="#nixpkgs_cc_configure-register">register</a>)
+                     <a href="#nixpkgs_cc_configure-target_constraints">target_constraints</a>, <a href="#nixpkgs_cc_configure-register">register</a>, <a href="#nixpkgs_cc_configure-cc_lang">cc_lang</a>)
 </pre>
 
 Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
@@ -55,6 +68,13 @@ nixpkgs_cc_configure(
   repository = "@nixpkgs",
   attribute_path = "gcc11",
   nix_file_content = "import <nixpkgs> {}",
+)
+```
+```
+# alternate usage without specifying `nix_file` or `nix_file_content`
+nixpkgs_cc_configure(
+  repository = "@nixpkgs",
+  attribute_path = "gcc11",
 )
 ```
 ```
@@ -97,7 +117,7 @@ default is <code>""</code>
 
 <p>
 
-optional, string, Obtain the toolchain from the Nix expression under this attribute path. Requires `nix_file` or `nix_file_content`.
+optional, string, Obtain the toolchain from the Nix expression under this attribute path. Uses default repository if no `nix_file` or `nix_file_content` is provided.
 
 </p>
 </td>
@@ -181,7 +201,7 @@ default is <code>[]</code>
 
 <p>
 
-optional, list of string, Extra flags to pass when calling Nix. Subject to location expansion, any instance of `$(location LABEL)` will be replaced by the path to the file ferenced by `LABEL` relative to the workspace root.
+optional, list of string, Extra flags to pass when calling Nix. See `nixopts` attribute to `nixpkgs_package` for further details.
 
 </p>
 </td>
@@ -252,6 +272,20 @@ default is <code>True</code>
 <p>
 
 bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_cc_configure-cc_lang">
+<td><code>cc_lang</code></td>
+<td>
+
+optional.
+default is <code>"c++"</code>
+
+<p>
+
+string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
 
 </p>
 </td>

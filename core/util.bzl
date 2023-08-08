@@ -2,8 +2,56 @@ load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
+def fail_on_err(return_value, prefix = None):
+    """Fail if the given return value indicates an error.
+
+    Args:
+      return_value: Pair; If the second element is not `None` this indicates an error.
+      prefix: optional, String; A prefix for the error message contained in `return_value`.
+
+    Returns:
+      The first element of `return_value` if no error was indicated.
+    """
+    result, err = return_value
+
+    if err:
+        if prefix:
+            msg = prefix + err
+        else:
+            msg = err
+        fail(msg)
+
+    return result
+
 def is_supported_platform(repository_ctx):
     return repository_ctx.which("nix-build") != None
+
+def _is_executable(repository_ctx, path):
+    stat_exe = repository_ctx.which("stat")
+    if stat_exe == None:
+        return False
+
+    # A hack to detect if stat in Nix shell is BSD stat as BSD stat does not
+    # support --version flag
+    is_bsd_stat = repository_ctx.execute([stat_exe, "--version"]).return_code != 0
+    if is_bsd_stat:
+        stat_args = ["-f", "%Lp", path]
+    else:
+        stat_args = ["-c", "%a", path]
+
+    arguments = [stat_exe] + stat_args
+    exec_result = repository_ctx.execute(arguments)
+    stdout = exec_result.stdout.strip()
+    mode = int(stdout, 8)
+    return mode & 0o100 != 0
+
+def external_repository_root(label):
+    """Get path to repository root from label."""
+    return "/".join([
+        component
+        for component in [label.workspace_root, label.package, label.name]
+        if component
+    ])
 
 def cp(repository_ctx, src, dest = None):
     """Copy the given file into the external repository root.
@@ -20,30 +68,19 @@ def cp(repository_ctx, src, dest = None):
     if dest == None:
         if type(src) != "Label":
             fail("src must be a Label if dest is not specified explicitly.")
-        dest = "/".join([
-            component
-            for component in [src.workspace_root, src.package, src.name]
-            if component
-        ])
+        dest = external_repository_root(src)
+
+    src_path = repository_ctx.path(src)
+    dest_path = repository_ctx.path(dest)
+    executable = _is_executable(repository_ctx, src_path)
 
     # Copy the file
     repository_ctx.file(
-        repository_ctx.path(dest),
-        repository_ctx.read(repository_ctx.path(src)),
-        executable = False,
+        dest_path,
+        repository_ctx.read(src_path),
+        executable = executable,
         legacy_utf8 = False,
     )
-
-    # Copy the executable bit of the source
-    # This is important to ensure that copied binaries are executable.
-    # Windows may not have chmod in path and doesn't have executable bits anyway.
-    if get_cpu_value(repository_ctx) != "x64_windows":
-        repository_ctx.execute([
-            repository_ctx.which("chmod"),
-            "--reference",
-            repository_ctx.path(src),
-            repository_ctx.path(dest),
-        ])
 
     return dest
 
@@ -53,16 +90,15 @@ def execute_or_fail(repository_ctx, arguments, failure_message = "", *args, **kw
     if result.return_code:
         outputs = dict(
             failure_message = failure_message,
-            arguments = arguments,
+            command = " ".join([repr(str(a)) for a in arguments]),
             return_code = result.return_code,
-            stderr = result.stderr,
+            stderr = '      > '.join(('\n'+result.stderr).splitlines(True)),
         )
         fail("""
-{failure_message}
-Command: {arguments}
-Return code: {return_code}
-Error output:
-{stderr}
+  {failure_message}
+    Command: {command}
+    Return code: {return_code}
+    Error output: {stderr}
 """.format(**outputs))
     return result
 
@@ -110,6 +146,7 @@ def default_constraints(repository_ctx):
     cpu = {
         "darwin": "@platforms//cpu:x86_64",
         "darwin_arm64": "@platforms//cpu:arm64",
+        "aarch64": "@platforms//cpu:arm64",
     }.get(cpu_value, "@platforms//cpu:x86_64")
     os = {
         "darwin": "@platforms//os:osx",
@@ -229,7 +266,7 @@ def resolve_label(label_str, labels):
 
     Attr:
       label_str: string, String representation of a label.
-      labels: dict from Label to path: Known label to path mappings.
+      labels: dict from String to path: Known label-string to path mappings.
 
     Returns:
       (path, error):
@@ -237,9 +274,9 @@ def resolve_label(label_str, labels):
         error: string or None, This is set if an error occurred.
     """
     label_candidates = [
-        (lbl, path)
-        for (lbl, path) in labels.items()
-        if lbl.relative(label_str) == lbl
+        (lbl_str, path)
+        for (lbl_str, path) in labels.items()
+        if Label(lbl_str).relative(label_str) == Label(lbl_str)
     ]
 
     if len(label_candidates) == 0:
@@ -261,7 +298,7 @@ def expand_location(repository_ctx, string, labels, attr = None):
     Attrs:
       repository_ctx: The repository rule context.
       string: string, Replace instances of `$(location )` in this string.
-      labels: dict from label to path: Known label to path mappings.
+      labels: dict from string to path: Known label-string to path mappings.
       attr: string, The rule attribute to use for error reporting.
 
     Returns:
@@ -276,12 +313,12 @@ def expand_location(repository_ctx, string, labels, attr = None):
         if command == "string":
             result += argument
         elif command == "location":
-            (label, error) = resolve_label(argument, labels)
+            (path, error) = resolve_label(argument, labels)
             if error != None:
                 fail(error, attr)
 
             result += paths.join(".", paths.relativize(
-                str(repository_ctx.path(label)),
+                str(repository_ctx.path(path)),
                 str(repository_ctx.path(".")),
             ))
         else:

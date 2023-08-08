@@ -9,10 +9,24 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # https://bazelbuild.github.io/rules_rust/#setup
 http_archive(
     name = "rules_rust",
-    sha256 = "7453856d239a004c9e29cde2e45903a068446e4a69501ee7393faf08e1a30403",
+    sha256 = "50272c39f20a3a3507cb56dcb5c3b348bda697a7d868708449e2fa6fb893444c",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.1.0/rules_rust-v0.1.0.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.1.0/rules_rust-v0.1.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
+    ],
+    # rules_rust 0.22.0 does not yet support direct
+    # overriding toolchain used for build of cargo-bazel
+    # binary.
+    # On non-standard systems (viz. NixOS), that approach
+    # results in download of 'broken' rustc which then
+    # cannot build cargo bazel.
+    # This patch fixes the issue, allowing for toolchain
+    # specification.
+    #
+    # Note: This should be removed as soon as
+    # issue in rules_rust is resolved.
+    patches = [
+        "//:patches/001-rules-rust-crate-universe.patch",
     ],
 )
 
@@ -20,12 +34,17 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_depende
 
 rules_nixpkgs_dependencies()
 
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_local_repository", "nixpkgs_package")
 
-nixpkgs_git_repository(
+# It is recommended to keep nixpkgs of nix-shell (which provide Bazel),
+# and nixpkgs of Bazel Workspace in sync - otherwise one may
+# got hit with nasty glibc mismatch errors.
+nixpkgs_local_repository(
     name = "nixpkgs",
-    revision = "21.11",
-    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
+    nix_file = "//:nixpkgs.nix",
+    nix_file_deps = [
+        "//:nixpkgs.json"
+    ],
 )
 
 # rules_rust also uses the cc compiler
@@ -34,15 +53,87 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure")
 nixpkgs_cc_configure(
     name = "nixpkgs_config_cc",
     repository = "@nixpkgs",
+    nix_file_deps = [
+        "//:nixpkgs.json"
+    ],
 )
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/rust.bzl", "nixpkgs_rust_configure")
 
 nixpkgs_rust_configure(
-    repository = "@nixpkgs//:default.nix",
+    repository = "@nixpkgs",
     name = "nix_rust",
+    nix_file_deps = [
+        "//:nixpkgs.json"
+    ],
+)
+
+nixpkgs_package(
+    name = "openssl-static",
+    repository = "@nixpkgs",
+    nix_file = "//:openssl-static.nix",
+    nix_file_deps = [
+        "//:nixpkgs.json"
+    ],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
+
+# crate_universe as a way of governing deps
+load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+
+crate_universe_dependencies(
+    bootstrap = True,
+    rust_toolchain_cargo_template = "@nix_rust//:bin/{tool}",
+    rust_toolchain_rustc_template = "@nix_rust//:bin/{tool}",
+)
+
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository", "render_config")
+
+OPENSSL_ENV_VARS = {
+        "OPENSSL_INCLUDE_DIR": "../openssl-static/include",
+        "OPENSSL_LIB_DIR": "../openssl-static/lib",
+        "OPENSSL_STATIC": "1",
+}
+OPENSSL_CRATE_ANNOTATION = crate.annotation(
+        build_script_env = OPENSSL_ENV_VARS,
+        build_script_data = [
+            "@openssl-static//:include",
+            "@openssl-static//:lib",
+        ],
+        data = ["@openssl-static//:lib"],
+        rustc_flags = [
+            "-Lexternal/openssl-static/lib",
+        ],
+)
+
+crates_repository(
+    name = "crate_index",
+    # Ensure the caro openssl-sys crate
+    # will use the openssl nixpkg.
+    annotations = {
+        "openssl-sys": [
+            OPENSSL_CRATE_ANNOTATION
+        ],
+    },
+    cargo_lockfile = "//:Cargo.lock",
+    lockfile = "//:cargo-bazel-lock.json",
+    packages = {
+        "openssl": crate.spec(
+            version = "0.10.40",
+            features = [],
+        ),
+    },
+    generator = "@cargo_bazel_bootstrap//:cargo-bazel",
+    render_config = render_config(
+        default_package_name = "",
+    ),
+    rust_toolchain_cargo_template = "@nix_rust//:bin/{tool}",
+    rust_toolchain_rustc_template = "@nix_rust//:bin/{tool}",
+)
+
+load("@crate_index//:defs.bzl", "crate_repositories")
+
+crate_repositories()

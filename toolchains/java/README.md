@@ -18,7 +18,8 @@
 <pre>
 nixpkgs_java_configure(<a href="#nixpkgs_java_configure-name">name</a>, <a href="#nixpkgs_java_configure-attribute_path">attribute_path</a>, <a href="#nixpkgs_java_configure-java_home_path">java_home_path</a>, <a href="#nixpkgs_java_configure-repository">repository</a>, <a href="#nixpkgs_java_configure-repositories">repositories</a>, <a href="#nixpkgs_java_configure-nix_file">nix_file</a>,
                        <a href="#nixpkgs_java_configure-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_java_configure-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_java_configure-nixopts">nixopts</a>, <a href="#nixpkgs_java_configure-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_java_configure-quiet">quiet</a>, <a href="#nixpkgs_java_configure-toolchain">toolchain</a>,
-                       <a href="#nixpkgs_java_configure-toolchain_name">toolchain_name</a>, <a href="#nixpkgs_java_configure-toolchain_version">toolchain_version</a>, <a href="#nixpkgs_java_configure-exec_constraints">exec_constraints</a>, <a href="#nixpkgs_java_configure-target_constraints">target_constraints</a>)
+                       <a href="#nixpkgs_java_configure-register">register</a>, <a href="#nixpkgs_java_configure-toolchain_name">toolchain_name</a>, <a href="#nixpkgs_java_configure-toolchain_version">toolchain_version</a>, <a href="#nixpkgs_java_configure-exec_constraints">exec_constraints</a>,
+                       <a href="#nixpkgs_java_configure-target_constraints">target_constraints</a>)
 </pre>
 
 Define a Java runtime provided by nixpkgs.
@@ -70,6 +71,29 @@ Add the following configuration to `.bazelrc` to enable this Java runtime:
 build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
 build --java_runtime_version=nixpkgs_java
 build --tool_java_runtime_version=nixpkgs_java
+```
+
+##### Bazel 6
+
+Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
+```bzl
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
+nixpkgs_java_configure(
+    attribute_path = "jdk11.home",
+    repository = "@nixpkgs",
+    toolchain = True,
+    toolchain_name = "nixpkgs_java",
+    toolchain_version = "11",
+)
+```
+
+Add the following configuration to `.bazelrc` to enable this Java runtime:
+```
+build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build --java_runtime_version=nixpkgs_java_11
+build --tool_java_runtime_version=nixpkgs_java_11
+build --java_language_version=11
+build --tool_java_language_version=11
 ```
 
 
@@ -244,7 +268,21 @@ default is <code>False</code>
 
 <p>
 
-Create & register a Bazel toolchain based on the Java runtime.
+Create a Bazel toolchain based on the Java runtime.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_java_configure-register">
+<td><code>register</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Register the created toolchain. Requires `toolchain` to be `True`. Defaults to the value of `toolchain`.
 
 </p>
 </td>

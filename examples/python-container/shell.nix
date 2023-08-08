@@ -1,8 +1,8 @@
-{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/refs/tags/21.11.tar.gz") {} }:
+{ pkgs ? import ./nixpkgs.nix { } }:
 
-pkgs.mkShell {
+pkgs.mkShellNoCC {
     nativeBuildInputs = [
-       pkgs.bazel_4
+       pkgs.bazel_6
     ];
 }
 

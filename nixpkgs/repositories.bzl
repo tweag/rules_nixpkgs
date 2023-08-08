@@ -2,20 +2,23 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
+_TOOLCHAINS = sorted([ 'cc', 'java', 'python', 'go', 'rust', 'posix', 'nodejs' ])
+
+def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", toolchains = None):
     """Load repositories required by rules_nixpkgs.
 
     Args:
         rules_nixpkgs_name: name under which this repository is known in your workspace
+        toolchains:         list of toolchains to load, e.g. `['cc', 'java']`, load all toolchains by default
     """
     maybe(
         http_archive,
-        "platforms",
+        name = "platforms",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.4/platforms-0.0.4.tar.gz",
-            "https://github.com/bazelbuild/platforms/releases/download/0.0.4/platforms-0.0.4.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
         ],
-        sha256 = "079945598e4b6cc075846f7fd6a9d0857c33a7afc0de868c2ccb96405225135d",
+        sha256 = "5308fc1d8865406a49427ba24a9ab53087f17f5266a7aabbfc28823f3916e1ca",
     )
     maybe(
         http_archive,
@@ -29,8 +32,15 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
     maybe(
         http_archive,
         "rules_java",
-        url = "https://github.com/bazelbuild/rules_java/releases/download/4.0.0/rules_java-4.0.0.tar.gz",
-        sha256 = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe",
+        sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
+        strip_prefix = "rules_java-5.0.0",
+        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
+    )
+    maybe(
+        http_archive,
+        "rules_nodejs",
+        sha256 = "08337d4fffc78f7fe648a93be12ea2fc4e8eb9795a4e6aa48595b66b34555626",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.0/rules_nodejs-core-5.8.0.tar.gz"],
     )
 
     # the following complication is due to migrating to `bzlmod`.
@@ -49,14 +59,23 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs"):
     if strip_prefix:
         strip_prefix += "/"
 
-    for name, prefix in [
-        ("rules_nixpkgs_core", "core"),
-        ("rules_nixpkgs_cc", "toolchains/cc"),
-        ("rules_nixpkgs_java", "toolchains/java"),
-        ("rules_nixpkgs_python", "toolchains/python"),
-        ("rules_nixpkgs_go", "toolchains/go"),
-        ("rules_nixpkgs_rust", "toolchains/rust"),
-        ("rules_nixpkgs_posix", "toolchains/posix"),
+    if toolchains != None:
+        inexistent_toolchains = [ name for name in toolchains if not name in _TOOLCHAINS ]
+        if inexistent_toolchains:
+            errormsg = [
+                "The following toolchains given in the `toolchains` argument are unknown: {}".format(
+                    ", ".join(inexistent_toolchains)
+                ),
+                "Available toolchains are: {}".format(
+                    ", ".join(_TOOLCHAINS)
+                )
+            ]
+            fail("\n".join(errormsg))
+
+    for name, prefix in [("rules_nixpkgs_core", "core")] + [
+        ("rules_nixpkgs_" + toolchain, "toolchains/" + toolchain)
+        for toolchain in _TOOLCHAINS
+        if toolchains == None or toolchain in toolchains
     ]:
         # case analysis in inner loop to reduce code duplication
         if kind == "local_repository":

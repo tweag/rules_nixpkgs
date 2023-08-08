@@ -1,21 +1,33 @@
-load("@rules_nixpkgs_core//docs:stardoc.bzl", "generate_documentation")
+load(":stardoc.bzl", "generate_documentation")
+
+exports_files([
+    "stardoc.bzl",
+    "copy-files.sh",
+    "compare-files.sh",
+] + glob(["templates/*"]))
 
 generate_documentation(
     name = "README.md",
-    input = "//nixpkgs:nixpkgs.bzl",
+    input = "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
     symbol_names = [
         "nixpkgs_git_repository",
+        "nixpkgs_http_repository",
         "nixpkgs_local_repository",
         "nixpkgs_package",
+        "nixpkgs_flake_package",
         "nixpkgs_cc_configure",
         "nixpkgs_cc_configure_deprecated",
+        "nixpkgs_go_configure",
         "nixpkgs_java_configure",
         "nixpkgs_python_configure",
+        "nixpkgs_python_repository",
         "nixpkgs_rust_configure",
         "nixpkgs_sh_posix_configure",
+        "nixpkgs_nodejs_configure",
+        "nixpkgs_nodejs_configure_platforms",
     ],
     deps = [
-        "//nixpkgs",
+        "@io_tweag_rules_nixpkgs//nixpkgs",
     ],
 )
 
