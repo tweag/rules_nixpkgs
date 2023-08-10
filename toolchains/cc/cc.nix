@@ -1,15 +1,14 @@
-let
-  pkgs = import <nixpkgs> { config = { }; overlays = [ ]; };
-in
-
 { ccType
 , ccAttrPath ? null
 , ccAttrSet ? null
 , ccExpr ? null
+, ccPkgs ? import <nixpkgs> { config = { }; overlays = [ ]; }
 , ccLang ? "c++"
 }:
 
 let
+  pkgs = ccPkgs.buildPackages;
+  stdenv = ccPkgs.stdenv;
   # The original `postLinkSignHook` from nixpkgs assumes `codesign_allocate` is
   # in the PATH which is not the case when using our cc_wrapper. Set
   # `CODESIGN_ALLOCATE` to an absolute path here and override the hook for
@@ -28,8 +27,8 @@ let
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.wrapCCWith rec {
-      cc = pkgs.stdenv.cc.cc;
-      bintools = pkgs.stdenv.cc.bintools.override { inherit postLinkSignHook; };
+      cc = stdenv.cc.cc;
+      bintools = stdenv.cc.bintools.override { inherit postLinkSignHook; };
       extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
         echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
         echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
@@ -54,22 +53,23 @@ let
     else
       pkgs.buildEnv (
         let
-          cc = if pkgs.stdenv.isDarwin then darwinCC else pkgs.stdenv.cc;
+          cc = if stdenv.isDarwin then darwinCC else stdenv.cc;
         in
         {
-          name = "bazel-nixpkgs-cc";
+          name = "bazel-${cc.name}-wrapper";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
           paths = [ cc cc.bintools ] ++ pkgs.lib.optional pkgs.stdenv.isDarwin pkgs.darwin.cctools;
           pathsToLink = [ "/bin" ];
           passthru = {
-            isClang = cc.isClang;
+            inherit (cc) isClang targetPrefix;
+            orignalName = cc.name;
           };
         }
       )
   ;
 in
-pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
+pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
 {
   executable = false;
   # Pointless to do this on a remote machine.
@@ -89,10 +89,14 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     TOOL_NAMES=(''${!TOOLS[@]})
     declare -A TOOL_PATHS=()
     for tool_name in ''${!TOOLS[@]}; do
-      tool_path=${cc}/bin/''${TOOLS[$tool_name]}
+      tool_path=${cc}/bin/${cc.targetPrefix}''${TOOLS[$tool_name]}
       if [[ -x $tool_path ]]; then
         TOOL_PATHS[$tool_name]=$tool_path
       else
+        if [[ $tool_name == gcc ]]; then
+          echo "Failed to find ${cc.targetPrefix}''${TOOLS[gcc]} in ${cc}/bin" >&2
+          exit 1
+        fi
         TOOL_PATHS[$tool_name]=${pkgs.coreutils}/bin/false
       fi
     done
@@ -188,7 +192,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
         add_linker_option_if_supported -Wl,-z,relro,-z,now -z
       )
       ${
-        if pkgs.stdenv.isDarwin
+        if stdenv.isDarwin
         then "-undefined dynamic_lookup -headerpad_max_install_names"
         else "-B${cc}/bin"
       }
@@ -199,11 +203,11 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     )
     LINK_LIBS=(
       ${
-        # Use pkgs.stdenv.isDarwin as a marker instead of cc.isClang because
+        # Use stdenv.isDarwin as a marker instead of cc.isClang because
         # we might have usecases with stdenv with clang and libstdc++.
         # On Darwin libstdc++ is not available, so it's safe to assume that
         # everybody use libc++ from LLVM.
-        if pkgs.stdenv.isDarwin then "-lc++" else "-lstdc++"
+        if stdenv.isDarwin then "-lc++" else "-lstdc++"
       }
       -lm
     )
@@ -233,7 +237,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     )
     OPT_LINK_FLAGS=(
       ${
-        if pkgs.stdenv.isDarwin
+        if stdenv.isDarwin
         then ""
         else "$(add_linker_option_if_supported -Wl,--gc-sections -gc-sections)"
       }
@@ -256,7 +260,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     DBG_COMPILE_FLAGS=(-g)
     COVERAGE_COMPILE_FLAGS=(
       ${
-        if pkgs.stdenv.isDarwin then
+        if stdenv.isDarwin then
           "-fprofile-instr-generate -fcoverage-mapping"
         else
           "--coverage"
@@ -264,7 +268,7 @@ pkgs.runCommand "bazel-nixpkgs-cc-toolchain"
     )
     COVERAGE_LINK_FLAGS=(
       ${
-        if pkgs.stdenv.isDarwin then
+        if stdenv.isDarwin then
           "-fprofile-instr-generate"
         else
           "--coverage"
