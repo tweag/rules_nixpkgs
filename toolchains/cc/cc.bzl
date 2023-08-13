@@ -31,9 +31,9 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load(
     "@rules_nixpkgs_core//:util.bzl",
-    "is_bazel_version_at_least",
     "ensure_constraints",
     "execute_or_fail",
+    "is_bazel_version_at_least",
 )
 
 def _parse_cc_toolchain_info(content, filename):
@@ -121,8 +121,9 @@ def _parse_cc_toolchain_info(content, filename):
     )
 
 def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
-    cpu_value = get_cpu_value(repository_ctx)
-    darwin = cpu_value == "darwin" or cpu_value == "darwin_arm64"
+    host_cpu = get_cpu_value(repository_ctx)
+    cross_cpu = repository_ctx.attr.cross_cpu or host_cpu
+    darwin = host_cpu == "darwin" or host_cpu == "darwin_arm64"
 
     cc_toolchain_info_file = repository_ctx.path(repository_ctx.attr.cc_toolchain_info)
     if not cc_toolchain_info_file.exists and not repository_ctx.attr.fail_not_supported:
@@ -147,7 +148,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
 
     # A module map is required for clang starting from Bazel version 3.3.0.
     # https://github.com/bazelbuild/bazel/commit/8b9f74649512ee17ac52815468bf3d7e5e71c9fa
-    bazel_version_match, bazel_from_source  = is_bazel_version_at_least("3.3.0")
+    bazel_version_match, bazel_from_source = is_bazel_version_at_least("3.3.0")
     needs_module_map = info.is_clang and (bazel_version_match or bazel_from_source)
     if needs_module_map:
         generate_system_module_map = [
@@ -186,7 +187,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         repository_ctx.path(repository_ctx.attr._build),
         {
             "%{cc_toolchain_identifier}": "local",
-            "%{name}": cpu_value,
+            "%{name}": cross_cpu,
             "%{modulemap}": ("\":module.modulemap\"" if needs_module_map else "None"),
             "%{supports_param_files}": "0" if darwin else "1",
             "%{cc_compiler_deps}": get_starlark_list(
@@ -199,7 +200,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
             "%{abi_libc_version}": "local",
             "%{host_system_name}": "local",
             "%{target_libc}": "macosx" if darwin else "local",
-            "%{target_cpu}": cpu_value,
+            "%{target_cpu}": cross_cpu,
             "%{target_system_name}": "local",
             "%{tool_paths}": ",\n        ".join(
                 ['"%s": "%s"' % (k, v) for (k, v) in info.tool_paths.items()],
@@ -224,6 +225,7 @@ _nixpkgs_cc_toolchain_config = repository_rule(
     attrs = {
         "cc_toolchain_info": attr.label(),
         "fail_not_supported": attr.bool(),
+        "cross_cpu": attr.string(),
         "_unix_cc_toolchain_config": attr.label(
             default = Label("@bazel_tools//tools/cpp:unix_cc_toolchain_config.bzl"),
         ),
@@ -246,7 +248,7 @@ _nixpkgs_cc_toolchain_config = repository_rule(
 )
 
 def _nixpkgs_cc_toolchain_impl(repository_ctx):
-    cpu = get_cpu_value(repository_ctx)
+    cpu = repository_ctx.attr.cross_cpu or get_cpu_value(repository_ctx)
     exec_constraints, target_constraints = ensure_constraints(repository_ctx)
 
     repository_ctx.file(
@@ -287,6 +289,7 @@ _nixpkgs_cc_toolchain = repository_rule(
         "cc_toolchain_config": attr.string(),
         "exec_constraints": attr.string_list(),
         "target_constraints": attr.string_list(),
+        "cross_cpu": attr.string(),
     },
 )
 
@@ -304,7 +307,8 @@ def nixpkgs_cc_configure(
         exec_constraints = None,
         target_constraints = None,
         register = True,
-        cc_lang = "c++"):
+        cc_lang = "c++",
+        cross_cpu = ""):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -375,8 +379,8 @@ def nixpkgs_cc_configure(
       target_constraints: Constraints for the target platform.
       register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
       cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
+      cross_cpu: string, `""` by default. Used if you want to add a cross compilation C/C++ toolchain. Set this to the CPU architecture for the target CPU. For example x86_64, would be k8.
     """
-
     nixopts = list(nixopts)
     nix_file_deps = list(nix_file_deps)
 
@@ -447,6 +451,7 @@ def nixpkgs_cc_configure(
         name = "{}".format(name),
         cc_toolchain_info = "@{}_info//:CC_TOOLCHAIN_INFO".format(name),
         fail_not_supported = fail_not_supported,
+        cross_cpu = cross_cpu,
     )
 
     # Generate the `cc_toolchain` workspace.
@@ -457,6 +462,7 @@ def nixpkgs_cc_configure(
         cc_toolchain_config = name,
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
+        cross_cpu = cross_cpu,
     )
 
     if register:
