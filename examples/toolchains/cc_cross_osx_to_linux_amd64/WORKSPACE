@@ -1,0 +1,111 @@
+# Replace with http_archive: https://github.com/tweag/rules_nixpkgs/#setup
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../../../",
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
+rules_nixpkgs_dependencies()
+
+load(
+    "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
+    "nixpkgs_cc_configure",
+    "nixpkgs_local_repository",
+)
+
+nixpkgs_local_repository(
+    name = "nixpkgs",
+    nix_file = "//:nixpkgs.nix",
+    nix_file_deps = ["//:nixpkgs.json"],
+)
+
+nixpkgs_cc_configure(
+    name = "nixpkgs_config_cc",
+    nix_file = "//toolchains:cc.nix",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_cc_configure(
+    name = "nixpkgs_cross_cc",
+    cross_cpu = "k8",
+    exec_constraints = [
+        "@platforms//os:osx",
+        "@platforms//cpu:arm64",
+    ],
+    nix_file = "//toolchains:osxcross_cc.nix",
+    nixopts = [
+        "--arg",
+        "ccPkgs",
+        "import <nixpkgs> { crossSystem = \"x86_64-linux\";}",
+        "--show-trace",
+    ],
+    repository = "@nixpkgs",
+    target_constraints = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+        "@rules_nixpkgs_core//constraints:support_nix",
+    ],
+)
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
+
+# We would probably want a select or something to make this work with OSX as well, for a more
+# production set up.
+nixpkgs_package(
+    name = "boost",
+    attribute_path = "boost175",
+    nix_file_content = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_package(
+    name = "boost.dev",
+    attribute_path = "boost175.dev",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h", "include/**/*.hpp"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "boost",
+    srcs = ["@boost//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+    nix_file_content = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_package(
+    name = "zlib",
+    attribute_path = "zlib",
+    nix_file_content = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_package(
+    name = "zlib.dev",
+    attribute_path = "zlib.dev",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "zlib",
+    srcs = ["@zlib//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+    nix_file_content = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repository = "@nixpkgs",
+)
