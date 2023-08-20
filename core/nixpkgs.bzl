@@ -396,21 +396,59 @@ def _nixpkgs_build_file_content(repository_ctx):
     else:
         return None
 
-def _nixpkgs_build_and_symlink(repository_ctx, nix_build, build_file_content):
+def _nixpkgs_build_and_symlink(repository_ctx, nix_build_path, expr_args, build_file_content):
     # Large enough integer that Bazel can still parse. We don't have
     # access to MAX_INT and 0 is not a valid timeout so this is as good
     # as we can do. The value shouldn't be too large to avoid errors on
     # macOS, see https://github.com/tweag/rules_nixpkgs/issues/92.
     timeout = 8640000
     repository_ctx.report_progress("Building Nix derivation")
+
+    nix_host = repository_ctx.os.environ.get('BAZEL_NIX_REMOTE', '')
+    if nix_host:
+        nix_store = "ssh-ng://{host}?max-connections=1".format(host = nix_host)
+        repository_ctx.report_progress("Remote-building Nix derivation")
+        exec_result = execute_or_fail(
+             repository_ctx,
+             [nix_build_path, "--store", nix_store, "--eval-store", "auto"] + expr_args,
+             failure_message = "Cannot build Nix attribute '{}'.".format(
+                 repository_ctx.attr.attribute_path,
+             ),
+             quiet = repository_ctx.attr.quiet,
+             timeout = timeout,
+        )
+        output_path = exec_result.stdout.splitlines()[-1]
+
+        ssh_path = repository_ctx.which("ssh")
+        repository_ctx.report_progress("Creating remote store root")
+        exec_result = execute_or_fail(
+            repository_ctx,
+            [ssh_path] + [nix_host, "nix-store --add-root /nix/var/nix/gcroots/per-user/nix/rules_nixpkgs_{root} -r {path}".format(root = output_path.split('/')[-1], path = output_path) ],
+            failure_message = "Cannot build Nix attribute '{}'.".format(
+                repository_ctx.attr.attribute_path,
+            ),
+            quiet = repository_ctx.attr.quiet,
+            timeout = 10000,
+        )
+
+        nix_path = repository_ctx.which("nix")
+        repository_ctx.report_progress("Downloading Nix derivation")
+        exec_result = repository_ctx.execute(
+            [nix_path, "copy", "--from", nix_store, output_path],
+            quiet = repository_ctx.attr.quiet,
+            timeout = 10000,
+        )
+
     exec_result = execute_or_fail(
         repository_ctx,
-        nix_build,
+        [nix_build_path] + expr_args,
         failure_message = "Cannot build Nix derivation for package '@{}'.".format(repository_ctx.name),
         quiet = repository_ctx.attr.quiet,
         timeout = timeout,
     )
     output_path = exec_result.stdout.splitlines()[-1]
+
+    repository_ctx.report_progress("Creating local folders")
 
     # ensure that the output is a directory
     test_path = repository_ctx.which("test")
@@ -542,9 +580,8 @@ def _nixpkgs_package_impl(repository_ctx):
         "nix-build",
         extra_msg = "See: https://nixos.org/nix/",
     )
-    nix_build = [nix_build_path] + expr_args
 
-    _nixpkgs_build_and_symlink(repository_ctx, nix_build, build_file_content)
+    _nixpkgs_build_and_symlink(repository_ctx, nix_build_path, expr_args, build_file_content)
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
