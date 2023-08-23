@@ -396,7 +396,7 @@ def _nixpkgs_build_file_content(repository_ctx):
     else:
         return None
 
-def _nixpkgs_build_and_symlink(repository_ctx, nix_build_path, expr_args, build_file_content):
+def _nixpkgs_build_and_symlink(repository_ctx, nix_path, expr_args, build_file_content):
     # Large enough integer that Bazel can still parse. We don't have
     # access to MAX_INT and 0 is not a valid timeout so this is as good
     # as we can do. The value shouldn't be too large to avoid errors on
@@ -410,7 +410,7 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_path, expr_args, build_
         repository_ctx.report_progress("Remote-building Nix derivation")
         exec_result = execute_or_fail(
              repository_ctx,
-             [nix_build_path, "--store", nix_store, "--eval-store", "auto"] + expr_args,
+             [nix_path, "build", "--store", nix_store, "--eval-store", "auto"] + expr_args,
              failure_message = "Cannot build Nix attribute '{}'.".format(
                  repository_ctx.attr.attribute_path,
              ),
@@ -441,7 +441,7 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_path, expr_args, build_
 
     exec_result = execute_or_fail(
         repository_ctx,
-        [nix_build_path] + expr_args,
+        [nix_path, "build"] + expr_args,
         failure_message = "Cannot build Nix derivation for package '@{}'.".format(repository_ctx.name),
         quiet = repository_ctx.attr.quiet,
         timeout = timeout,
@@ -575,13 +575,13 @@ def _nixpkgs_package_impl(repository_ctx):
         for opt in repository_ctx.attr.nixopts
     ])
 
-    nix_build_path = executable_path(
+    nix_path = executable_path(
         repository_ctx,
-        "nix-build",
+        "nix",
         extra_msg = "See: https://nixos.org/nix/",
     )
 
-    _nixpkgs_build_and_symlink(repository_ctx, nix_build_path, expr_args, build_file_content)
+    _nixpkgs_build_and_symlink(repository_ctx, nix_path, expr_args, build_file_content)
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
@@ -778,9 +778,8 @@ def _nixpkgs_flake_package_impl(repository_ctx):
         "nix",
         extra_msg = "See: https://nixos.org/nix/",
     )
-    nix_build = [nix_path, "build"] + expr_args
 
-    _nixpkgs_build_and_symlink(repository_ctx, nix_build, build_file_content)
+    _nixpkgs_build_and_symlink(repository_ctx, nix_path, expr_args, build_file_content)
 
 _nixpkgs_flake_package = repository_rule(
     implementation = _nixpkgs_flake_package_impl,
