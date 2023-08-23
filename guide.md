@@ -482,7 +482,7 @@ compilation. This can be verified using Bazel's `--toolchain_resolution_debug`
 switch:
 
 ```
-> bazel build //src:hello-world --toolchain-resolution-debug '.*'
+> bazel build //src:hello-world --toolchain_resolution_debug '.*'
 INFO: Build option --toolchain_resolution_debug has changed, discarding analysis cache.
 INFO: ToolchainResolution: Target platform @rules_nixpkgs_core//platforms:host: Selected execution platform @rules_nixpkgs_core//platforms:host, 
 INFO: ToolchainResolution:     Type @bazel_tools//tools/cpp:toolchain_type: target platform @rules_nixpkgs_core//platforms:host: Rejected toolchain @nixpkgs_config_cc//:cc-compiler-armeabi-v7a; mismatching values: arm, android
