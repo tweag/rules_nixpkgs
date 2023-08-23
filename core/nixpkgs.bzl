@@ -431,7 +431,6 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_path, expr_args, build_file_c
             timeout = 10000,
         )
 
-        nix_path = repository_ctx.which("nix")
         repository_ctx.report_progress("Downloading Nix derivation")
         exec_result = repository_ctx.execute(
             [nix_path, "copy", "--from", nix_store, output_path],
