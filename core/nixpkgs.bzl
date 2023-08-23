@@ -418,7 +418,7 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
              repository_ctx,
              nix_build_cmd + ["--store", nix_store, "--eval-store", "auto"] + expr_args,
              failure_message = "Cannot build Nix attribute '{}'.".format(
-                 repository_ctx.attr.attribute_path,
+                 repository_ctx.attr.name,
              ),
              quiet = repository_ctx.attr.quiet,
              timeout = timeout,
@@ -430,8 +430,8 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         exec_result = execute_or_fail(
             repository_ctx,
             [ssh_path] + [nix_host, "nix-store --add-root /nix/var/nix/gcroots/per-user/nix/rules_nixpkgs_{root} -r {path}".format(root = output_path.split('/')[-1], path = output_path) ],
-            failure_message = "Cannot build Nix attribute '{}'.".format(
-                repository_ctx.attr.attribute_path,
+            failure_message = "Cannot create remote store root for Nix attribute '{}'.".format(
+                repository_ctx.attr.name,
             ),
             quiet = repository_ctx.attr.quiet,
             timeout = 10000,
