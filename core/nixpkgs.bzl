@@ -429,7 +429,7 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         repository_ctx.report_progress("Creating remote store root")
         exec_result = execute_or_fail(
             repository_ctx,
-            [ssh_path] + [nix_host, "nix-store --add-root /nix/var/nix/gcroots/per-user/nix/rules_nixpkgs_{root} -r {path}".format(root = output_path.split('/')[-1], path = output_path) ],
+            [ssh_path] + [nix_host, "nix-store --add-root ~/rules_nixpkgs_gcroots/{root} -r {path}".format(root = output_path.split('/')[-1], path = output_path) ],
             failure_message = "Cannot create remote store root for Nix attribute '{}'.".format(
                 repository_ctx.attr.name,
             ),
