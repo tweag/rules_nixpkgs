@@ -1,6 +1,6 @@
 #include <iostream>
-#include <boost/filesystem/operations.hpp>
-#include <zlib.h>
+//#include <boost/filesystem/operations.hpp>
+//#include <zlib.h>
 
 int main()
 {

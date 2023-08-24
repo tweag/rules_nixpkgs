@@ -6,8 +6,8 @@ cc_binary(
     name = "hello",
     srcs = ["hello.cc"],
     deps = [
-        "@boost.dev//:boost",
-        "@zlib.dev//:zlib",
+        #"@boost.dev//:boost",
+        #"@zlib.dev//:zlib",
     ],
 )
 

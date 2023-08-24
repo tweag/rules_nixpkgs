@@ -34,6 +34,7 @@ nixpkgs_cc_configure(
         "@platforms//cpu:arm64",
     ],
     nix_file = "//toolchains:osxcross_cc.nix",
+    nix_file_deps = ["//toolchains:osxcross_cc_pkgs.nix"],
     nixopts = [
         "--arg",
         "ccPkgs",
@@ -55,16 +56,30 @@ nixpkgs_package(
     build_file_content = """\
 exports_files(["closure.tar"])
 """,
+    nix_file_deps = ["//toolchains:osxcross_cc_pkgs.nix"],
     nix_file_content = """
 let
   pkgs = import <nixpkgs> { config = {}; overlays = []; };
-  packages = with import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }; [ boost175 zlib ];
+  buildPkgs = import ./toolchains/osxcross_cc_pkgs.nix { targetSystem = "x86_64-linux"; };
+  #packages = with import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }; [ boost175 zlib ];
+  #packages = [ (import ./toolchains/osxcross_cc.nix) ];
+  packages = [ buildPkgs.llvmPackages_11.bintools.libc.out ];
   closure = with pkgs; builtins.toString (lib.strings.splitString "\n" (builtins.readFile "${closureInfo { rootPaths = packages; }}/store-paths"));
 in pkgs.buildEnv {
   name = "closure";
   paths = [ ];
   buildInputs = packages;
-  postBuild = "tar -cf $out/closure.tar ${closure}";
+  #postBuild = "tar -cf $out/closure.tar ${closure}";
+  postBuild = ''
+    set -x
+
+    # For some reason libgcc_s.so is not executable, so fix it
+    GCC_LIB=${buildPkgs.gcc.cc.lib}
+    tar -c "$GCC_LIB" | tar -x -C .
+    find ./$GCC_LIB -name "libgcc_s.so*" -exec chmod -v +x {} \\;
+
+    tar -cvf $out/closure.tar ${buildPkgs.llvmPackages_11.bintools.libc.out} ${buildPkgs.llvmPackages_11.libraries.libcxxabi} ${buildPkgs.llvmPackages_11.libraries.libcxx} ./$GCC_LIB
+  '';
 }
 """,
     repository = "@nixpkgs",
@@ -179,3 +194,5 @@ http_archive(
 )
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
+
+
