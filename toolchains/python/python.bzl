@@ -316,6 +316,7 @@ def nixpkgs_python_repository(
         repository = repository,
         repositories = repositories,
         nix_file_deps = nix_file_deps + [ nix_file ],
+        build_file_content = """exports_files(["requirements.json"])""",
         nixopts = [ "--arg", "nix_file", "$(location {})".format(nix_file) ],
         quiet = quiet,
     )
