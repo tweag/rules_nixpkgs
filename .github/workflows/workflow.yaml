@@ -109,9 +109,16 @@ jobs:
           for dir in "${with_nix[@]}"; do
               pushd "$dir"
               echo
-              echo "::group::Running $(head -n1 README.md) with Nix"
-              nix-shell --command 'bazel run --config=nix :hello'
-              # TODO: all toolchains should run without Nixpkgs
+              example_name="$(head -n1 README.md) with Nix"
+              if [[ -f skip-on-ci ]]; then
+                  echo "Skipping $example_name"
+                  popd
+                  continue
+              else
+                  echo "::group::Running $example_name"
+                  nix-shell --command 'bazel run --config=nix :hello'
+                  # TODO: all toolchains should run without Nixpkgs
+              fi
               popd
           done
           for dir in "${without_nix[@]}"; do
