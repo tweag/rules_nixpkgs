@@ -112,6 +112,7 @@ jobs:
               example_name="$(head -n1 README.md) with Nix"
               if [[ -f skip-on-ci ]]; then
                   echo "Skipping $example_name"
+                  popd
                   continue
               else
                   echo "::group::Running $example_name"
