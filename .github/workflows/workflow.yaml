@@ -53,7 +53,7 @@ jobs:
           common:ci --announce_rc=false
           EOF
       - name: Start remote Nix server
-        if: ${{ matrix.withNixRemote }} == "true"
+        if: ${{ matrix.withNixRemote }} == "true" && ${{ matrix.os }} == "ubuntu-latest"
         run: |
           # Generate temporary SSH keys.
           mkdir -p $HOME/.ssh
@@ -61,7 +61,7 @@ jobs:
           ssh-keygen -t ed25519 -f .github/nix-server/keys/ci -C ci-nix-server -q -N ""
 
           docker build -t nix-server -f .github/nix-server/Dockerfile .
-          docker run -p 2222:22 nix-server
+          docker run -d -p 2222:22 nix-server
 
           cp .github/nix-server/config $HOME/.ssh/config
       - name: Build & test
