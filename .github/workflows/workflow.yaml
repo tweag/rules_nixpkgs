@@ -53,7 +53,7 @@ jobs:
           common:ci --announce_rc=false
           EOF
       - name: Start remote Nix server
-        if: ${{ matrix.withNixRemote }} == "true" && ${{ matrix.os }} == "ubuntu-latest"
+        if: ${{ matrix.withNixRemote == "true" }} && ${{ matrix.os == "ubuntu-latest" }}
         run: |
           # Generate temporary SSH keys.
           mkdir -p $HOME/.ssh
@@ -67,9 +67,8 @@ jobs:
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
-          NIX_REMOTE_ENABLED: ${{ matrix.withNixRemote }}
         run: |
-          if [ "$NIX_REMOTE_ENABLED" == "true" ]; then
+          if [ ${{ matrix.withNixRemote }} = true ]; then
             export BAZEL_NIX_REMOTE=nix-server
           fi
 
