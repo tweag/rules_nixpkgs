@@ -68,7 +68,7 @@ jobs:
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
         run: |
-          if [ ${{ matrix.withNixRemote }} = true ]; then
+          if [ ${{ matrix.withNixRemote }} = "true" ]; then
             export BAZEL_NIX_REMOTE=nix-server
           fi
 

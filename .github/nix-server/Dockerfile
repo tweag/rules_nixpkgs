@@ -16,6 +16,9 @@ COPY .github/nix-server/keys .
 
 RUN cat ci.pub > $HOME/.ssh/authorized_keys
 
-RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
+    echo ". /root/.nix-profile/etc/profile.d/nix.sh" >> $HOME/.bashrc && \
+    ln -sf /root/.nix-profile/bin/nix-store /usr/bin/ && \
+    ln -sf /root/.nix-profile/bin/nix-daemon /usr/bin/
 
 CMD ["/usr/sbin/sshd", "-D"]
