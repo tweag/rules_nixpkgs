@@ -64,9 +64,15 @@ jobs:
           docker run -d -p 2222:22 nix-server
 
           sudo apt-get update -qq
-          sudo apt-get install openssh-server -y
+          sudo apt-get install openssh-client -y
 
           cp .github/nix-server/config $HOME/.ssh/config
+          cat $HOME/.ssh/config
+          sudo chmod -R 600 $HOME/.ssh/
+          echo $HOME
+          pwd
+          id
+          ssh -V
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
