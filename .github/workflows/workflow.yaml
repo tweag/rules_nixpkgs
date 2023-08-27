@@ -53,7 +53,7 @@ jobs:
           common:ci --announce_rc=false
           EOF
       - name: Start remote Nix server
-        if: ${{ matrix.withNixRemote == "true" }} && ${{ matrix.os == "ubuntu-latest" }}
+        if: matrix.withNixRemote && matrix.os == 'ubuntu-latest'
         run: |
           # Generate temporary SSH keys.
           mkdir -p $HOME/.ssh
