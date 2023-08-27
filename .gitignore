@@ -1,3 +1,5 @@
 /**/bazel-*
 
 /**/node_modules
+
+.github/nix-server/keys

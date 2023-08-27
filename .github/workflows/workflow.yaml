@@ -27,6 +27,9 @@ jobs:
         bzlmodEnabled:
           - true
           - false
+        withNixRemote:
+          - true
+          - false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3.6.0
@@ -49,13 +52,31 @@ jobs:
           # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
           common:ci --announce_rc=false
           EOF
+      - name: Start remote Nix server
+        if: ${{ matrix.withNixRemote }} == "true"
+        run: |
+          # Generate temporary SSH keys.
+          mkdir -p $HOME/.ssh
+          mkdir -p .github/nix-server/keys
+          ssh-keygen -t ed25519 -f .github/nix-server/keys/ci -C ci-nix-server -q -N ""
+
+          docker build -t nix-server -f .github/nix-server/Dockerfile .
+          docker run -p 2222:22 nix-server
+
+          cp .github/nix-server/config $HOME/.ssh/config
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
+          NIX_REMOTE_ENABLED: ${{ matrix.withNixRemote }}
         run: |
+          if [ "$NIX_REMOTE_ENABLED" == "true" ]; then
+            export BAZEL_NIX_REMOTE=nix-server
+          fi
+
           nix-shell --pure \
             --keep GITHUB_REPOSITORY \
             --keep BZLMOD_ENABLED \
+            --keep BAZEL_NIX_REMOTE \
             --run 'bash .github/build-and-test'
   test-examples:
     name: Build & Test - Examples

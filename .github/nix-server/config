@@ -1,0 +1,5 @@
+Host nix-server
+  Hostname localhost
+  Port 2222
+  User root
+  IdentityFile .github/nix-server/keys/ci
