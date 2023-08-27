@@ -63,6 +63,9 @@ jobs:
           docker build -t nix-server -f .github/nix-server/Dockerfile .
           docker run -d -p 2222:22 nix-server
 
+          sudo apt-get update -qq
+          sudo apt-get install openssh-server -y
+
           cp .github/nix-server/config $HOME/.ssh/config
       - name: Build & test
         env:
