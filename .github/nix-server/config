@@ -2,7 +2,7 @@ Host nix-server
   Hostname localhost
   Port 2222
   User root
-  IdentityFile .github/nix-server/keys/ci
+  IdentityFile /home/runner/.ssh/ci
 
 Host *
     StrictHostKeyChecking no
