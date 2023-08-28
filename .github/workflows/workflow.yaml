@@ -63,9 +63,6 @@ jobs:
           docker build -t nix-server -f .github/nix-server/Dockerfile .
           docker run -d -p 2222:22 nix-server
 
-          sudo apt-get update -qq
-          sudo apt-get install openssh-client -y
-
           cp .github/nix-server/config $HOME/.ssh/config
           cat $HOME/.ssh/config
           sudo chmod -R 600 $HOME/.ssh/
@@ -79,8 +76,6 @@ jobs:
         run: |
           if [ ${{ matrix.withNixRemote }} = "true" ]; then
             export BAZEL_NIX_REMOTE=nix-server
-
-            nix store ping --store ssh://nix-server
           fi
 
           nix-shell --pure \
