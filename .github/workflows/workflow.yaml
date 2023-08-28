@@ -64,12 +64,7 @@ jobs:
           docker run -d -p 2222:22 nix-server
 
           cp .github/nix-server/config $HOME/.ssh/config
-          cat $HOME/.ssh/config
           sudo chmod -R 600 $HOME/.ssh/
-          echo $HOME
-          pwd
-          id
-          ssh -V
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
