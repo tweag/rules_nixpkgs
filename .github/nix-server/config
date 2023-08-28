@@ -3,3 +3,7 @@ Host nix-server
   Port 2222
   User root
   IdentityFile .github/nix-server/keys/ci
+
+Host *
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
