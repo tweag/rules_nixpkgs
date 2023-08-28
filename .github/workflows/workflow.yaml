@@ -69,8 +69,10 @@ jobs:
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
+          NIX_REMOTE_ENABLED: matrix.withNixRemote && matrix.os == 'ubuntu-latest'
         run: |
-          if [ ${{ matrix.withNixRemote }} = "true" ]; then
+          if [ "$NIX_REMOTE_ENABLED" = "true" ]; then
+            echo "Setting BAZEL_NIX_REMOTE env variable"
             export BAZEL_NIX_REMOTE=nix-server
           fi
 
