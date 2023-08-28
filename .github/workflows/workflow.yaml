@@ -79,6 +79,8 @@ jobs:
         run: |
           if [ ${{ matrix.withNixRemote }} = "true" ]; then
             export BAZEL_NIX_REMOTE=nix-server
+
+            nix store ping --store ssh://nix-server
           fi
 
           nix-shell --pure \
