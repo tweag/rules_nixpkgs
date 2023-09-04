@@ -90,6 +90,7 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
                 url = rules_nixpkgs.get("url"),
                 urls = rules_nixpkgs.get("urls"),
                 sha256 = rules_nixpkgs.get("sha256"),
+                type = rules_nixpkgs.get("type"),
             )
         elif kind == "git_repository":
             maybe(
