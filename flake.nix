@@ -15,7 +15,7 @@
       {
         devShells.default = with pkgs; mkShell {
           name = "rules_nixpkgs_shell";
-          packages = [ bazel_6 bazel-buildtools cacert gcc nix git ];
+          packages = [ bazel_6 bazel-buildtools cacert gcc nix git openssh ];
         };
       });
 }

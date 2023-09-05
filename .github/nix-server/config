@@ -1,0 +1,9 @@
+Host nix-server
+  Hostname localhost
+  Port 2222
+  User root
+  IdentityFile /home/runner/.ssh/ci
+
+Host *
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
