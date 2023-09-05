@@ -9,5 +9,5 @@ This example uses the Nix package manager to provide C++ dependencies, and as su
 
 To run the example with Nix, issue the following command:
 ```
-nix-shell --command 'bazel run --config=cross:hello'
+nix-shell --command 'bazel run --config=cross :hello'
 ```
