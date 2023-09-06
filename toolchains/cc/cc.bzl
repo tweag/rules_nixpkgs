@@ -122,8 +122,8 @@ def _parse_cc_toolchain_info(content, filename):
 
 def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     host_cpu = get_cpu_value(repository_ctx)
-    cross_cpu = repository_ctx.attr.cross_cpu or host_cpu
-    darwin = (host_cpu == "darwin" or host_cpu == "darwin_arm64") and cross_cpu == host_cpu
+    cpu_value = repository_ctx.attr.cross_cpu or host_cpu
+    darwin = cpu_value == "darwin" or cpu_value == "darwin_arm64"
 
     cc_toolchain_info_file = repository_ctx.path(repository_ctx.attr.cc_toolchain_info)
     if not cc_toolchain_info_file.exists and not repository_ctx.attr.fail_not_supported:
@@ -187,7 +187,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         repository_ctx.path(repository_ctx.attr._build),
         {
             "%{cc_toolchain_identifier}": "local",
-            "%{name}": cross_cpu,
+            "%{name}": cpu_value,
             "%{modulemap}": ("\":module.modulemap\"" if needs_module_map else "None"),
             "%{supports_param_files}": "0" if darwin else "1",
             "%{cc_compiler_deps}": get_starlark_list(
@@ -200,7 +200,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
             "%{abi_libc_version}": "local",
             "%{host_system_name}": "local",
             "%{target_libc}": "macosx" if darwin else "local",
-            "%{target_cpu}": cross_cpu,
+            "%{target_cpu}": cpu_value,
             "%{target_system_name}": "local",
             "%{tool_paths}": ",\n        ".join(
                 ['"%s": "%s"' % (k, v) for (k, v) in info.tool_paths.items()],
