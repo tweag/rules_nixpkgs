@@ -1,13 +1,16 @@
-C++ With Dependencies Toolchain Example
-=======================================
+Linux C++ In Docker, Cross Compiled on MacOS
+============================================
 
-This is an example C++ project with dependencies that uses `rules_cc`.
-
-This example uses the Nix package manager to provide C++ dependencies, and as such only works with Nix installed. Demonstrating other methods of providing C++ dependencies is out of scope of this example.
+Builds a Docker image containing a C++ program cross compiled for Linux, on MacOS.
 
 # Usage
 
-To run the example with Nix, issue the following command:
+To build the Docker image with Nix, issue the following command:
 ```
-nix-shell --command 'bazel run --config=cross :hello'
+nix-shell --command 'bazel build --config=cross :hello_image_tarball'
+```
+
+Or if you have Docker installed, you can build and run the image with a single command:
+```
+nix-shell --command 'bazel run --config=cross :hello_image'
 ```
