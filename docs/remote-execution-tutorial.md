@@ -96,7 +96,7 @@ The final step is to configure our Bazel project to use the Nix server and remot
 1. Enable copying of Nix paths to the remote server.
 
 This can be done by setting the `BAZEL_NIX_REMOTE` environment variable. This should be the name of
-any entry on the [SSH config](https://www.ssh.com/academy/ssh/config) file where all the
+an entry in the [SSH config](https://www.ssh.com/academy/ssh/config) file where all the
 authentication details are provided.
 
 ```
