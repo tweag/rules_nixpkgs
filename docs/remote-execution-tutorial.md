@@ -38,7 +38,7 @@ sudo systemctl start nfs-kernel-server
 The goal of this step is to mount the exported file share from the Nix server. This will enable the
 executors to have the current state of the Nix store.
 
-The exact setup will different depending on what kind of executor you're using. Below are some
+The exact setup will be different depending on what kind of executor you're using. Below are some
 examples of such configurations.
 
 ### VM server
