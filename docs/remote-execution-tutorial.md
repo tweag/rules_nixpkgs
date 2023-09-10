@@ -54,7 +54,7 @@ For this we'll need an entry like the following in the `/etc/fstab` file.
 host_ip:/nix/store /nix/store  nfs ro,nfsvers=3 0 0
 ```
 
-### [BuilbBarn](https://github.com/buildbarn) on Kubernetes
+### [BuildBarn](https://github.com/buildbarn) on Kubernetes
 
 Buildbarn provides Kubernetes manifests that you can use to deploy an executor. In order to make it
 compatible with the `rules_nixpkgs` we'll need to mount the NFS share. Luckily this is supported
