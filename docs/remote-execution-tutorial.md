@@ -113,7 +113,7 @@ export BAZEL_NIX_REMOTE=nix-server
 
 2. Configure remote execution.
 
-We can't give exact instructions for this steps because it on your specific setup and the executors
+We can't give exact instructions for this step because it depends on your specific setup and the executors
 or third party service you're using.
 
 Overall this should not affect the way `rules_nixpkgs` works once the Nix paths are available on the
