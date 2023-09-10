@@ -11,8 +11,8 @@ the paths can be made available to remote executors through a read-only NFS moun
 
 ### Setup the Nix server
 
-The first step would be to setup a Nix server. We assume a Debian/Ubuntu for the following steps but
-any Linux system should do.
+The first step would be to setup a Nix server. Although we base the following instructions on a
+Debian/Ubuntu system, most Linux distributions should work.
 
 1. Install nix
 2. Install the NFS server package
@@ -35,11 +35,11 @@ sudo systemctl start nfs-kernel-server
 
 ### Setup the executors
 
-The goal of this step is to mount the exported file share from the Nix server. This will enable the
-executors to have the current state of the Nix store.
+This step involves mounting the exported file share from the Nix server, allowing the executors to
+access the current state of the Nix store. The specific procedures may differ based on your executor
+type.
 
-The exact setup will be different depending on what kind of executor you're using. Below are some
-examples of such configurations.
+Below are examples for various configurations:
 
 ### VM server
 
