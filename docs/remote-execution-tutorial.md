@@ -49,7 +49,7 @@ sudo apt-get install nfs-common
 ```
 2. Mount the file share
 
-For this we'll need an entrance like the following on the `/etc/fstab` file.
+For this we'll need an entry like the following in the `/etc/fstab` file.
 ```conf
 host_ip:/nix/store /nix/store  nfs ro,nfsvers=3 0 0
 ```
