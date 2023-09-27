@@ -1,0 +1,10 @@
+module(name = "non_root_module")
+
+bazel_dep(name = "rules_nixpkgs_core")
+
+nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
+nix_repo_simple.default(name = "nixpkgs-simple")
+nix_repo_simple.default(name = "nixpkgs-root")
+use_repo(nix_repo_simple, "nixpkgs-root", "nixpkgs-simple")
+
+# TODO Test actual imports from nixpkgs-root and nixpkgs-simple

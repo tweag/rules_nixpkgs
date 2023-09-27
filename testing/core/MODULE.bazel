@@ -6,6 +6,12 @@ local_path_override(
     path = "../../core",
 )
 
+bazel_dep(name = "non_root_module")
+local_path_override(
+    module_name = "non_root_module",
+    path = "tests/non_root_module",
+)
+
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 bazel_dep(name = "nixpkgs_location_expansion_test_file")
 local_path_override(
@@ -128,7 +134,12 @@ nix_pkg.local_expr(
 
 nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
 nix_repo_simple.default(name = "nixpkgs-simple")
-use_repo(nix_repo_simple, "nixpkgs-simple")
+nix_repo_simple.github(
+    name = "nixpkgs-root",
+    sha256 = "ddc3428d9e1a381b7476750ac4dbea7a42885cbbe6e1af44b21d6447c9609a6f",
+    tag = "22.11",
+)
+use_repo(nix_repo_simple, "nixpkgs-root", "nixpkgs-simple")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "hello-simple")
