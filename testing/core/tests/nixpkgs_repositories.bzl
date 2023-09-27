@@ -169,6 +169,12 @@ filegroup(
         )
 
     nixpkgs_package(
+        name = "hello-simple",
+        attribute_path = "hello",
+        repository = "@nixpkgs-simple",
+    )
+
+    nixpkgs_package(
         name = "nixpkgs_location_expansion_test",
         build_file_content = "exports_files(glob(['out/**']))",
         nix_file = "//tests:location_expansion.nix",

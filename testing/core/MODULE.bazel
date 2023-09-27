@@ -7,7 +7,6 @@ local_path_override(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
-
 bazel_dep(name = "nixpkgs_location_expansion_test_file")
 local_path_override(
     module_name = "nixpkgs_location_expansion_test_file",
@@ -19,14 +18,14 @@ use_repo(nix_repo, "nixpkgs_repositories")
 nix_repo.default(name = "nixpkgs")
 nix_repo.github(
     name = "remote_nixpkgs",
-    tag = "22.05",
     sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    tag = "22.05",
 )
 nix_repo.http(
     name = "http_nixpkgs",
-    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
     sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
     strip_prefix = "nixpkgs-22.05",
+    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
 )
 nix_repo.file(
     name = "file_nixpkgs",
@@ -47,9 +46,20 @@ nix_repo.expr(
 nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 use_repo(nix_pkg, "nixpkgs_packages")
 nix_pkg.attr(attr = "hello")
-nix_pkg.local_attr(name = "attribute-test", attr = "hello")
-nix_pkg.local_attr(name = "nixpkgs-git-repository-test", attr = "hello", repo = "remote_nixpkgs")
-nix_pkg.local_attr(name = "nixpkgs-http-repository-test", attr = "hello", repo = "http_nixpkgs")
+nix_pkg.local_attr(
+    name = "attribute-test",
+    attr = "hello",
+)
+nix_pkg.local_attr(
+    name = "nixpkgs-git-repository-test",
+    attr = "hello",
+    repo = "remote_nixpkgs",
+)
+nix_pkg.local_attr(
+    name = "nixpkgs-http-repository-test",
+    attr = "hello",
+    repo = "http_nixpkgs",
+)
 nix_pkg.local_file(
     name = "nix-file-test",
     attr = "hello",
@@ -76,7 +86,6 @@ nix_pkg.local_file(
 )
 nix_pkg.local_file(
     name = "output-filegroup-manual-test",
-    file = "//tests:output.nix",
     build_file_content = """
 package(default_visibility = [ "//visibility:public" ])
 filegroup(
@@ -84,6 +93,7 @@ filegroup(
     srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
 )
 """,
+    file = "//tests:output.nix",
 )
 nix_pkg.local_expr(
     name = "expr-test",
@@ -109,10 +119,19 @@ nix_pkg.local_expr(
 nix_pkg.local_expr(
     name = "extra-args-test",
     expr = "{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}",
-    nixopts = ["--argstr", "packagePath", "hello"],
+    nixopts = [
+        "--argstr",
+        "packagePath",
+        "hello",
+    ],
 )
 
+nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
+nix_repo_simple.default(name = "nixpkgs-simple")
+use_repo(nix_repo_simple, "nixpkgs-simple")
+
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
+use_repo(non_module_deps, "hello-simple")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")
 use_repo(non_module_deps, "flake-hello")
 use_repo(non_module_deps, "flake-hello-with-build-file")
