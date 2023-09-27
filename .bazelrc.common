@@ -1,7 +1,7 @@
 build --host_platform=@rules_nixpkgs_core//platforms:host
 
-build:bzlmod --enable_bzlmod
-build:bzlmod --registry=https://bcr.bazel.build
+common:bzlmod --enable_bzlmod
+common:bzlmod --registry=https://bcr.bazel.build
 common:bzlmod --experimental_isolated_extension_usages
 
 test --test_output=errors
