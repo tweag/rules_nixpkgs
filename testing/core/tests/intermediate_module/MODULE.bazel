@@ -18,6 +18,18 @@ nix_repo_dev.github(
     tag = "22.05",
 )
 
+nix_repo_isolated = use_extension(
+    "@rules_nixpkgs_core//extensions:repository.bzl",
+    "nix_repo",
+    isolate = True,
+)
+nix_repo_isolated.github(
+    name = "isolated_nixpkgs",
+    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    tag = "22.05",
+)
+use_repo(nix_repo_isolated, "isolated_nixpkgs")
+
 nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 nix_pkg.default(attr = "hello")
 nix_pkg.default(attr = "nixpkgs-git-repository-test")
@@ -33,3 +45,15 @@ nix_pkg_dev.attr(
     attr = "hello",
     repo = "@remote_nixpkgs",
 )
+
+nix_pkg_isolated = use_extension(
+    "@rules_nixpkgs_core//extensions:package.bzl",
+    "nix_pkg",
+    isolate = True,
+)
+nix_pkg_isolated.attr(
+    name = "isolated-test",
+    attr = "hello",
+    repo = "@isolated_nixpkgs",
+)
+use_repo(nix_pkg_isolated, "isolated-test")

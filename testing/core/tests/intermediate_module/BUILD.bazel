@@ -9,6 +9,7 @@
     for test in [
         "hello",
         "nixpkgs-git-repository-test",
+        "isolated-test",
     ]
 ]
 
