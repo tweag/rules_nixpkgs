@@ -40,22 +40,6 @@ nix_repo.expr(
 
 nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 use_repo(nix_pkg, "nixpkgs_packages")
-nix_pkg.local_expr(
-    name = "expr-test",
-    expr = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
-    # Deliberately not nixpkgs, to test whether explict repository works.
-    repos = {"nixpkgs": "file_nixpkgs"},
-)
-nix_pkg.local_expr(
-    name = "nixpkgs-file-repository-test",
-    expr = "with import <nixpkgs> {}; hello",
-    repo = "file_nixpkgs",
-)
-nix_pkg.local_expr(
-    name = "nixpkgs-local-repository-test",
-    expr = "with import <nixpkgs> {}; hello",
-    repo = "nixpkgs_content",
-)
 
 nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
 nix_repo_simple.default(name = "nixpkgs")
@@ -70,10 +54,27 @@ nix_repo_simple.http(
     strip_prefix = "nixpkgs-22.05",
     url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
 )
+nix_repo_simple.file(
+    name = "file_nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = [
+        "//:flake.lock",
+    ],
+)
+nix_repo_simple.expr(
+    name = "nixpkgs_content",
+    expr = "import ./nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.nix",
+        "//:flake.lock",
+    ],
+)
 use_repo(
     nix_repo_simple,
+    "file_nixpkgs",
     "http_nixpkgs",
     "nixpkgs",
+    "nixpkgs_content",
     "remote_nixpkgs",
 )
 
@@ -146,16 +147,38 @@ nix_pkg_simple.expr(
         "hello",
     ],
 )
+nix_pkg_simple.expr(
+    name = "expr-test",
+    attr = "",
+    expr = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+    # Deliberately not @nixpkgs, to test whether explict repository works.
+    repos = {"@file_nixpkgs": "nixpkgs"},
+)
+nix_pkg_simple.expr(
+    name = "nixpkgs-file-repository-test",
+    attr = "",
+    expr = "with import <nixpkgs> {}; hello",
+    repo = "@file_nixpkgs",
+)
+nix_pkg_simple.expr(
+    name = "nixpkgs-local-repository-test",
+    attr = "",
+    expr = "with import <nixpkgs> {}; hello",
+    repo = "@nixpkgs_content",
+)
 use_repo(
     nix_pkg_simple,
     "attribute-test",
     "expr-attribute-test",
+    "expr-test",
     "extra-args-test",
     "hello",
     "nix-file-deps-test",
     "nix-file-test",
+    "nixpkgs-file-repository-test",
     "nixpkgs-git-repository-test",
     "nixpkgs-http-repository-test",
+    "nixpkgs-local-repository-test",
     "output-filegroup-manual-test",
     "output-filegroup-test",
     "relative-imports",

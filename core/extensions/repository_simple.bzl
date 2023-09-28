@@ -3,7 +3,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:sets.bzl", "sets")
-load("//:nixpkgs.bzl", "nixpkgs_http_repository")
+load("//:nixpkgs.bzl", "nixpkgs_http_repository", "nixpkgs_local_repository")
 
 _ISOLATED_OR_ROOT_ONLY_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may only be used on an isolated module extension or in the root module or rules_nixpkgs_core."
 _ISOLATED_NOT_ALLOWED_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may not be used on an isolated module extension."

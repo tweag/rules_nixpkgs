@@ -13,10 +13,9 @@ def nixpkgs_repositories(*, bzlmod):
     nixpkgs = "@nixpkgs"
     remote_nixpkgs = "@remote_nixpkgs"
     http_nixpkgs = "@http_nixpkgs"
-    if bzlmod:
-        file_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "file_nixpkgs")
-        nixpkgs_content = nix_repo("rules_nixpkgs_core_testing", "nixpkgs_content")
-    else:
+    file_nixpkgs = "@file_nixpkgs"
+    nixpkgs_content = "@nixpkgs_content"
+    if not bzlmod:
         nixpkgs_local_repository(
             name = "nixpkgs",
             nix_file = "//:nixpkgs.nix",
@@ -38,7 +37,6 @@ def nixpkgs_repositories(*, bzlmod):
         )
 
         # same as @nixpkgs, only needed for bzlmod tests to distinguish `default` and `file`.
-        file_nixpkgs = "@file_nixpkgs"
         nixpkgs_local_repository(
             name = "file_nixpkgs",
             nix_file = "//:nixpkgs.nix",
@@ -46,7 +44,6 @@ def nixpkgs_repositories(*, bzlmod):
         )
 
         # same as @nixpkgs but using the `nix_file_content` parameter
-        nixpkgs_content = "@nixpkgs_content"
         nixpkgs_local_repository(
             name = "nixpkgs_content",
             nix_file_content = "import ./nixpkgs.nix",
