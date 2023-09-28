@@ -171,7 +171,7 @@ filegroup(
     nixpkgs_package(
         name = "hello-simple",
         attribute_path = "hello",
-        repository = "@nixpkgs-simple",
+        repository = "@nixpkgs",
     )
 
     nixpkgs_package(

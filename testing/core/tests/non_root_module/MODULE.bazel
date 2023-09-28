@@ -3,9 +3,9 @@ module(name = "non_root_module")
 bazel_dep(name = "rules_nixpkgs_core")
 
 nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
-nix_repo_simple.default(name = "nixpkgs-simple")
+nix_repo_simple.default(name = "nixpkgs")
 nix_repo_simple.default(name = "nixpkgs-root")
-use_repo(nix_repo_simple, "nixpkgs-root", "nixpkgs-simple")
+use_repo(nix_repo_simple, "nixpkgs", "nixpkgs-root")
 
 nix_pkg_simple = use_extension("@rules_nixpkgs_core//extensions:package_simple.bzl", "nix_pkg")
 nix_pkg_simple.default(attr = "hello")

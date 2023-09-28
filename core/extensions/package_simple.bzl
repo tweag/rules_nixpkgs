@@ -5,8 +5,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//:nixpkgs.bzl", "nixpkgs_package")
 
-# TODO[AH] Switch to @nixpkgs
-_DEFAULT_NIXKGS = "@nixpkgs-simple"
+_DEFAULT_NIXKGS = "@nixpkgs"
 
 _ISOLATED_OR_ROOT_ONLY_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may only be used on an isolated module extension or in the root module or rules_nixpkgs_core."
 _DUPLICATE_PACKAGE_NAME_ERROR = "Duplicate nix_pkg import due to {tag_name} tag. The package name '{package_name}' is already used."
