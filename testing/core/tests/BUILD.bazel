@@ -1,5 +1,4 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
-load("@nixpkgs_packages//:defs.bzl", "nix_pkg")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
 load(":module_registry_tests.bzl", "module_registry_test_suite")
 
@@ -13,16 +12,6 @@ expand_location_unit_test_suite()
     # produce a valid bazel repository.
     sh_test(
         name = "run-{0}".format(test),
-        timeout = "short",
-        srcs = ["test_bin.sh"],
-        args = ["$(location {0})".format(nix_pkg("rules_nixpkgs_core_testing", test, "//:bin"))],
-        data = [nix_pkg("rules_nixpkgs_core_testing", test, "//:bin")],
-    )
-    for test in [
-    ]
-] + [
-    sh_test(
-        name = "run-{0}-simple".format(test),
         timeout = "short",
         srcs = ["test_bin.sh"],
         args = ["$(location @{0}//:bin)".format(test)],
