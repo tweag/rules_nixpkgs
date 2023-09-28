@@ -1,5 +1,3 @@
-load("@nixpkgs_repositories//:defs.bzl", "nix_repo")
-load("@nixpkgs_packages//:defs.bzl", "nix_pkg")
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
     "nixpkgs_flake_package",

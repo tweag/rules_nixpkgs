@@ -19,28 +19,6 @@ local_path_override(
     path = "tests/location_expansion/test_repo",
 )
 
-nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
-use_repo(nix_repo, "nixpkgs_repositories")
-nix_repo.default(name = "nixpkgs")
-nix_repo.file(
-    name = "file_nixpkgs",
-    file = "//:nixpkgs.nix",
-    file_deps = [
-        "//:flake.lock",
-    ],
-)
-nix_repo.expr(
-    name = "nixpkgs_content",
-    expr = "import ./nixpkgs.nix",
-    file_deps = [
-        "//:nixpkgs.nix",
-        "//:flake.lock",
-    ],
-)
-
-nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
-use_repo(nix_pkg, "nixpkgs_packages")
-
 nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
 nix_repo_simple.default(name = "nixpkgs")
 nix_repo_simple.github(
