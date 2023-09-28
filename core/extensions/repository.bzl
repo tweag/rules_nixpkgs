@@ -84,6 +84,9 @@ def _nix_repo_impl(module_ctx):
 
     is_isolated = getattr(module_ctx, "is_isolated", False)
 
+    # This loop handles all tags that can create global repository overrides,
+    # or generate isolated repository instances. References to global
+    # repositories are handled later.
     for mod in module_ctx.modules:
         module_repos = sets.make()
 
@@ -119,6 +122,9 @@ def _nix_repo_impl(module_ctx):
             else:
                 sets.insert(module_repos, default.name)
 
+    # This loop handles references to global repositories. Any instance of a
+    # global override was already instantiated at this point, so we can resolve
+    # references from all modules.
     for mod in module_ctx.modules:
         is_root = mod.is_root
 

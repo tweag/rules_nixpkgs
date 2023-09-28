@@ -135,6 +135,9 @@ def _nix_pkg_impl(module_ctx):
 
     is_isolated = getattr(module_ctx, "is_isolated", False)
 
+    # This loop handles all tags that can create global package overrides, or
+    # generate isolated package instances. References to global packages are
+    # handled later.
     for mod in module_ctx.modules:
         module_pkgs = sets.make()
 
@@ -172,6 +175,9 @@ def _nix_pkg_impl(module_ctx):
             else:
                 sets.insert(module_pkgs, default.attr)
 
+    # This loop handles references to global packages. Any instance of a global
+    # override was already instantiated at this point, so we can resolve
+    # references from all modules.
     for mod in module_ctx.modules:
         is_root = mod.is_root
 
