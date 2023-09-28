@@ -21,3 +21,4 @@ nix_repo_simple.github(
     tag = "22.11",
     sha256 = "ddc3428d9e1a381b7476750ac4dbea7a42885cbbe6e1af44b21d6447c9609a6f",
 )
+use_repo(nix_repo_simple, "nixpkgs-simple")
