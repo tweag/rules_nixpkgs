@@ -143,7 +143,11 @@ use_repo(nix_repo_simple, "nixpkgs-root", "nixpkgs-simple")
 
 nix_pkg_simple = use_extension("@rules_nixpkgs_core//extensions:package_simple.bzl", "nix_pkg")
 nix_pkg_simple.default(attr = "hello")
-use_repo(nix_pkg_simple, "hello")
+nix_pkg_simple.attr(
+    name = "attribute-test",
+    attr = "hello",
+)
+use_repo(nix_pkg_simple, "attribute-test", "hello")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "hello-simple")
