@@ -2,13 +2,13 @@ module(name = "non_root_module")
 
 bazel_dep(name = "rules_nixpkgs_core")
 
-nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
-nix_repo_simple.default(name = "nixpkgs")
-use_repo(nix_repo_simple, "nixpkgs")
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.default(name = "nixpkgs")
+use_repo(nix_repo, "nixpkgs")
 
-nix_pkg_simple = use_extension("@rules_nixpkgs_core//extensions:package_simple.bzl", "nix_pkg")
-nix_pkg_simple.default(attr = "hello")
-nix_pkg_simple.default(attr = "attribute-test")
-use_repo(nix_pkg_simple, "attribute-test", "hello")
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+nix_pkg.default(attr = "hello")
+nix_pkg.default(attr = "attribute-test")
+use_repo(nix_pkg, "attribute-test", "hello")
 
 # TODO Test actual imports from nixpkgs-root and nixpkgs-simple
