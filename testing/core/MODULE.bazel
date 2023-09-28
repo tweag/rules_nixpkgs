@@ -22,17 +22,6 @@ local_path_override(
 nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
 use_repo(nix_repo, "nixpkgs_repositories")
 nix_repo.default(name = "nixpkgs")
-nix_repo.github(
-    name = "remote_nixpkgs",
-    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
-    tag = "22.05",
-)
-nix_repo.http(
-    name = "http_nixpkgs",
-    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
-    strip_prefix = "nixpkgs-22.05",
-    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
-)
 nix_repo.file(
     name = "file_nixpkgs",
     file = "//:nixpkgs.nix",
@@ -51,66 +40,11 @@ nix_repo.expr(
 
 nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 use_repo(nix_pkg, "nixpkgs_packages")
-nix_pkg.attr(attr = "hello")
-nix_pkg.local_attr(
-    name = "attribute-test",
-    attr = "hello",
-)
-nix_pkg.local_attr(
-    name = "nixpkgs-git-repository-test",
-    attr = "hello",
-    repo = "remote_nixpkgs",
-)
-nix_pkg.local_attr(
-    name = "nixpkgs-http-repository-test",
-    attr = "hello",
-    repo = "http_nixpkgs",
-)
-nix_pkg.local_file(
-    name = "nix-file-test",
-    attr = "hello",
-    file = "//tests:nixpkgs.nix",
-)
-nix_pkg.local_file(
-    name = "nix-file-deps-test",
-    file = "//tests:hello.nix",
-    file_deps = ["//tests:pkgname.nix"],
-)
-nix_pkg.local_file(
-    name = "relative-imports",
-    attr = "hello",
-    file = "//tests:relative_imports.nix",
-    file_deps = [
-        "//:flake.lock",
-        "//:nixpkgs.nix",
-        "//tests:relative_imports/nixpkgs.nix",
-    ],
-)
-nix_pkg.local_file(
-    name = "output-filegroup-test",
-    file = "//tests:output.nix",
-)
-nix_pkg.local_file(
-    name = "output-filegroup-manual-test",
-    build_file_content = """
-package(default_visibility = [ "//visibility:public" ])
-filegroup(
-    name = "manual-filegroup",
-    srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
-)
-""",
-    file = "//tests:output.nix",
-)
 nix_pkg.local_expr(
     name = "expr-test",
     expr = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
     # Deliberately not nixpkgs, to test whether explict repository works.
     repos = {"nixpkgs": "file_nixpkgs"},
-)
-nix_pkg.local_expr(
-    name = "expr-attribute-test",
-    attr = "hello",
-    expr = "import <nixpkgs> { config = {}; overlays = []; }",
 )
 nix_pkg.local_expr(
     name = "nixpkgs-file-repository-test",
@@ -122,24 +56,26 @@ nix_pkg.local_expr(
     expr = "with import <nixpkgs> {}; hello",
     repo = "nixpkgs_content",
 )
-nix_pkg.local_expr(
-    name = "extra-args-test",
-    expr = "{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}",
-    nixopts = [
-        "--argstr",
-        "packagePath",
-        "hello",
-    ],
-)
 
 nix_repo_simple = use_extension("@rules_nixpkgs_core//extensions:repository_simple.bzl", "nix_repo")
 nix_repo_simple.default(name = "nixpkgs")
 nix_repo_simple.github(
-    name = "nixpkgs-root",
-    sha256 = "ddc3428d9e1a381b7476750ac4dbea7a42885cbbe6e1af44b21d6447c9609a6f",
-    tag = "22.11",
+    name = "remote_nixpkgs",
+    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    tag = "22.05",
 )
-use_repo(nix_repo_simple, "nixpkgs", "nixpkgs-root")
+nix_repo_simple.http(
+    name = "http_nixpkgs",
+    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    strip_prefix = "nixpkgs-22.05",
+    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
+)
+use_repo(
+    nix_repo_simple,
+    "http_nixpkgs",
+    "nixpkgs",
+    "remote_nixpkgs",
+)
 
 nix_pkg_simple = use_extension("@rules_nixpkgs_core//extensions:package_simple.bzl", "nix_pkg")
 nix_pkg_simple.default(attr = "hello")
@@ -147,22 +83,85 @@ nix_pkg_simple.attr(
     name = "attribute-test",
     attr = "hello",
 )
+nix_pkg_simple.attr(
+    name = "nixpkgs-git-repository-test",
+    attr = "hello",
+    repo = "@remote_nixpkgs",
+)
+nix_pkg_simple.attr(
+    name = "nixpkgs-http-repository-test",
+    attr = "hello",
+    repo = "@http_nixpkgs",
+)
 nix_pkg_simple.file(
     name = "nix-file-test",
     attr = "hello",
     file = "//tests:nixpkgs.nix",
 )
-nix_pkg_simple.expr(
-    name = "expr-test",
+nix_pkg_simple.file(
+    name = "nix-file-deps-test",
     attr = "",
-    expr = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
-    # Deliberately not @nixpkgs, to test whether explict repository works.
-    repos = {"@nixpkgs-root": "nixpkgs"},
+    file = "//tests:hello.nix",
+    file_deps = ["//tests:pkgname.nix"],
 )
-use_repo(nix_pkg_simple, "attribute-test", "expr-test", "hello", "nix-file-test")
+nix_pkg_simple.file(
+    name = "relative-imports",
+    attr = "hello",
+    file = "//tests:relative_imports.nix",
+    file_deps = [
+        "//:flake.lock",
+        "//:nixpkgs.nix",
+        "//tests:relative_imports/nixpkgs.nix",
+    ],
+)
+nix_pkg_simple.file(
+    name = "output-filegroup-test",
+    attr = "",
+    file = "//tests:output.nix",
+)
+nix_pkg_simple.file(
+    name = "output-filegroup-manual-test",
+    attr = "",
+    build_file_content = """
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+    name = "manual-filegroup",
+    srcs = glob(["hi-i-exist", "hi-i-exist-too", "bin/*"]),
+)
+""",
+    file = "//tests:output.nix",
+)
+nix_pkg_simple.expr(
+    name = "expr-attribute-test",
+    attr = "hello",
+    expr = "import <nixpkgs> { config = {}; overlays = []; }",
+)
+nix_pkg_simple.expr(
+    name = "extra-args-test",
+    attr = "",
+    expr = "{ packagePath }: (import <nixpkgs> { config = {}; overlays = []; }).${packagePath}",
+    nixopts = [
+        "--argstr",
+        "packagePath",
+        "hello",
+    ],
+)
+use_repo(
+    nix_pkg_simple,
+    "attribute-test",
+    "expr-attribute-test",
+    "extra-args-test",
+    "hello",
+    "nix-file-deps-test",
+    "nix-file-test",
+    "nixpkgs-git-repository-test",
+    "nixpkgs-http-repository-test",
+    "output-filegroup-manual-test",
+    "output-filegroup-test",
+    "relative-imports",
+)
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "hello-simple")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")
 use_repo(non_module_deps, "flake-hello")
 use_repo(non_module_deps, "flake-hello-with-build-file")
