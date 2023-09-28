@@ -56,9 +56,25 @@ def _http_repo(http):
         strip_prefix = http.strip_prefix,
     )
 
+def _file_repo(file):
+    nixpkgs_local_repository(
+        name = file.name,
+        nix_file = file.file,
+        nix_file_deps = file.file_deps,
+    )
+
+def _expr_repo(expr):
+    nixpkgs_local_repository(
+        name = expr.name,
+        nix_file_content = expr.expr,
+        nix_file_deps = expr.file_deps,
+    )
+
 _OVERRIDE_TAGS = {
     "github": _github_repo,
     "http": _http_repo,
+    "file": _file_repo,
+    "expr": _expr_repo,
 }
 
 def _nix_repo_impl(module_ctx):
@@ -187,6 +203,28 @@ _INTEGRITY_ATTRS = {
     ),
 }
 
+_FILE_ATTRS = {
+    "file": attr.label(
+        doc = "The file containing the Nix expression.",
+        mandatory = True,
+        allow_single_file = True,
+    ),
+}
+
+_EXPR_ATTRS = {
+    "expr": attr.string(
+        doc = "The Nix expression.",
+        mandatory = True,
+    ),
+}
+
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "List of files required by the Nix expression.",
+        mandatory = False,
+    ),
+}
+
 _default_tag = tag_class(
     attrs = _DEFAULT_ATTRS,
     doc = "Depend on this global default repository. May not be used on an isolated module extension.",
@@ -202,11 +240,23 @@ _http_tag = tag_class(
     doc = "Import a Nix repository from an HTTP URL. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
+_file_tag = tag_class(
+    attrs = dicts.add(_NAME_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS),
+    doc = "Import a Nix repository from a local file. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
+)
+
+_expr_tag = tag_class(
+    attrs = dicts.add(_NAME_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS),
+    doc = "Import a Nix repository from a Nix expression. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
+)
+
 nix_repo = module_extension(
     _nix_repo_impl,
     tag_classes = {
         "default": _default_tag,
         "github": _github_tag,
         "http": _http_tag,
+        "file": _file_tag,
+        "expr": _expr_tag,
     },
 )
