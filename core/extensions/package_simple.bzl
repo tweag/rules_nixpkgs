@@ -12,6 +12,8 @@ _ISOLATED_OR_ROOT_ONLY_ERROR = "Illegal use of the {tag_name} tag. The {tag_name
 _DUPLICATE_PACKAGE_NAME_ERROR = "Duplicate nix_pkg import due to {tag_name} tag. The package name '{package_name}' is already used."
 _ISOLATED_NOT_ALLOWED_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may not be used on an isolated module extension."
 
+# TODO[AH]: Add support to configure global default Nix options.
+
 def _get_pkg_name(attrs):
     if bool(attrs.name):
         return attrs.name
@@ -20,7 +22,7 @@ def _get_pkg_name(attrs):
     else:
         fail('The `name` attribute must be set if `attr` is the empty string `""`.')
 
-def _handle_name_attrs(attrs):
+def _handle_common_attrs(attrs):
     kwargs = {}
 
     kwargs["name"] = _get_pkg_name(attrs)
@@ -64,6 +66,22 @@ def _handle_build_attrs(attrs):
 
     return kwargs
 
+def _handle_file_attrs(attrs):
+    kwargs = {"nix_file": attrs.file}
+
+    if bool(attrs.file_deps):
+        kwargs["nix_file_deps"] = attrs.file_deps
+
+    return kwargs
+
+def _handle_expr_attrs(attrs):
+    kwargs = {"nix_file_content": attrs.expr}
+
+    if bool(attrs.file_deps):
+        kwargs["nix_file_deps"] = attrs.file_deps
+
+    return kwargs
+
 def _handle_opts_attrs(attrs):
     return {"nixopts": attrs.nixopts or []}
 
@@ -75,17 +93,40 @@ def _default_pkg(default):
     )
 
 def _attr_pkg(attr):
-    kwargs = {}
-
-    kwargs.update(_handle_name_attrs(attr))
+    kwargs = _handle_common_attrs(attr)
     kwargs.update(_handle_repo_attrs(attr))
     kwargs.update(_handle_build_attrs(attr))
     kwargs.update(_handle_opts_attrs(attr))
 
     nixpkgs_package(**kwargs)
 
+def _file_pkg(file):
+    kwargs = _handle_common_attrs(file)
+    kwargs.update(_handle_repo_attrs(file))
+    kwargs.update(_handle_build_attrs(file))
+    kwargs.update(_handle_file_attrs(file))
+    kwargs.update(_handle_opts_attrs(file))
+
+    # Indicate that nixpkgs_package is called from a module extension to
+    # enable required workarounds.
+    # TODO[AH] Remove this once the workarounds are no longer required.
+    kwargs["_bzlmod"] = True
+
+    nixpkgs_package(**kwargs)
+
+def _expr_pkg(expr):
+    kwargs = _handle_common_attrs(expr)
+    kwargs.update(_handle_repo_attrs(expr))
+    kwargs.update(_handle_build_attrs(expr))
+    kwargs.update(_handle_expr_attrs(expr))
+    kwargs.update(_handle_opts_attrs(expr))
+
+    nixpkgs_package(**kwargs)
+
 _OVERRIDE_TAGS = {
     "attr": _attr_pkg,
+    "file": _file_pkg,
+    "expr": _expr_pkg,
 }
 
 def _nix_pkg_impl(module_ctx):
@@ -236,6 +277,27 @@ Specify at most one of `build_file` or `build_file_content`.
     ),
 }
 
+_FILE_ATTRS = {
+    "file": attr.label(
+        doc = "The file containing the Nix expression.",
+        mandatory = True,
+    ),
+}
+
+_EXPR_ATTRS = {
+    "expr": attr.string(
+        doc = "The Nix expression.",
+        mandatory = True,
+    ),
+}
+
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "Files required by the Nix expression.",
+        mandatory = False,
+    ),
+}
+
 _OPTS_ATTRS = {
     "nixopts": attr.string_list(
         doc = "Extra flags to pass when calling Nix. Note, this does not currently support location expansion.",
@@ -254,10 +316,22 @@ _attr_tag = tag_class(
     doc = "Configure and import a Nix package by attribute path. Overrides default imports of this package. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
+_file_tag = tag_class(
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
+    doc = "Configure and import a Nix package from a file. Overrides default imports of this package. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
+)
+
+_expr_tag = tag_class(
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
+    doc = "Configure and import a Nix package from a Nix expression. Overrides default imports of this package. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
+)
+
 nix_pkg = module_extension(
     _nix_pkg_impl,
     tag_classes = {
         "default": _default_tag,
         "attr": _attr_tag,
+        "file": _file_tag,
+        "expr": _expr_tag,
     },
 )

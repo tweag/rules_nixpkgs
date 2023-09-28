@@ -147,7 +147,19 @@ nix_pkg_simple.attr(
     name = "attribute-test",
     attr = "hello",
 )
-use_repo(nix_pkg_simple, "attribute-test", "hello")
+nix_pkg_simple.file(
+    name = "nix-file-test",
+    attr = "hello",
+    file = "//tests:nixpkgs.nix",
+)
+nix_pkg_simple.expr(
+    name = "expr-test",
+    attr = "",
+    expr = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in pkgs.hello",
+    # Deliberately not @nixpkgs, to test whether explict repository works.
+    repos = {"@nixpkgs-root": "nixpkgs"},
+)
+use_repo(nix_pkg_simple, "attribute-test", "expr-test", "hello", "nix-file-test")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "hello-simple")
