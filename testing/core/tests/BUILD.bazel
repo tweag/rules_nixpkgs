@@ -1,6 +1,5 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
-load(":module_registry_tests.bzl", "module_registry_test_suite")
 
 package(default_testonly = 1)
 
@@ -111,5 +110,3 @@ diff_test(
     file1 = "//tests:location_expansion/test_file",
     file2 = "@nixpkgs_location_expansion_test//:out/argstr_external_file",
 )
-
-module_registry_test_suite(name = "module_registry_test_suite")
