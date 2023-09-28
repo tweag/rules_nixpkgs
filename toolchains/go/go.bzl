@@ -211,13 +211,18 @@ nixpkgs_go_toolchain = repository_rule(
 go_sdk_build = """
 load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
 load("@{rules_go}//go/private/rules:sdk.bzl", "package_list")
-load("@{rules_go}//go:def.bzl", "go_sdk")
+load("@{rules_go}//go:def.bzl", "go_sdk", "RULES_GO_VERSION")
 load("@{helpers}//:go_sdk.bzl", "go_sdk_for_arch")
 load(":go_version.bzl", "go_version")
 
 package(default_visibility = ["//visibility:public"])
 
 go_sdk_for_arch(go_version)
+
+# rules_go >= 0.42.0 requires a stdlib prefix
+TOOL_BINARY_NEEDS_STDLIB_PREFIX = (int(RULES_GO_VERSION.split(".")[0]) > 0) or (int(RULES_GO_VERSION.split(".")[1]) >= 42)
+None if TOOL_BINARY_NEEDS_STDLIB_PREFIX else \
+    print("WARNING: rules_go %s is deprecated and support will soon be removed. Upgrade to rules_go >= 0.42.0. See https://github.com/tweag/rules_nixpkgs/issues/421 for more information." % (RULES_GO_VERSION))
 
 filegroup(
     name = "headers",
@@ -237,6 +242,7 @@ filegroup(
 go_tool_binary(
     name = "builder",
     srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
+    ldflags = "-X main.rulesGoStdlibPrefix=@{rules_go}//stdlib:" if TOOL_BINARY_NEEDS_STDLIB_PREFIX else None,
     sdk = ":go_sdk",
 )
 
