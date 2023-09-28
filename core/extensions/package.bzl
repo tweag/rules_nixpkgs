@@ -169,9 +169,20 @@ def _nix_pkg_impl(module_ctx):
                     sets.insert(all_pkgs, pkg_name)
                     tag_fun(tag)
 
+        # Here we loop through the default tags only to check for duplicates.
+        # The imports or instantiations are performed later.
         for default in mod.tags.default:
+            is_dev_dep = module_ctx.is_dev_dependency(default)
+
             if sets.contains(module_pkgs, default.attr):
-                fail(_DUPLICATE_PACKAGE_NAME_ERROR.format(package_name = default.attr, tag_name = "default"))
+                if is_root and not is_dev_dep and sets.contains(root_dev_deps, default.attr):
+                    # Collisions between default and overrides are allowed in
+                    # the root module if the override is a dev-dependency and
+                    # the default is not.
+                    sets.remove(root_dev_deps, default.attr)
+                    sets.insert(root_deps, default.attr)
+                else:
+                    fail(_DUPLICATE_PACKAGE_NAME_ERROR.format(package_name = default.attr, tag_name = "default"))
             else:
                 sets.insert(module_pkgs, default.attr)
 

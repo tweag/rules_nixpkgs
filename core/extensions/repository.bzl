@@ -116,9 +116,20 @@ def _nix_repo_impl(module_ctx):
                     sets.insert(all_repos, tag.name)
                     tag_fun(tag)
 
+        # Here we loop through the default tags only to check for duplicates.
+        # The imports are performed later.
         for default in mod.tags.default:
+            is_dev_dep = module_ctx.is_dev_dependency(default)
+
             if sets.contains(module_repos, default.name):
-                fail(_DUPLICATE_REPOSITORY_NAME_ERROR.format(repo_name = default.name, tag_name = "default"))
+                if is_root and not is_dev_dep and sets.contains(root_dev_deps, default.name):
+                    # Collisions between default and overrides are allowed in
+                    # the root module if the override is a dev-dependency and
+                    # the default is not.
+                    sets.remove(root_dev_deps, default.name)
+                    sets.insert(root_deps, default.name)
+                else:
+                    fail(_DUPLICATE_REPOSITORY_NAME_ERROR.format(repo_name = default.name, tag_name = "default"))
             else:
                 sets.insert(module_repos, default.name)
 
