@@ -1,0 +1,3 @@
+import %workspace%/../../../../.bazelrc.common
+import %workspace%/../../../../.bazelrc.java
+common --override_module=rules_nixpkgs_core=../../../../core

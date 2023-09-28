@@ -1,0 +1,18 @@
+[
+    sh_test(
+        name = "run-{0}".format(test),
+        timeout = "short",
+        srcs = ["test_bin.sh"],
+        args = ["$(location @{0}//:bin)".format(test)],
+        data = ["@{}//:bin".format(test)],
+    )
+    for test in [
+        "hello",
+        "nixpkgs-git-repository-test",
+    ]
+]
+
+test_suite(
+    name = "tests",
+    visibility = ["//visibility:public"],
+)

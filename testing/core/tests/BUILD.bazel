@@ -1,5 +1,6 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load(":location_expansion_unit_test.bzl", "expand_location_unit_test_suite")
+load(":util.bzl", "is_bzlmod_enabled")
 
 package(default_testonly = 1)
 
@@ -75,6 +76,13 @@ expand_location_unit_test_suite()
         "flake-hello-with-build-file",
     ]
 ]
+
+test_suite(
+    name = "intermediate_module_tests",
+    tests = [
+        "@intermediate_module//:tests",
+    ],
+) if is_bzlmod_enabled() else None
 
 # Test nixopts location expansion
 test_suite(

@@ -6,10 +6,10 @@ local_path_override(
     path = "../../core",
 )
 
-bazel_dep(name = "non_root_module")
+bazel_dep(name = "intermediate_module")
 local_path_override(
-    module_name = "non_root_module",
-    path = "tests/non_root_module",
+    module_name = "intermediate_module",
+    path = "tests/intermediate_module",
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.0.3")

@@ -36,6 +36,7 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
     )
     declare -ra test_dirs=(
         testing/core
+        testing/core/tests/intermediate_module
         testing/go-bzlmod
         testing/java
         testing/nodejs
