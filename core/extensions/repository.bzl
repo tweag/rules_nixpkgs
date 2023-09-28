@@ -153,7 +153,7 @@ def _nix_repo_impl(module_ctx):
             )
             registry.set_default_global_repo(r, name = override.name, repo = repo)
             fail_on_err(
-                registry.use_global_repo(r, key = key, name = default.name),
+                registry.use_global_repo(r, key = key, name = override.name),
                 prefix = prefix,
             )
 
