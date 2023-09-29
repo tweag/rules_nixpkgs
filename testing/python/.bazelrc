@@ -1,3 +1,7 @@
 import %workspace%/../../.bazelrc.common
 import %workspace%/../../.bazelrc.cc
 import %workspace%/../../.bazelrc.java
+
+# The python-2.7.18.1 package is classified as insecure.
+# It is used to test rules_nixpkgs_python support for PY2.
+build --repo_env=NIXPKGS_ALLOW_INSECURE=1
