@@ -25,6 +25,9 @@ let
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
+    #
+    # Work around https://github.com/NixOS/nixpkgs/issues/258607
+    # by patching cc-wrapper, see https://github.com/NixOS/nixpkgs/pull/258608
     pkgs.wrapCCWith rec {
       cc = stdenv.cc.cc;
       bintools = stdenv.cc.bintools.override { inherit postLinkSignHook; };
