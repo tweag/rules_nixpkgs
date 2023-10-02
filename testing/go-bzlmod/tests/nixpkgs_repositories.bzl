@@ -4,10 +4,8 @@ load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
 load("@rules_nixpkgs_go//:go.bzl", "nixpkgs_go_configure")
 
 _PATCHED_CC = """\
-{ ccPkgs ? import <nixpkgs> { config = { }; overlays = [ ]; }
-}:
-
 let
+  ccPkgs = import <nixpkgs> { config = { }; overlays = [ ]; };
   pkgs = ccPkgs.buildPackages;
   stdenv = ccPkgs.stdenv;
   # The original `postLinkSignHook` from nixpkgs assumes `codesign_allocate` is
@@ -78,6 +76,7 @@ def nixpkgs_repositories(*, bzlmod):
         repository = "@nixpkgs",
         register = not bzlmod,
         nix_file_content = _PATCHED_CC,
+        nixopts = ["--show-trace"],
     )
 
     nixpkgs_java_configure(
