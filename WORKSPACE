@@ -24,14 +24,7 @@ docs_dependencies_2()
 load(
     "//nixpkgs:nixpkgs.bzl",
     "nixpkgs_git_repository",
-    "nixpkgs_local_repository",
     "nixpkgs_package",
-)
-
-nixpkgs_local_repository(
-    name = "nixpkgs",
-    nix_file = "@rules_nixpkgs_core//:nixpkgs.nix",
-    nix_file_deps = ["@rules_nixpkgs_core//:nixpkgs.json"],
 )
 
 nixpkgs_package(
