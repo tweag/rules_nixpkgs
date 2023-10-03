@@ -37,6 +37,9 @@ nixpkgs_package(
 # `run-test-invalid-nixpkgs-package`.
 nixpkgs_package(
     name = "coreutils_static",
+    # Work around https://github.com/tweag/rules_nixpkgs/issues/424.
+    # `pkgsStatic.coreutils` stopped working on MacOS 11 with x86_64 as used on GitHub actions CI.
+    # Fall back to `pkgs.coreutiles` on MacOS.
     nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in if pkgs.stdenv.isDarwin then pkgs.coreutils else pkgs.pkgsStatic.coreutils",
     repository = "@nixpkgs",
 )
