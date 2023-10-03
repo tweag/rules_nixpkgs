@@ -37,7 +37,7 @@ nixpkgs_package(
 # `run-test-invalid-nixpkgs-package`.
 nixpkgs_package(
     name = "coreutils_static",
-    attribute_path = "pkgsStatic.coreutils",
+    nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in if pkgs.stdenv.isDarwin then pkgs.coreutils else pkgs.pkgsStatic.coreutils",
     repository = "@nixpkgs",
 )
 
