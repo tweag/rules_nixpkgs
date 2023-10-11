@@ -690,6 +690,11 @@ def nixpkgs_package(
         nix_file_deps = {dep: str(dep) for dep in nix_file_deps} if nix_file_deps else {}
     else:
         nix_file_deps = {dep: dep for dep in nix_file_deps} if nix_file_deps else {}
+
+    # remove exec_constraints from the kwargs since it's currently not supported by _nixpkgs_package
+    # see https://github.com/tweag/rules_nixpkgs/issues/416
+    kwargs.pop("exec_constraints", None)
+
     kwargs.update(
         name = name,
         unmangled_name = name,
