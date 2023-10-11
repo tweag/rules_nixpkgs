@@ -1,6 +1,6 @@
 # Bazel remote execution using `rules_nixpkgs`
 
-During a Bazel build with `rules_nixpkgs`, a series of Nix paths will be created on the local
+During a Bazel build with `rules_nixpkgs`, a series of Nix store paths will be created on the local
 machine, which are then referenced by Bazel either directly or indirectly. The challenge with remote
 execution is to ensure that the executors have those Nix store paths available.
 
