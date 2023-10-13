@@ -92,13 +92,13 @@ def _nix_repo_impl(module_ctx):
 
         is_root = mod.is_root
         is_core = mod.name == "rules_nixpkgs_core"
-        may_override = is_root or is_core
+        may_override = is_isolated or is_root or is_core
 
         for tag_name, tag_fun in _OVERRIDE_TAGS.items():
             for tag in getattr(mod.tags, tag_name):
                 is_dev_dep = module_ctx.is_dev_dependency(tag)
 
-                if not is_isolated and not may_override:
+                if not may_override:
                     fail(_ISOLATED_OR_ROOT_ONLY_ERROR.format(tag_name = tag_name))
 
                 if sets.contains(module_repos, tag.name):
