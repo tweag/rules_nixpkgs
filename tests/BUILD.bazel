@@ -8,7 +8,7 @@ sh_test(
         "//nixpkgs:srcs",
         "//tests/invalid_nixpkgs_package:srcs",
         "@coreutils_static//:bin",
-        "@nix_2_7//:bin",
+        "@nix_2_10//:bin",
         "@rules_nixpkgs_cc//:srcs",
         "@rules_nixpkgs_core//:srcs",
         "@rules_nixpkgs_java//:srcs",

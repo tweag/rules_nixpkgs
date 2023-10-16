@@ -24,19 +24,12 @@ docs_dependencies_2()
 load(
     "//nixpkgs:nixpkgs.bzl",
     "nixpkgs_git_repository",
-    "nixpkgs_local_repository",
     "nixpkgs_package",
 )
 
-nixpkgs_local_repository(
-    name = "nixpkgs",
-    nix_file = "@rules_nixpkgs_core//:nixpkgs.nix",
-    nix_file_deps = ["@rules_nixpkgs_core//:nixpkgs.json"],
-)
-
 nixpkgs_package(
-    name = "nix_2_7",
-    attribute_path = "nixVersions.nix_2_7",
+    name = "nix_2_10",
+    attribute_path = "nixVersions.nix_2_10",
     repositories = {"nixpkgs": "@nixpkgs"},
 )
 
@@ -44,7 +37,10 @@ nixpkgs_package(
 # `run-test-invalid-nixpkgs-package`.
 nixpkgs_package(
     name = "coreutils_static",
-    attribute_path = "pkgsStatic.coreutils",
+    # Work around https://github.com/tweag/rules_nixpkgs/issues/424.
+    # `pkgsStatic.coreutils` stopped working on MacOS 11 with x86_64 as used on GitHub actions CI.
+    # Fall back to `pkgs.coreutils` on MacOS.
+    nix_file_content = "let pkgs = import <nixpkgs> { config = {}; overlays = []; }; in if pkgs.stdenv.isDarwin then pkgs.coreutils else pkgs.pkgsStatic.coreutils",
     repository = "@nixpkgs",
 )
 

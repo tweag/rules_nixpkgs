@@ -1,33 +1,14 @@
 """Defines the nix_repo module extension.
 """
 
-load("//:nixpkgs.bzl", "nixpkgs_http_repository", "nixpkgs_local_repository")
-load("//:util.bzl", "fail_on_err")
-load("//private:module_registry.bzl", "registry")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@bazel_skylib//lib:partial.bzl", "partial")
+load("@bazel_skylib//lib:sets.bzl", "sets")
+load("//:nixpkgs.bzl", "nixpkgs_http_repository", "nixpkgs_local_repository")
 
-_ACCESSOR = '''\
-def nix_repo(module_name, name):
-    """Access a Nix repository imported with `nix_repo`.
-
-    Args:
-      module_name: `String`; Name of the calling Bazel module.
-        This is needed until Bazel offers unique module identifiers,
-        see [#17652][bazel-17652].
-      name: `String`; Name of the repository.
-
-    Returns:
-      The resolved label to the repository's entry point.
-
-    [bazel-17652]: https://github.com/bazelbuild/bazel/issues/17652
-    """
-    resolved = _fail_on_err(
-        _get_repository(module_name, name),
-        prefix = "Invalid Nix repository, you must use the nix_repo extension and request a global repository or register a local repository: ",
-    )
-    return resolved
-'''
+_ISOLATED_OR_ROOT_ONLY_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may only be used on an isolated module extension or in the root module or rules_nixpkgs_core."
+_ISOLATED_NOT_ALLOWED_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may not be used on an isolated module extension."
+_DUPLICATE_REPOSITORY_NAME_ERROR = "Duplicate nix_repo import due to {tag_name} tag. The repository name '{repo_name}' is already used."
+_UNKNOWN_REPOSITORY_REFERENCE_ERROR = "Reference to unknown repository '{repo_name}' encountered on {tag_name} tag."
 
 def _github_repo(github):
     tag_set = bool(github.tag)
@@ -48,8 +29,8 @@ def _github_repo(github):
 
     url = "https://github.com/%s/%s/archive/%s" % (github.org, github.repo, archive)
 
-    return partial.make(
-        nixpkgs_http_repository,
+    nixpkgs_http_repository(
+        name = github.name,
         url = url,
         integrity = github.integrity,
         sha256 = github.sha256,
@@ -66,8 +47,8 @@ def _http_repo(http):
     if not url_set and not urls_set:
         fail("Missing URL. Specify one of `url` or `urls`.")
 
-    return partial.make(
-        nixpkgs_http_repository,
+    nixpkgs_http_repository(
+        name = http.name,
         url = http.url if url_set else None,
         urls = http.urls if urls_set else None,
         integrity = http.integrity,
@@ -76,93 +57,106 @@ def _http_repo(http):
     )
 
 def _file_repo(file):
-    return partial.make(
-        nixpkgs_local_repository,
+    nixpkgs_local_repository(
+        name = file.name,
         nix_file = file.file,
         nix_file_deps = file.file_deps,
     )
 
 def _expr_repo(expr):
-    return partial.make(
-        nixpkgs_local_repository,
+    nixpkgs_local_repository(
+        name = expr.name,
         nix_file_content = expr.expr,
         nix_file_deps = expr.file_deps,
     )
 
-def _nix_repo_impl(module_ctx):
-    r = registry.make()
+_OVERRIDE_TAGS = {
+    "github": _github_repo,
+    "http": _http_repo,
+    "file": _file_repo,
+    "expr": _expr_repo,
+}
 
+def _nix_repo_impl(module_ctx):
+    all_repos = sets.make()
+    root_deps = sets.make()
+    root_dev_deps = sets.make()
+
+    is_isolated = getattr(module_ctx, "is_isolated", False)
+
+    # This loop handles all tags that can create global repository overrides,
+    # or generate isolated repository instances. References to global
+    # repositories are handled later.
     for mod in module_ctx.modules:
-        key = fail_on_err(registry.add_module(r, name = mod.name, version = mod.version))
+        module_repos = sets.make()
+
+        is_root = mod.is_root
+        is_core = mod.name == "rules_nixpkgs_core"
+        may_override = is_isolated or is_root or is_core
+
+        for tag_name, tag_fun in _OVERRIDE_TAGS.items():
+            for tag in getattr(mod.tags, tag_name):
+                is_dev_dep = module_ctx.is_dev_dependency(tag)
+
+                if not may_override:
+                    fail(_ISOLATED_OR_ROOT_ONLY_ERROR.format(tag_name = tag_name))
+
+                if sets.contains(module_repos, tag.name):
+                    fail(_DUPLICATE_REPOSITORY_NAME_ERROR.format(repo_name = tag.name, tag_name = tag_name))
+                else:
+                    sets.insert(module_repos, tag.name)
+
+                if is_root:
+                    if is_dev_dep:
+                        sets.insert(root_dev_deps, tag.name)
+                    else:
+                        sets.insert(root_deps, tag.name)
+
+                if not sets.contains(all_repos, tag.name):
+                    sets.insert(all_repos, tag.name)
+                    tag_fun(tag)
+
+        # Here we loop through the default tags only to check for duplicates.
+        # The imports are performed later.
+        for default in mod.tags.default:
+            is_dev_dep = module_ctx.is_dev_dependency(default)
+
+            if sets.contains(module_repos, default.name):
+                if is_root and not is_dev_dep and sets.contains(root_dev_deps, default.name):
+                    # Collisions between default and overrides are allowed in
+                    # the root module if the override is a dev-dependency and
+                    # the default is not.
+                    sets.remove(root_dev_deps, default.name)
+                    sets.insert(root_deps, default.name)
+                else:
+                    fail(_DUPLICATE_REPOSITORY_NAME_ERROR.format(repo_name = default.name, tag_name = "default"))
+            else:
+                sets.insert(module_repos, default.name)
+
+    # This loop handles references to global repositories. Any instance of a
+    # global override was already instantiated at this point, so we can resolve
+    # references from all modules.
+    for mod in module_ctx.modules:
+        is_root = mod.is_root
 
         for default in mod.tags.default:
-            fail_on_err(
-                registry.use_global_repo(r, key = key, name = default.name),
-                prefix = "Cannot use global default repository: ",
-            )
+            is_dev_dep = module_ctx.is_dev_dependency(default)
 
-        for github in mod.tags.github:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = github.name,
-                    repo = _github_repo(github),
-                ),
-                prefix = "Cannot import GitHub repository: ",
-            )
+            if is_isolated:
+                fail(_ISOLATED_NOT_ALLOWED_ERROR.format(tag_name = "default"))
 
-        for http in mod.tags.http:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = http.name,
-                    repo = _http_repo(http),
-                ),
-                prefix = "Cannot import HTTP repository: ",
-            )
+            if not sets.contains(all_repos, default.name):
+                fail(_UNKNOWN_REPOSITORY_REFERENCE_ERROR.format(repo_name = default.name, tag_name = "default"))
 
-        for file in mod.tags.file:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = file.name,
-                    repo = _file_repo(file),
-                ),
-                prefix = "Cannot import file repository: ",
-            )
+            if is_root:
+                if is_dev_dep:
+                    sets.insert(root_dev_deps, default.name)
+                else:
+                    sets.insert(root_deps, default.name)
 
-        for expr in mod.tags.expr:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = expr.name,
-                    repo = _expr_repo(expr),
-                ),
-                prefix = "Cannot import expression repository: ",
-            )
-
-        for override in mod.tags.override:
-            prefix = "Cannot override global default repository: "
-            repo = fail_on_err(
-                registry.pop_local_repo(r, key = key, name = override.name),
-                prefix = prefix,
-            )
-            registry.set_default_global_repo(r, name = override.name, repo = repo)
-            fail_on_err(
-                registry.use_global_repo(r, key = key, name = default.name),
-                prefix = prefix,
-            )
-
-    for repo_name, repo in registry.get_all_repositories(r).items():
-        partial.call(repo, name = repo_name)
-
-    fail_on_err(
-        registry.hub_repo(r, name = "nixpkgs_repositories", accessor = _ACCESSOR),
-        prefix = "Failed to generate `nixpkgs_repositories`: ",
+    return module_ctx.extension_metadata(
+        root_module_direct_deps = sets.to_list(root_deps),
+        root_module_direct_dev_deps = sets.to_list(root_dev_deps),
     )
 
 _DEFAULT_ATTRS = {
@@ -176,17 +170,6 @@ _NAME_ATTRS = {
     "name": attr.string(
         doc = "A unique name for this repository. The name must be unique within the requesting module.",
         mandatory = True,
-    ),
-}
-
-_INTEGRITY_ATTRS = {
-    "integrity": attr.string(
-        doc = "Expected checksum in Subresource Integrity format of the file downloaded. This must match the checksum of the file downloaded. _It is a security risk to omit the checksum as remote files can change._ At best omitting this field will make your build non-hermetic. It is optional to make development easier but either this attribute or `sha256` should be set before shipping.",
-        mandatory = False,
-    ),
-    "sha256": attr.string(
-        doc = "The expected SHA-256 of the file downloaded. This must match the SHA-256 of the file downloaded. _It is a security risk to omit the SHA-256 as remote files can change._ At best omitting this field will make your build non-hermetic. It is optional to make development easier but either this attribute or `integrity` should be set before shipping.",
-        mandatory = False,
     ),
 }
 
@@ -226,9 +209,13 @@ _HTTP_ATTRS = {
     ),
 }
 
-_FILE_DEPS_ATTRS = {
-    "file_deps": attr.label_list(
-        doc = "List of files required by the Nix expression.",
+_INTEGRITY_ATTRS = {
+    "integrity": attr.string(
+        doc = "Expected checksum in Subresource Integrity format of the file downloaded. This must match the checksum of the file downloaded. _It is a security risk to omit the checksum as remote files can change._ At best omitting this field will make your build non-hermetic. It is optional to make development easier but either this attribute or `sha256` should be set before shipping.",
+        mandatory = False,
+    ),
+    "sha256": attr.string(
+        doc = "The expected SHA-256 of the file downloaded. This must match the SHA-256 of the file downloaded. _It is a security risk to omit the SHA-256 as remote files can change._ At best omitting this field will make your build non-hermetic. It is optional to make development easier but either this attribute or `integrity` should be set before shipping.",
         mandatory = False,
     ),
 }
@@ -248,41 +235,36 @@ _EXPR_ATTRS = {
     ),
 }
 
-_OVERRIDE_ATTRS = {
-    "name": attr.string(
-        doc = "The name of the global default repository to set.",
-        mandatory = True,
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "List of files required by the Nix expression.",
+        mandatory = False,
     ),
 }
 
 _default_tag = tag_class(
     attrs = _DEFAULT_ATTRS,
-    doc = "Depend on this global default repository.",
+    doc = "Depend on this global default repository. May not be used on an isolated module extension.",
 )
 
 _github_tag = tag_class(
     attrs = dicts.add(_NAME_ATTRS, _GITHUB_ATTRS, _INTEGRITY_ATTRS),
-    doc = "Import a Nix repository from Github.",
+    doc = "Import a Nix repository from Github. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
 _http_tag = tag_class(
     attrs = dicts.add(_NAME_ATTRS, _HTTP_ATTRS, _INTEGRITY_ATTRS),
-    doc = "Import a Nix repository from an HTTP URL.",
+    doc = "Import a Nix repository from an HTTP URL. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
 _file_tag = tag_class(
     attrs = dicts.add(_NAME_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS),
-    doc = "Import a Nix repository from a local file.",
+    doc = "Import a Nix repository from a local file. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
 _expr_tag = tag_class(
     attrs = dicts.add(_NAME_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS),
-    doc = "Import a Nix repository from a Nix expression.",
-)
-
-_override_tag = tag_class(
-    attrs = _OVERRIDE_ATTRS,
-    doc = "Define the global default Nix repository. May only be used in the root module or rules_nixpkgs_core.",
+    doc = "Import a Nix repository from a Nix expression. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
 nix_repo = module_extension(
@@ -293,6 +275,5 @@ nix_repo = module_extension(
         "http": _http_tag,
         "file": _file_tag,
         "expr": _expr_tag,
-        "override": _override_tag,
     },
 )

@@ -1,48 +1,67 @@
 """Defines the nix_pkg module extension.
 """
 
-load("//:nixpkgs.bzl", "nixpkgs_package")
-load("//:util.bzl", "fail_on_err")
-load("//private:module_registry.bzl", "registry")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@bazel_skylib//lib:partial.bzl", "partial")
-load("@nixpkgs_repositories//:defs.bzl", "nix_repo")
+load("@bazel_skylib//lib:sets.bzl", "sets")
+load("//:nixpkgs.bzl", "nixpkgs_package")
 
-_ACCESSOR = '''\
-def nix_pkg(module_name, name, label):
-    """Access a Nix package imported with `nix_pkg`.
+_DEFAULT_NIXKGS = "@nixpkgs"
 
-    Args:
-      module_name: `String`; Name of the calling Bazel module.
-        This is needed until Bazel offers unique module identifiers,
-        see [#17652][bazel-17652].
-      name: `String`; Name of the package.
-      label: `String`; Target within the package.
-        A string representation of a label under the package's external
-        workspace.
+_ISOLATED_OR_ROOT_ONLY_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may only be used on an isolated module extension or in the root module or rules_nixpkgs_core."
+_DUPLICATE_PACKAGE_NAME_ERROR = "Duplicate nix_pkg import due to {tag_name} tag. The package name '{package_name}' is already used."
+_ISOLATED_NOT_ALLOWED_ERROR = "Illegal use of the {tag_name} tag. The {tag_name} tag may not be used on an isolated module extension."
 
-    Returns:
-      `Label`; The resolved label to the target within the package's external workspace.
+# TODO[AH]: Add support to configure global default Nix options.
 
-    [bazel-17652]: https://github.com/bazelbuild/bazel/issues/17652
-    """
-    resolved = _fail_on_err(
-        _get_repository(module_name, name),
-        prefix = "Invalid Nix repository, you must use the nix_repo extension and request a global repository or register a local repository: ",
-    )
-    return resolved.relative(label)
-'''
-
-def _name_from_attr(attr):
-    """Generate a global workspace name from an attribute path.
-    """
-    return attr
+def _get_pkg_name(attrs):
+    if bool(attrs.name):
+        return attrs.name
+    elif bool(attrs.attr):
+        return attrs.attr
+    else:
+        fail('The `name` attribute must be set if `attr` is the empty string `""`.')
 
 def _handle_common_attrs(attrs):
     kwargs = {}
 
-    if bool(attrs.attr):
-        kwargs["attribute_path"] = attrs.attr
+    kwargs["name"] = _get_pkg_name(attrs)
+    kwargs["attribute_path"] = attrs.attr
+
+    return kwargs
+
+def _handle_repo_attrs(attrs):
+    kwargs = {}
+
+    repo_set = bool(attrs.repo)
+    repos_set = bool(attrs.repos)
+
+    if repo_set and repos_set:
+        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
+    elif repo_set:
+        kwargs["repository"] = attrs.repo
+    elif repos_set:
+        kwargs["repositories"] = {
+            name: repo
+            for repo, names in attrs.repos.items()
+            for name in names.split(":")
+        }
+    else:
+        kwargs["repository"] = _DEFAULT_NIXKGS
+
+    return kwargs
+
+def _handle_build_attrs(attrs):
+    kwargs = {}
+
+    build_file_set = bool(attrs.build_file)
+    build_file_content_set = bool(attrs.build_file_content)
+
+    if build_file_set and build_file_content_set:
+        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
+    elif build_file_set:
+        kwargs["build_file"] = attrs.build_file
+    elif build_file_content_set:
+        kwargs["build_file_content"] = attrs.build_file_content
 
     return kwargs
 
@@ -62,212 +81,158 @@ def _handle_expr_attrs(attrs):
 
     return kwargs
 
-def _handle_repo_attrs(key, attrs):
-    kwargs = {}
-
-    repo_set = bool(attrs.repo)
-    repos_set = bool(attrs.repos)
-
-    if repo_set and repos_set:
-        fail("Duplicate Nix repositories. Specify at most one of `repo` and `repos`.")
-    elif repo_set:
-        kwargs["repository"] = nix_repo(key, attrs.repo)
-    elif repos_set:
-        kwargs["repositories"] = {
-            name: nix_repo(key, repo)
-            for name, repo in attrs.repos.items()
-        }
-    else:
-        kwargs["repository"] = nix_repo(key, "nixpkgs")
-
-    return kwargs
-
-def _handle_build_attrs(attrs):
-    kwargs = {}
-
-    build_file_set = bool(attrs.build_file)
-    build_file_content_set = bool(attrs.build_file_content)
-
-    if build_file_set and build_file_content_set:
-        fail("Duplicate BUILD file. Specify at most one of `build_file` and `build_file_contents`.")
-    elif build_file_set:
-        kwargs["build_file"] = attrs.build_file
-    elif build_file_content_set:
-        kwargs["build_file_content"] = attrs.build_file_content
-
-    return kwargs
-
 def _handle_opts_attrs(attrs):
     return {"nixopts": attrs.nixopts or []}
 
+def _default_pkg(default):
+    nixpkgs_package(
+        name = default.attr,
+        attribute_path = default.attr,
+        repository = _DEFAULT_NIXKGS,
+    )
+
 def _attr_pkg(attr):
-    return partial.make(
-        nixpkgs_package,
-        attribute_path = attr.attr,
-        repository = nix_repo("rules_nixpkgs_core", "nixpkgs"),
-    )
+    kwargs = _handle_common_attrs(attr)
+    kwargs.update(_handle_repo_attrs(attr))
+    kwargs.update(_handle_build_attrs(attr))
+    kwargs.update(_handle_opts_attrs(attr))
 
-def _local_attr_pkg(key, local_attr):
-    kwargs = {}
+    nixpkgs_package(**kwargs)
 
-    if bool(local_attr.attr):
-        kwargs["attribute_path"] = local_attr.attr
-    else:
-        kwargs["attribute_path"] = local_attr.name
-
-    kwargs.update(_handle_repo_attrs(key, local_attr))
-    kwargs.update(_handle_build_attrs(local_attr))
-    kwargs.update(_handle_opts_attrs(local_attr))
-
-    return partial.make(
-        nixpkgs_package,
-        **kwargs
-    )
-
-def _local_file_pkg(key, local_file):
-    kwargs = _handle_common_attrs(local_file)
-    kwargs.update(_handle_repo_attrs(key, local_file))
-    kwargs.update(_handle_build_attrs(local_file))
-    kwargs.update(_handle_file_attrs(local_file))
-    kwargs.update(_handle_opts_attrs(local_file))
+def _file_pkg(file):
+    kwargs = _handle_common_attrs(file)
+    kwargs.update(_handle_repo_attrs(file))
+    kwargs.update(_handle_build_attrs(file))
+    kwargs.update(_handle_file_attrs(file))
+    kwargs.update(_handle_opts_attrs(file))
 
     # Indicate that nixpkgs_package is called from a module extension to
     # enable required workarounds.
     # TODO[AH] Remove this once the workarounds are no longer required.
     kwargs["_bzlmod"] = True
 
-    return partial.make(
-        nixpkgs_package,
-        **kwargs
-    )
+    nixpkgs_package(**kwargs)
 
-def _local_expr_pkg(key, local_expr):
-    kwargs = _handle_common_attrs(local_expr)
-    kwargs.update(_handle_repo_attrs(key, local_expr))
-    kwargs.update(_handle_build_attrs(local_expr))
-    kwargs.update(_handle_expr_attrs(local_expr))
-    kwargs.update(_handle_opts_attrs(local_expr))
+def _expr_pkg(expr):
+    kwargs = _handle_common_attrs(expr)
+    kwargs.update(_handle_repo_attrs(expr))
+    kwargs.update(_handle_build_attrs(expr))
+    kwargs.update(_handle_expr_attrs(expr))
+    kwargs.update(_handle_opts_attrs(expr))
 
-    return partial.make(
-        nixpkgs_package,
-        **kwargs
-    )
+    nixpkgs_package(**kwargs)
+
+_OVERRIDE_TAGS = {
+    "attr": _attr_pkg,
+    "file": _file_pkg,
+    "expr": _expr_pkg,
+}
 
 def _nix_pkg_impl(module_ctx):
-    r = registry.make()
+    all_pkgs = sets.make()
+    root_deps = sets.make()
+    root_dev_deps = sets.make()
 
+    is_isolated = getattr(module_ctx, "is_isolated", False)
+
+    # This loop handles all tags that can create global package overrides, or
+    # generate isolated package instances. References to global packages are
+    # handled later.
     for mod in module_ctx.modules:
-        key = fail_on_err(registry.add_module(r, name = mod.name, version = mod.version))
+        module_pkgs = sets.make()
 
-        for attr in mod.tags.attr:
-            name = _name_from_attr(attr.attr)
-            fail_on_err(
-                registry.use_global_repo(r, key = key, name = name),
-                prefix = "Cannot use unified Nix package: ",
-            )
-            if not registry.has_global_repo(r, name = name):
-                fail_on_err(
-                    registry.add_global_repo(
-                        r,
-                        name = name,
-                        repo = _attr_pkg(attr),
-                    ),
-                    prefix = "Cannot define unified Nix package: ",
-                )
+        is_root = mod.is_root
+        is_core = mod.name == "rules_nixpkgs_core"
+        may_override = is_isolated or is_root or is_core
 
-        for local_attr in mod.tags.local_attr:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = local_attr.name,
-                    repo = _local_attr_pkg(key, local_attr),
-                ),
-                prefix = "Cannot use Nix package: ",
-            )
+        for tag_name, tag_fun in _OVERRIDE_TAGS.items():
+            for tag in getattr(mod.tags, tag_name):
+                is_dev_dep = module_ctx.is_dev_dependency(tag)
 
-        for local_file in mod.tags.local_file:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = local_file.name,
-                    repo = _local_file_pkg(key, local_file),
-                ),
-                prefix = "Cannot use Nix package: ",
-            )
+                if not may_override:
+                    fail(_ISOLATED_OR_ROOT_ONLY_ERROR.format(tag_name = tag_name))
 
-        for local_expr in mod.tags.local_expr:
-            fail_on_err(
-                registry.add_local_repo(
-                    r,
-                    key = key,
-                    name = local_expr.name,
-                    repo = _local_expr_pkg(key, local_expr),
-                ),
-                prefix = "Cannot use Nix package: ",
-            )
+                pkg_name = _get_pkg_name(tag)
 
-    for repo_name, repo in registry.get_all_repositories(r).items():
-        partial.call(repo, name = repo_name)
+                if sets.contains(module_pkgs, pkg_name):
+                    fail(_DUPLICATE_PACKAGE_NAME_ERROR.format(package_name = pkg_name, tag_name = tag_name))
+                else:
+                    sets.insert(module_pkgs, pkg_name)
 
-    fail_on_err(
-        registry.hub_repo(r, name = "nixpkgs_packages", accessor = _ACCESSOR),
-        prefix = "Failed to generate `nixpkgs_packages`: ",
+                if is_root:
+                    if is_dev_dep:
+                        sets.insert(root_dev_deps, pkg_name)
+                    else:
+                        sets.insert(root_deps, pkg_name)
+
+                if not sets.contains(all_pkgs, pkg_name):
+                    sets.insert(all_pkgs, pkg_name)
+                    tag_fun(tag)
+
+        # Here we loop through the default tags only to check for duplicates.
+        # The imports or instantiations are performed later.
+        for default in mod.tags.default:
+            is_dev_dep = module_ctx.is_dev_dependency(default)
+
+            if sets.contains(module_pkgs, default.attr):
+                if is_root and not is_dev_dep and sets.contains(root_dev_deps, default.attr):
+                    # Collisions between default and overrides are allowed in
+                    # the root module if the override is a dev-dependency and
+                    # the default is not.
+                    sets.remove(root_dev_deps, default.attr)
+                    sets.insert(root_deps, default.attr)
+                else:
+                    fail(_DUPLICATE_PACKAGE_NAME_ERROR.format(package_name = default.attr, tag_name = "default"))
+            else:
+                sets.insert(module_pkgs, default.attr)
+
+    # This loop handles references to global packages. Any instance of a global
+    # override was already instantiated at this point, so we can resolve
+    # references from all modules.
+    for mod in module_ctx.modules:
+        is_root = mod.is_root
+
+        for default in mod.tags.default:
+            is_dev_dep = module_ctx.is_dev_dependency(default)
+
+            if is_isolated:
+                fail(_ISOLATED_NOT_ALLOWED_ERROR.format(tag_name = "default"))
+
+            if not sets.contains(all_pkgs, default.attr):
+                sets.insert(all_pkgs, default.attr)
+                _default_pkg(default)
+
+            if is_root:
+                if is_dev_dep:
+                    sets.insert(root_dev_deps, default.attr)
+                else:
+                    sets.insert(root_deps, default.attr)
+
+    return module_ctx.extension_metadata(
+        root_module_direct_deps = sets.to_list(root_deps),
+        root_module_direct_dev_deps = sets.to_list(root_dev_deps),
     )
 
-_ATTR_ATTRS = {
+_DEFAULT_ATTRS = {
     "attr": attr.string(
         doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots.",
         mandatory = True,
     ),
 }
 
-_LOCAL_ATTR_ATTRS = {
-    "name": attr.string(
-        doc = "A unique name for this package. The name must be unique within the requesting module.",
-        mandatory = True,
-    ),
-    "attr": attr.string(
-        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots. Defaults to `name`.",
-        mandatory = False,
-    ),
-}
-
 _COMMON_ATTRS = {
-    "name": attr.string(
-        doc = "A unique name for this package. The name must be unique within the requesting module.",
-        mandatory = True,
-    ),
     "attr": attr.string(
-        doc = "The attribute path of the package to import. The attribute path is a sequence of attribute names separated by dots. Import the top-level Nix expression if empty.",
-        mandatory = False,
-    ),
-}
-
-_FILE_DEPS_ATTRS = {
-    "file_deps": attr.label_list(
-        doc = "Files required by the Nix expression.",
-        mandatory = False,
-    ),
-}
-
-_FILE_ATTRS = {
-    "file": attr.label(
-        doc = "The file containing the Nix expression.",
+        doc = "The attribute path of the package to configure and import. The attribute path is a sequence of attribute names separated by dots.",
         mandatory = True,
     ),
-}
-
-_EXPR_ATTRS = {
-    "expr": attr.string(
-        doc = "The Nix expression.",
-        mandatory = True,
+    "name": attr.string(
+        doc = "Configure and import the package under this name instead of the attribute path. Other modules must pass this name to the `default` tag to refer to this package.",
+        mandatory = False,
     ),
 }
 
 _REPO_ATTRS = {
-    "repo": attr.string(
+    "repo": attr.label(
         doc = """\
 The Nix repository to use.
 Equivalent to `repos = {"nixpkgs": repo}`.
@@ -275,13 +240,13 @@ Specify at most one of `repo` or `repos`.
 """,
         mandatory = False,
     ),
-    "repos": attr.string_dict(
+    "repos": attr.label_keyed_string_dict(
         doc = """\
-The Nix repositories to use. The dictionary keys represent the names of the
-`NIX_PATH` entries. For example, `repositories = { "myrepo" : "somerepo" }`
+The Nix repositories to use. The dictionary values represent the names of the
+`NIX_PATH` entries. For example, `repositories = { "@somerepo" : "myrepo" }`
 would replace all instances of `<myrepo>` in the Nix code by the path to the
-Nix repository `somerepo`. See the [relevant section in the nix
-manual](https://nixos.org/nix/manual/#env-NIX_PATH) for more information.
+Nix repository `@somerepo`. You can provide multiple `NIX_PATH` entry names for a single repository as a colon (`:`) separated string. See the [relevant section in the nix
+manual](https://nixos.org/manual/nix/stable/command-ref/env-common.html#env-NIX_PATH) for more information.
 Specify at most one of `repo` or `repos`.
 """,
         mandatory = False,
@@ -328,6 +293,27 @@ Specify at most one of `build_file` or `build_file_content`.
     ),
 }
 
+_FILE_ATTRS = {
+    "file": attr.label(
+        doc = "The file containing the Nix expression.",
+        mandatory = True,
+    ),
+}
+
+_EXPR_ATTRS = {
+    "expr": attr.string(
+        doc = "The Nix expression.",
+        mandatory = True,
+    ),
+}
+
+_FILE_DEPS_ATTRS = {
+    "file_deps": attr.label_list(
+        doc = "Files required by the Nix expression.",
+        mandatory = False,
+    ),
+}
+
 _OPTS_ATTRS = {
     "nixopts": attr.string_list(
         doc = "Extra flags to pass when calling Nix. Note, this does not currently support location expansion.",
@@ -336,32 +322,32 @@ _OPTS_ATTRS = {
     ),
 }
 
+_default_tag = tag_class(
+    attrs = _DEFAULT_ATTRS,
+    doc = "Import a globally unified Nix package from the default nixpkgs repository. May not be used on an isolated module extension.",
+)
+
 _attr_tag = tag_class(
-    attrs = _ATTR_ATTRS,
-    doc = "Import a globally unified Nix package. If multiple Bazel modules import the same nixpkgs attribute, then they will all use the same external Bazel repository that imports the Nix package.",
+    attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _OPTS_ATTRS),
+    doc = "Configure and import a Nix package by attribute path. Overrides default imports of this package. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
-_local_attr_tag = tag_class(
-    attrs = dicts.add(_LOCAL_ATTR_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _OPTS_ATTRS),
-    doc = "Import a Nix package by attribute path.",
-)
-
-_local_file_tag = tag_class(
+_file_tag = tag_class(
     attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _FILE_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
-    doc = "Import a Nix package from a local file.",
+    doc = "Configure and import a Nix package from a file. Overrides default imports of this package. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
-_local_expr_tag = tag_class(
+_expr_tag = tag_class(
     attrs = dicts.add(_COMMON_ATTRS, _REPO_ATTRS, _BUILD_ATTRS, _EXPR_ATTRS, _FILE_DEPS_ATTRS, _OPTS_ATTRS),
-    doc = "Import a Nix package from a local expression.",
+    doc = "Configure and import a Nix package from a Nix expression. Overrides default imports of this package. May only be used on an isolated module extension or in the root module or rules_nixpkgs_core.",
 )
 
 nix_pkg = module_extension(
     _nix_pkg_impl,
     tag_classes = {
+        "default": _default_tag,
         "attr": _attr_tag,
-        "local_attr": _local_attr_tag,
-        "local_file": _local_file_tag,
-        "local_expr": _local_expr_tag,
+        "file": _file_tag,
+        "expr": _expr_tag,
     },
 )

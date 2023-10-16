@@ -193,7 +193,10 @@ Support the use of Nix built packages as Bazel toolchains.
     into the package and toolchain repositories through that intermediary.
     A known repository that provides a macro to convert tag names into resolved
     labels to the repository could be such an intermediary, i.e. a hub
-    repository, see below.
+    repository, see below. Alternatively, the user could pass the required
+    repositories into the tag by label. The latter approach is simpler, uses
+    Bazel's core features, and introduces lower migration cost as WORKSPACE
+    users already used labels to refer to imports.
 
 ### Module Extensions Have Global Scope
 
@@ -203,6 +206,8 @@ Support the use of Nix built packages as Bazel toolchains.
     extension.
   * Repository rules are assigned names in a global scope for the current
     module extension.
+  * Recent Bazel versions (starting from 6.3) introduced ["isolated" module
+    extensions][isolted-ext].
 * Impact
   * Module extensions must either reconcile or avoid name clashes due to
     external workspaces defined based on tags requested by different Bazel
@@ -210,6 +215,9 @@ Support the use of Nix built packages as Bazel toolchains.
     named `"nixpkgs"`, then the module extension must either unify that tag
     into a single external workspace under that name, or avoid collision by
     generating separate external workspaces with unique names.
+  * If the ability to define new names is limited to isolated extensions, the
+    root module, and rules_nixpkgs_core itself, then name can be easily
+    controlled by the user and unintended collisions can be avoided.
 
 ### External Workspaces Have Restricted Visibility
 
@@ -279,6 +287,21 @@ Support the use of Nix built packages as Bazel toolchains.
 
 [auto-use-repo]: https://docs.google.com/document/d/1dj8SN5L6nwhNOufNqjBhYkk5f-BJI_FPYWKxlB3GAmA/edit?disco=AAAArdGBwhc
 
+### Isolated Extensions and Automatic Imports
+
+* Features
+  * As mentioned above, module extensions can be declared as isolated to limit
+    their scope to one module.
+  * As mentioned above, Bazel can automatically manage the required `use_repo`
+    stanzas.
+* Impact
+  * A hub-repository is no longer necessary to separate globally unified and
+    per-module scoped repositories. Instead, isolated extensions can be used to
+    generate per-module scoped repositories, while regular extensions manage
+    globally unified repositories.
+  * If repositories are explicitly imported using `use_repo` stanzas, then they
+    can be forwarded to other tags simply by label.
+
 ### Nixpkgs Repositories or Packages Have No Convenient Canonical Name
 
 * Constraint
@@ -306,6 +329,10 @@ Support the use of Nix built packages as Bazel toolchains.
     repositories and packages as defined in each Bazel module, taking into
     account nixpkgs repositories defined within the scope of that module, or
     explicitly imported from another module (if that's feasible).
+  * In light of isolated extensions and automatic imports we can restrict the
+    ability to assign non-canonical names to the root module and
+    rules_nixpkgs_core or isolated extensions and use attribute paths into the
+    default nixpkgs repository as canonical names for package imports.
 
 ### The Diamond Dependency Problem
 
@@ -398,21 +425,28 @@ rules\_nixpkgs\_core itself will define a global default `nixpkgs` repository,
 any module can reference this global default repository like so.
 
 ```python
-use_extension("//extensions:repository.bzl", "nix_repo")
+nix_repo = use_extension("//extensions:repository.bzl", "nix_repo")
 
 nix_repo.default(name = "nixpkgs")
+
+use_repo(nix_repo, "nixpkgs")
 ```
 
 ### Local Repository
 
-Any Bazel module can define custom Nix repositories for local use.
+Any Bazel module can use an isolated extension to define custom Nix
+repositories for local use.
 
 ```python
-nix_repo.github(
+nix_repo_isolated = use_extension("//extensions:repository.bzl", "nix_repo", isolate = True)
+
+nix_repo_isolated.github(
     name = "nixpkgs-unstable",
     commit = "1eeea1f1922fb79a36008ba744310ccbf96130e2",
     sha256 = "d6759a60a91dfd03bdd4bf9c834e1acd348cf5ca80c6a6795af5838165bc7ea6",
 )
+
+use_repo(nix_repo, "nixpkgs-unstable")
 ```
 
 ### Repository Override
@@ -420,8 +454,30 @@ nix_repo.github(
 The root module can override the default set by rules\_nixpkgs\_core.
 
 ```python
-nix_repo.override(name = "nixpkgs")
+nix_repo = use_extension("//extensions:repository.bzl", "nix_repo")
+
 nix_repo.http(
+    name = "nixpkgs",
+    url = "https://github.com/NixOS/nixpkgs/archive/1eeea1f1922fb79a36008ba744310ccbf96130e2.tar.gz",
+    sha256 = "d6759a60a91dfd03bdd4bf9c834e1acd348cf5ca80c6a6795af5838165bc7ea6",
+    strip_prefix = "nixpkgs-1eeea1f1922fb79a36008ba744310ccbf96130e2",
+)
+
+use_repo(nix_repo, "nixpkgs")
+```
+
+rules\_nixpkgs\_core uses the same mechanism to define the global default.
+
+A module can override the default as a dev-dependency, i.e. conditionally if it
+is the root module.
+
+```python
+nix_repo = use_extension("//extensions:repository.bzl", "nix_repo")
+nix_repo.default(name = "nixpkgs")
+use_repo(nix_repo, "nixpkgs")
+
+nix_repo_dev = use_extension("//extensions:repository.bzl", "nix_repo", dev_dependency = True)
+nix_repo_dev.http(
     name = "nixpkgs",
     url = "https://github.com/NixOS/nixpkgs/archive/1eeea1f1922fb79a36008ba744310ccbf96130e2.tar.gz",
     sha256 = "d6759a60a91dfd03bdd4bf9c834e1acd348cf5ca80c6a6795af5838165bc7ea6",
@@ -429,54 +485,65 @@ nix_repo.http(
 )
 ```
 
-rules\_nixpkgs\_core uses the same mechanism to define the global default.
-
-```
-nix_repo.override(name = "nixpkgs")
-nix_repo.github(
-    name = "nixpkgs",
-    tag = "22.11",
-    sha256 = "ddc3428d9e1a381b7476750ac4dbea7a42885cbbe6e1af44b21d6447c9609a6f",
-)
-```
-
 ### Unified Nix Package
 
 Bazel modules can depend on Nix packages by attribute path into a global Nix
-repository (by default `nixpkgs`). These package references are unified
-globally based on the attribute path, such that every Bazel module requesting
-this package will be given the same instance of the package. This is meant to
-avoid diamond dependency issues, see above.
+repository (`nixpkgs`). These package references are unified globally based on
+the attribute path, such that every Bazel module requesting this package will
+be given the same instance of the package. This is meant to avoid diamond
+dependency issues, see above.
 
 ```python
-use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
 
 nix_pkg.attr(attr = "jq")
 nix_pkg.attr(attr = "gawk")
+
+use_repo(nix_pkg, "jq", "gawk")
 ```
 
 ### Local Nix Package
 
 A Bazel module can import a custom Nix package from an expression or file and
-provide a custom BUILD file template if required. The possibilities for
-customization are too great to attempt global unification of such packages. If
-two different Bazel modules effectively request the same such Nix package, then
-rules\_nixkgs will still generate two separate external repositories to import
-the package for each module.
+provide a custom BUILD file template if required using an isoloated extension.
+The possibilities for customization are too great to attempt global unification
+of such packages. If two different Bazel modules effectively request the same
+such Nix package, then rules\_nixkgs will still generate two separate external
+repositories to import the package for each module.
 
 ```python
-nix_pkgs.local_attr(name = "jq", repo = "nixpkgs-unstable")
+nix_pkg_isolated = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg", isolate = True)
 
-nix_pkg.local_expr(
+nix_pkg_isolated.attr(attr = "jq", repo = "@nixpkgs-unstable")
+
+nix_pkg_isolated.expr(
     name = "awk",
+    attr = "",
     expr = """\
 with import <nixpkgs> { config = {}; overlays = []; };
 gawk-with-extensions.override {
     extensions = with gawkextlib; [ csv json ];
 }
     """,
-    repo = "nixpkgs-unstable",
+    repo = "@nixpkgs-unstable",
 )
+
+use_repo(nix_pkg_isolated, "jq", "awk")
+```
+
+### Package Override
+
+The root module (and rules_nixpkgs_core) can override a globally unified
+package, providing a custom repository, Nix expression, or BUILD file template,
+such that other modules referring to the same attribute path will import the
+same overriden instance.
+
+```python
+use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+
+nix_pkg.attr(attr = "jq", repo = "@nixpkgs-unstable")
+
+use_repo(nix_pkg, "jq")
 ```
 
 ## Interface
@@ -519,8 +586,6 @@ offers tags to define Nix repositories:
   * `name`: `String`; unique name.
   * `expr`: `String`; the Nix expression.
   * `file_deps`: optional, List of `Label`, files required by `expr`.
-* `override(repo)` (only allowed in rules\_nixpkgs\_core and root)\
-  * `repo`: `String`; The name of the repository to override.
 
 All `name` attributes define a unique name for the given Nix repository within
 the scope of the requesting module.
@@ -528,40 +593,24 @@ the scope of the requesting module.
 The extension is defined in its own Starlark module under
 `@rules_nixpkgs_core//extensions:repository.bzl`.
 
-The extension generates a hub repository called `nixpkgs_repositories` that
-exposes a macro from `//:defs.bzl` to access the imported repositories from the
-scope of the calling module:
-
-* `nix_repo(module, name)`\
-  Attrs:
-  * `module`: `String`; name of the calling Bazel module.\
-    Needed until Bazel offers an API to infer the calling module.
-    See, [#17652][bazel-17652].\
-    Note, this is ambiguous for multi-version overrides.\
-    TODO: Handle multi-version overrides.
-  * `name`: `String`; name of the repository.\
-    This is the name used on the `nix_repo` tag.
-
-  Returns:\
-    The resolved `Label` object to the repository.
-
-Users are not expected to invoke `nix_repo` directly. Instead, it will be
-invoked by the package and toolchain module extensions to access the relevant
-repositories.
+The extension returns `extension_metadata` (see [Automatic `use_repo`
+fixups][auto-use-repo]) to declare which repositories are dependencies or
+dev-dependencies of the root module, such that Bazel can check the imports and
+generated buildozer commands to update the `use_repo` stanzas if needed.
 
 ### Nix Packages
 
 The `rules_nixpkgs_core` module exposes the module extension `nix_pkg` which
 offers tags to define Nix packages:
 
-* `attr(attr)` (globally unified)\
+* `default(attr)` (globally unified)\
   * `attr`: `String`; the attribute path.\
-* `local_attr(name, attr, repo, build_file, build_file_content)`\
-  * `name`: `String`; unique name.
-  * `attr`: optional, `String`; the attribute path.\
-    Default: `name`.
-  * `repo`: optional, `String`; the `nixpkgs` repository to import from.\
-    Default: `nixpkgs`.
+* `attr(name, attr, repo, build_file, build_file_content)`\
+  * `name`: optional, `String`; unique name.
+    Default: `attr`.
+  * `attr`: `String`; the attribute path.\
+  * `repo`: optional, `Label`; the `nixpkgs` repository to import from.\
+    Default: `@nixpkgs`.
   * `build_file`: optional, `Label`; `BUILD` file to write into the external
     workspace.\
     Specify at most one of `build_file` or `build_file_content`.
@@ -569,16 +618,17 @@ offers tags to define Nix packages:
     the external workspace.\
     Specify at most one of `build_file` or `build_file_content`.
   * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
-* `local_file(name, attr, file, file_deps, repo, repos)`\
-  * `name`: `String`; unique name.
-  * `attr`: optional, `String`; the attribute path.\
+* `file(name, attr, file, file_deps, repo, repos)`\
+  * `name`: optional, `String`; unique name.
+    Default: `attr`.
+  * `attr`: `String`; the attribute path.\
   * `file`: `Label`; the file containing the Nix expression.
   * `file_deps`: optional, List of `Label`, files required by `file`.
-  * `repo`: optional, `String`; use this `nixpkgs` repository.
-    Equivalent to `repos = {"nixpkgs": repo}`.
+  * `repo`: optional, `Label`; use this `nixpkgs` repository.
+    Equivalent to `repos = {repo: "nixpkgs"}`.
     Specify only one of `repo` or `repos`.
-    Default: `nixpkgs`.
-  * `repos`: optional, Dict of `String`; use these Nix repositories.
+    Default: `@nixpkgs`.
+  * `repos`: optional, Dict of `Label` to `String`; use these Nix repositories.
     The dictionary key represents the name of the `NIX_PATH` entry.
     Specify only one of `repo` or `repos`.
   * `build_file`: optional, `Label`; `BUILD` file to write into the external
@@ -587,15 +637,16 @@ offers tags to define Nix packages:
   * `build_file_content`: optional, `Label`; `BUILD` file content to write into
     the external workspace.\
   * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
-* `local_expr(name, attr, expr, repo, repos)`\
-  * `name`: `String`; unique name.
-  * `attr`: optional, `String`; the attribute path.\
+* `expr(name, attr, expr, repo, repos)`\
+  * `name`: optional, `String`; unique name.
+    Default: `attr`.
+  * `attr`: `String`; the attribute path.\
   * `expr`: `String`; the Nix expression.
-  * `repo`: optional, `String`; use this `nixpkgs` repository.
-    Equivalent to `repos = {"nixpkgs": repo}`.
+  * `repo`: optional, `Label`; use this `nixpkgs` repository.
+    Equivalent to `repos = {repo: "nixpkgs"}`.
     Specify only one of `repo` or `repos`.
-    Default: `nixpkgs`.
-  * `repos`: optional, Dict of `String`; use these Nix repositories.
+    Default: `@nixpkgs`.
+  * `repos`: optional, Dict of `Label` to `String`; use these Nix repositories.
     The dictionary key represents the name of the `NIX_PATH` entry.
     Specify only one of `repo` or `repos`.
   * `build_file`: optional, `Label`; `BUILD` file to write into the external
@@ -605,29 +656,17 @@ offers tags to define Nix packages:
     the external workspace.\
   * `nixopts`: optional, List of `String`; Extra flags to pass to Nix.
 
-All `name` attributes define a unique name for the given Nix repository within
-the scope of the requesting module.
+All `name` attributes define the name for the generated external repository,
+either globally, in case of override, or in the scope of the current module, in
+case of an isolated extension. If `name` is not set, it defaults to `attr`.
 
 The extension is defined in its own Starlark module under
 `@rules_nixpkgs_core//extensions:package.bzl`.
 
-The extension generates a hub repository called `nixpkgs_packages` that exposes
-a macro from `//:defs.bzl` to access the imported packages from the scope of
-the calling module:
-
-* `nix_pkg(module, name, label)`\
-  Attrs:
-  * `module`: `String`; name of the calling Bazel module.\
-    Needed until Bazel offers an API to infer the calling module.
-    See, [#17652][bazel-17652].\
-    Note, this is ambiguous for multi-version overrides.\
-    TODO: Handle multi-version overrides.
-  * `name`: `String`; name of the package.\
-    This is the name used on the `nix_pkg` tag.
-  * `label`: `String`; the label to resolve within the package.
-
-  Returns:\
-  The resolved `Label` object.
+The extension returns `extension_metadata` (see [Automatic `use_repo`
+fixups][auto-use-repo]) to declare which packages are dependencies or
+dev-dependencies of the root module, such that Bazel can check the imports and
+generated buildozer commands to update the `use_repo` stanzas if needed.
 
 ### Nix Toolchains
 
@@ -655,3 +694,4 @@ contains toolchain targets for all imported toolchains. The
 [bzlmod-undetected-cycles]: https://github.com/bazelbuild/bazel/issues/17564
 [bzlmod-import]: https://bazelbuild.slack.com/archives/C014RARENH0/p1677600643532639?thread_ts=1677077009.456189&cid=C014RARENH0
 [bazel-17652]: https://github.com/bazelbuild/bazel/issues/17652
+[isolated-ext]: https://github.com/bazelbuild/bazel/pull/18529

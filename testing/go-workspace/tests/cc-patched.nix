@@ -1,0 +1,1 @@
+../../go-bzlmod/tests/cc-patched.nix

@@ -14,6 +14,7 @@ def nixpkgs_repositories(*, bzlmod):
         name = "nixpkgs_config_cc",
         repository = "@nixpkgs",
         register = not bzlmod,
+        nix_file = "//tests:cc-patched.nix",
     )
 
     nixpkgs_java_configure(

@@ -1,5 +1,3 @@
-load("@nixpkgs_repositories//:defs.bzl", "nix_repo")
-load("@nixpkgs_packages//:defs.bzl", "nix_pkg")
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
     "nixpkgs_flake_package",
@@ -10,21 +8,18 @@ load(
 )
 
 def nixpkgs_repositories(*, bzlmod):
-    if bzlmod:
-        nixpkgs = nix_repo("rules_nixpkgs_core_testing", "nixpkgs")
-        remote_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "remote_nixpkgs")
-        http_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "http_nixpkgs")
-        file_nixpkgs = nix_repo("rules_nixpkgs_core_testing", "file_nixpkgs")
-        nixpkgs_content = nix_repo("rules_nixpkgs_core_testing", "nixpkgs_content")
-    else:
-        nixpkgs = "@nixpkgs"
+    nixpkgs = "@nixpkgs"
+    remote_nixpkgs = "@remote_nixpkgs"
+    http_nixpkgs = "@http_nixpkgs"
+    file_nixpkgs = "@file_nixpkgs"
+    nixpkgs_content = "@nixpkgs_content"
+    if not bzlmod:
         nixpkgs_local_repository(
             name = "nixpkgs",
             nix_file = "//:nixpkgs.nix",
             nix_file_deps = ["//:flake.lock"],
         )
 
-        remote_nixpkgs = "@remote_nixpkgs"
         nixpkgs_git_repository(
             name = "remote_nixpkgs",
             remote = "https://github.com/NixOS/nixpkgs",
@@ -32,7 +27,6 @@ def nixpkgs_repositories(*, bzlmod):
             sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
         )
 
-        http_nixpkgs = "@http_nixpkgs"
         nixpkgs_http_repository(
             name = "http_nixpkgs",
             url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz",
@@ -41,7 +35,6 @@ def nixpkgs_repositories(*, bzlmod):
         )
 
         # same as @nixpkgs, only needed for bzlmod tests to distinguish `default` and `file`.
-        file_nixpkgs = "@file_nixpkgs"
         nixpkgs_local_repository(
             name = "file_nixpkgs",
             nix_file = "//:nixpkgs.nix",
@@ -49,7 +42,6 @@ def nixpkgs_repositories(*, bzlmod):
         )
 
         # same as @nixpkgs but using the `nix_file_content` parameter
-        nixpkgs_content = "@nixpkgs_content"
         nixpkgs_local_repository(
             name = "nixpkgs_content",
             nix_file_content = "import ./nixpkgs.nix",
