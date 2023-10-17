@@ -35,6 +35,7 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
         toolchains/python
     )
     declare -ra test_dirs=(
+        core/testing
         testing/core
         testing/core/tests/intermediate_module
         testing/go-bzlmod

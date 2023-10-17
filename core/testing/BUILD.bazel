@@ -1,0 +1,14 @@
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+
+genrule(
+    name = "hello.actual",
+    cmd = "$(execpath @hello//:bin/hello) > $(OUTS)",
+    tools = ["@hello//:bin/hello"],
+    outs = ["hello.actual.txt"],
+)
+
+diff_test(
+    name = "test",
+    file1 = ":hello.actual.txt",
+    file2 = ":hello.expected.txt",
+)
