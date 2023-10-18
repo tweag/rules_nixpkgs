@@ -1,0 +1,12 @@
+# Note, this file cannot load the .bazelrc file in rules_nixpkgs, because it
+# needs to work from an extraction of rules_nixpkgs_core only.
+
+build --host_platform=@rules_nixpkgs_core//platforms:host
+
+common:bzlmod --enable_bzlmod
+
+# User Configuration
+# ------------------
+try-import %workspace%/.bazelrc.local
+
+# vim: ft=conf
