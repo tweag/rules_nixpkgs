@@ -1,6 +1,7 @@
 # Cut a release whenever a new tag is pushed to the repo.
-# You should use an annotated tag, like `git tag -a v1.2.3`
+# You should use an annotated tag, like `git tag -a v1.2.3 --cleanup=whitespace`
 # and put the release notes into the commit message for the tag.
+# The `--cleanup` flag avoids markdown headings being stripped as comments.
 name: Release
 
 on:
