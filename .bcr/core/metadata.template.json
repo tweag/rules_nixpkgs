@@ -1,5 +1,5 @@
 {
-  "homepage": "",
+  "homepage": "https://nix-bazel.build",
   "maintainers": [
     {
       "email": "benjamin.radford@tweag.io ",
@@ -12,6 +12,9 @@
       "name": "Andreas Herrmann"
     }
   ],
-  "versions": ["0.10.0"],
+  "repository": [
+    "github:tweag/rules_nixpkgs"
+  ],
+  "versions": [],
   "yanked_versions": []
 }

@@ -1,0 +1,15 @@
+bcr_test_module:
+  module_path: "testing"
+  matrix:
+    platform: ["ubuntu2204"]
+  tasks:
+    run_tests:
+      name: "Run test module"
+      platform: ${{ platform }}
+      shell_commands:
+        - apt update
+        - apt install --yes nix-setup-systemd
+        - nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+        - nix-channel --update
+      test_targets:
+        - "//..."

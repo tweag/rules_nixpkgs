@@ -1,8 +1,8 @@
 module(
     name = "rules_nixpkgs_java",
-    version = "0.9.0",
+    version = "0.10.0",
 )
 
-bazel_dep(name = "rules_nixpkgs_core", version = "0.9.0")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.10.0")
 bazel_dep(name = "rules_java", version = "4.0.0")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")

@@ -6,14 +6,69 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.10.0...HEAD
+
+## [0.10.0] - 2023-10-18
+
+[0.10.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.9.0...v0.10.0
 
 ### Added
-- nixpkgs_nodejs_configure_platforms for platform transparent npm_install
-  See [#309]
+- nixpkgs_nodejs_configure to import a NodeJS toolchain. See [#222].
+- nixpkgs_nodejs_configure_platforms for platform transparent npm_install. See [#309].
+- nixkpgs_python_configure generates an interpreter target. See [#255].
+- nixpkgs_go_configure gained an attribute_path attribute. See [#288].
+- nixpkgs_cc_configure gained the ability to configure CXX_FLAGS. See [#298].
+- nixpkgs_local_repository now accepts a flake.lock file to generate a nixpkgs repository. See [#338].
+- nixpkgs_python_repository can import Nix provided Python packages, e.g. through poetry. See [#343].
+- nixpkgs_http_repository can download a nixpkgs repository over HTTP. See [#356].
+- nixpkgs_flake_package can add a Nix package from a flake. See [#380].
+- rules_nixpkgs gained the ability to copy generated Nix store paths to a remote store for remote execution support. See [#404].
+- rules_nixpkgs_core gained bzlmod module extensions nix_repo and nix_pkg to import nixpkgs repositories and packages in MODULE.bazel files directly. See [#423].
+
+[#222]: https://github.com/tweag/rules_nixpkgs/pull/222
+[#255]: https://github.com/tweag/rules_nixpkgs/issues/255
+[#288]: https://github.com/tweag/rules_nixpkgs/pull/288
+[#298]: https://github.com/tweag/rules_nixpkgs/pull/298
+[#338]: https://github.com/tweag/rules_nixpkgs/pull/338
+[#343]: https://github.com/tweag/rules_nixpkgs/pull/343
+[#356]: https://github.com/tweag/rules_nixpkgs/pull/356
+[#380]: https://github.com/tweag/rules_nixpkgs/pull/380
+[#404]: https://github.com/tweag/rules_nixpkgs/pull/404
+[#423]: https://github.com/tweag/rules_nixpkgs/pull/423
+
+### Changed
+- nixpkgs_cc_configure now supports cross compilation toolchains. See [#241] and [#401].
+- rules_nixpkgs_dependencies takes a toolchains parameter to specify which rules_nixpkgs components to imoprt. See [#257]
+- nixpkgs_cc_configure now works without an explicit nix_file or nix_file_content attribute. See [#334].
+- nixpkgs_python_configure now exposes the requirements.json file. See [#407].
+
+[#241]: https://github.com/tweag/rules_nixpkgs/pull/241
+[#257]: https://github.com/tweag/rules_nixpkgs/pull/257
+[#334]: https://github.com/tweag/rules_nixpkgs/pull/334
+[#401]: https://github.com/tweag/rules_nixpkgs/pull/401
+[#407]: https://github.com/tweag/rules_nixpkgs/pull/407
+
+### Fixed
+- A performance issue with nixpkgs_package on MacOS due to slow file copies was resolved. See [#256].
+- A performance issue with nixpkgs_package due to repeated rule restarts was resolved. See [#263].
+- Compatibility issues with Bazel 6 for nixpkgs_configure_java were resolved. See [#273].
+- C++ build errors on MacOS due to -Welaborated-enum-base were fixed. See [#382].
+- Hard to read error reporting was improved. See [#389].
+- The http_archive type attribute is now forwarded to rules_nixpkgs component imports. See [#411].
+- Configuration issues when cross-compiling from Linux to MacOS were fixed. See [#413].
+
+[#256]: https://github.com/tweag/rules_nixpkgs/issues/256
+[#263]: https://github.com/tweag/rules_nixpkgs/pull/263
+[#273]: https://github.com/tweag/rules_nixpkgs/pull/273
+[#382]: https://github.com/tweag/rules_nixpkgs/pull/382
+[#389]: https://github.com/tweag/rules_nixpkgs/pull/389
+[#411]: https://github.com/tweag/rules_nixpkgs/pull/411
+[#413]: https://github.com/tweag/rules_nixpkgs/pull/413
   
 ### Breaking changes
-- rules_nixpkgs_go: Custom derivations passed to `nixpkgs_go_configure` (via `nix-file`, `nix-file-content` or `attribute_path`) must now contain a `version` attribute.
+- rules_nixpkgs_go: Custom derivations passed to `nixpkgs_go_configure` (via `nix-file`, `nix-file-content` or `attribute_path`) must now contain a `version` attribute. See [#385].
+
+[#385]: https://github.com/tweag/rules_nixpkgs/pull/385
 
 ## [0.9.0] - 2022-07-19
 

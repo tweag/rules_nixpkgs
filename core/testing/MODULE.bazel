@@ -1,0 +1,13 @@
+module(name = "rules_nixpkgs_core_bcr_testing")
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "..",
+)
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+nix_pkg.default(attr = "hello")
+use_repo(nix_pkg, "hello")
+
+bazel_dep(name = "bazel_skylib", version = "1.4.2")
