@@ -22,20 +22,14 @@ bazel_dep(name = "rules_nixpkgs_core", version = "${TAG:1}")
 
 ## Using WORKSPACE
 
-Paste this snippet into your `WORKSPACE.bazel` file:
+Paste this snippet into your \`WORKSPACE.bazel\` file:
 
 \`\`\`starlark
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-http_archive(
-    name = "rules_nixpkgs",
-    sha256 = "${SHA}",
-    strip_prefix = "${PREFIX}",
-    url = "https://github.com/myorg/rules_nixpkgs/releases/download/${TAG}/${ARCHIVE}",
-)
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_tweag_rules_nixpkgs",
+    sha256 = "${SHA}",
     strip_prefix = "$PREFIX",
     urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/$TAG/$ARCHIVE"],
 )
