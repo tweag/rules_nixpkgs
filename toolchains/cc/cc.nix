@@ -143,6 +143,12 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
         | xargs -0 -r realpath -ms
     }
     CXX_BUILTIN_INCLUDE_DIRECTORIES=($({
+      if is_compiler_option_supported -print-resource-dir; then
+        resource_dir="$( $cc -print-resource-dir )"
+        if [ -d "$resource_dir/share" ]; then
+          echo "$resource_dir/share"
+        fi
+      fi
       include_dirs_for c
       include_dirs_for c++
       if is_compiler_option_supported -fno-canonical-system-headers; then
