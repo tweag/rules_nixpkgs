@@ -21,7 +21,7 @@ let
     paths = [ goAttr ];
     postBuild = ''
       touch $out/ROOT
-      ln -s $out/share/go/{api,doc,lib,misc,pkg,src} $out/
+      ln -s $out/share/go/{api,doc,lib,misc,pkg,src,go.env} $out/
     '';
   } // {
     version = getVersion goAttr;
