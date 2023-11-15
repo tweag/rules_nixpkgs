@@ -81,8 +81,13 @@ def go_sdk_for_arch(go_version):
         ),
     )
 
+    experiments = []
+    if go_version.split('.')[0] == '1' and int(go_version.split('.')[1]) >= 20:
+        experiments = ["nocoverageredesign"]
+
     go_sdk(
         name = "go_sdk",
+        experiments = experiments,
         goos = "{goos}",
         goarch = "{goarch}",
         root_file = "ROOT",
