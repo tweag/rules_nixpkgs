@@ -11,6 +11,12 @@ def nixpkgs_repositories(*, bzlmod):
         nix_file_deps = ["//:flake.lock"],
     )
 
+    nixpkgs_local_repository(
+        name = "poetry2nix",
+        nix_file = "//:poetry2nix.nix",
+        nix_file_deps = ["//:flake.lock"],
+    )
+
     # Tests implicitly depend on Java
     nixpkgs_java_configure(
         name = "nixpkgs_java_runtime",
@@ -43,7 +49,10 @@ def nixpkgs_repositories(*, bzlmod):
 
     nixpkgs_python_repository(
         name = "poetry_packages",
-        repository = "@nixpkgs",
+        repositories = {
+            "nixpkgs": "@nixpkgs",
+            "poetry2nix": "@poetry2nix",
+        },
         nix_file = "//:poetry.nix",
         nix_file_deps = [
             "//:pyproject.toml",

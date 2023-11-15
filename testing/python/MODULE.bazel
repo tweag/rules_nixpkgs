@@ -49,6 +49,7 @@ use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "nixpkgs_python_toolchain")
 use_repo(non_module_deps, "nixpkgs_python_configure_test")
 use_repo(non_module_deps, "nixpkgs_python_toolchain_python3")
+use_repo(non_module_deps, "poetry2nix")
 register_toolchains("@nixpkgs_python_toolchain//:all")
 
 use_repo(non_module_deps, "generated_poetry_packages_deps")

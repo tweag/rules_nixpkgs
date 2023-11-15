@@ -1,6 +1,7 @@
 let
-  nixpkgs = import <nixpkgs> {};
-  inherit (nixpkgs) lib poetry2nix python3 runCommand;
+  nixpkgs = import <nixpkgs> { };
+  poetry2nix = import <poetry2nix> { pkgs = nixpkgs; };
+  inherit (nixpkgs) python3;
 
   args = {
     python = python3;
