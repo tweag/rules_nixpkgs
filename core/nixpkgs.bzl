@@ -410,18 +410,18 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         extra_msg = "See: https://nixos.org/nix/",
     )
 
-    nix_host = repository_ctx.os.environ.get('BAZEL_NIX_REMOTE', '')
+    nix_host = repository_ctx.os.environ.get("BAZEL_NIX_REMOTE", "")
     if nix_host:
         nix_store = "ssh-ng://{host}?max-connections=1".format(host = nix_host)
         repository_ctx.report_progress("Remote-building Nix derivation")
         exec_result = execute_or_fail(
-             repository_ctx,
-             nix_build_cmd + ["--store", nix_store, "--eval-store", "auto"] + expr_args,
-             failure_message = "Cannot build Nix attribute '{}'.".format(
-                 repository_ctx.attr.name,
-             ),
-             quiet = repository_ctx.attr.quiet,
-             timeout = timeout,
+            repository_ctx,
+            nix_build_cmd + ["--store", nix_store, "--eval-store", "auto"] + expr_args,
+            failure_message = "Cannot build Nix attribute '{}'.".format(
+                repository_ctx.attr.name,
+            ),
+            quiet = repository_ctx.attr.quiet,
+            timeout = timeout,
         )
         output_path = exec_result.stdout.splitlines()[-1]
 
@@ -429,7 +429,7 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         repository_ctx.report_progress("Creating remote store root")
         exec_result = execute_or_fail(
             repository_ctx,
-            [ssh_path] + [nix_host, "nix-store --add-root ~/rules_nixpkgs_gcroots/{root} -r {path}".format(root = output_path.split('/')[-1], path = output_path) ],
+            [ssh_path] + [nix_host, "nix-store --add-root ~/rules_nixpkgs_gcroots/{root} -r {path}".format(root = output_path.split("/")[-1], path = output_path)],
             failure_message = "Cannot create remote store root for Nix attribute '{}'.".format(
                 repository_ctx.attr.name,
             ),
@@ -753,7 +753,8 @@ def _nixpkgs_flake_package_impl(repository_ctx):
     for dep_lbl, dep_str in repository_ctx.attr.nix_flake_file_deps.items():
         nix_flake_file_deps[dep_str] = cp(repository_ctx, dep_lbl)
 
-    nix_build_target = str(repository_ctx.path(repository_ctx.attr.nix_flake_file).dirname)
+    nix_build_target = "path:" if not repository_ctx.attr.legacy_path_syntax else ""
+    nix_build_target += str(repository_ctx.path(repository_ctx.attr.nix_flake_file).dirname)
     if repository_ctx.attr.package:
         nix_build_target += "#" + repository_ctx.attr.package
 
@@ -804,7 +805,8 @@ _nixpkgs_flake_package = repository_rule(
         "quiet": attr.bool(),
         "fail_not_supported": attr.bool(default = True, doc = """
             If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
-                                        """),
+        """),
+        "legacy_path_syntax": attr.bool(default = False),
     },
 )
 
@@ -819,8 +821,17 @@ def nixpkgs_flake_package(
         nixopts = [],
         quiet = False,
         fail_not_supported = True,
+        legacy_path_syntax = False,
         **kwargs):
     """Make the content of a local Nix Flake package available in the Bazel workspace.
+
+    **IMPORTANT NOTE**: Calling `nix build` copies the entirety of the Nix Flake
+    into the Nix Store.  When using the `path:` syntax, this means the directory
+    containing `flake.nix` and any subdirectories.  Without specifying `path:`
+    Nix may infer that the flake is the Git repository and copy the entire thing.
+    As a consequence, you may want to isolate your flake from the rest of the
+    repository to minimize the amount of unnecessary data that gets copied into
+    the Nix Store whenever the flake is rebuilt.
 
     Args:
       name: A unique name for this repository.
@@ -833,6 +844,8 @@ def nixpkgs_flake_package(
       nixopts: Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package-nixopts) for more information.
       quiet: Whether to hide the output of the Nix command.
       fail_not_supported: If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
+      legacy_path_syntax: If set to True (not default), the Nix Flake invocation will directly call `nix build <path>` instead of `nix build path:<path>` which may involve copying the entirety of the Git repo into the Nix Store instead of just the path and its children.
+      **kwargs: Common rule arguments.
     """
     if kwargs.pop("_bzlmod", None):
         # The workaround to map canonicalized labels to the user provided
@@ -857,6 +870,7 @@ def nixpkgs_flake_package(
         nixopts = nixopts,
         quiet = quiet,
         fail_not_supported = fail_not_supported,
+        legacy_path_syntax = legacy_path_syntax,
     )
 
     _nixpkgs_flake_package(**kwargs)
