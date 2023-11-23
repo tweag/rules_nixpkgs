@@ -538,10 +538,20 @@ Options to forward to the nix command.
 
 <pre>
 nixpkgs_flake_package(<a href="#nixpkgs_flake_package-name">name</a>, <a href="#nixpkgs_flake_package-nix_flake_file">nix_flake_file</a>, <a href="#nixpkgs_flake_package-nix_flake_lock_file">nix_flake_lock_file</a>, <a href="#nixpkgs_flake_package-nix_flake_file_deps">nix_flake_file_deps</a>, <a href="#nixpkgs_flake_package-package">package</a>,
-                      <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>, <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
+                      <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>, <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>,
+                      <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
 </pre>
 
 Make the content of a local Nix Flake package available in the Bazel workspace.
+
+**IMPORTANT NOTE**: Calling `nix build` copies the entirety of the Nix Flake
+into the Nix Store.  When using the `path:` syntax, this means the directory
+containing `flake.nix` and any subdirectories.  Without specifying `path:`
+Nix may infer that the flake is the Git repository and copy the entire thing.
+As a consequence, you may want to isolate your flake from the rest of the
+repository to minimize the amount of unnecessary data that gets copied into
+the Nix Store whenever the flake is rebuilt.
+
 
 #### Parameters
 
@@ -688,12 +698,31 @@ If set to `True` (default) this rule will fail on platforms which do not support
 </p>
 </td>
 </tr>
+<tr id="nixpkgs_flake_package-legacy_path_syntax">
+<td><code>legacy_path_syntax</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+If set to True (not default), the Nix Flake invocation will directly call `nix build <path>` instead of `nix build path:<path>` which may involve copying the entirety of the Git repo into the Nix Store instead of just the path and its children.
+
+</p>
+</td>
+</tr>
 <tr id="nixpkgs_flake_package-kwargs">
 <td><code>kwargs</code></td>
 <td>
 
 optional.
 
+<p>
+
+Common rule arguments.
+
+</p>
 </td>
 </tr>
 </tbody>
