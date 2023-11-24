@@ -18,6 +18,9 @@
       in
       {
         devShells.default = with pkgs; mkShell {
+          # do not use Xcode on macOS
+          BAZEL_USE_CPP_ONLY_TOOLCHAIN = "1";
+
           name = "rules_nixpkgs_shell";
           packages = [ bazel_6 bazel-buildtools cacert gcc nix git openssh ];
         };
