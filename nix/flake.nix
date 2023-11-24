@@ -20,6 +20,8 @@
         devShells.default = with pkgs; mkShell {
           # do not use Xcode on macOS
           BAZEL_USE_CPP_ONLY_TOOLCHAIN = "1";
+          # for nixpkgs cc wrappers, select C++ explicitly (see https://github.com/NixOS/nixpkgs/issues/150655)
+          BAZEL_CXXOPTS = "-x:c++";
 
           name = "rules_nixpkgs_shell";
           packages = [ bazel_6 bazel-buildtools cacert gcc nix git openssh ];
