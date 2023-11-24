@@ -24,6 +24,7 @@
           BAZEL_CXXOPTS = "-x:c++";
 
           name = "rules_nixpkgs_shell";
+          buildInputs = lib.optional pkgs.stdenv.isDarwin darwin.cctools;
           packages = [ bazel_6 bazel-buildtools cacert gcc nix git openssh ];
         };
       });
