@@ -14,7 +14,7 @@
 
 """Rules for importing and registering a local JDK."""
 
-load(":default_java_toolchain.bzl", "default_java_toolchain")
+load(":default_java_toolchain.bzl", "NONPREBUILT_TOOLCHAIN_CONFIGURATION", "default_java_toolchain")
 
 def _detect_java_version(repository_ctx, java_bin):
     properties_out = repository_ctx.execute([java_bin, "-XshowSettings:properties"]).stderr
@@ -99,10 +99,10 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         for version in range(8, int(version) + 1):
             default_java_toolchain(
                 name = name + "_toolchain_java" + str(version),
+                configuration = NONPREBUILT_TOOLCHAIN_CONFIGURATION,
                 source_version = str(version),
                 target_version = str(version),
                 java_runtime = runtime_name,
-
                 exec_compatible_with = exec_compatible_with,
                 target_compatible_with = target_compatible_with,
             )
