@@ -41,6 +41,8 @@ jobs:
       - name: CHUCK DEBUG 
         shell: bash
         run: |
+          echo >&2 "current dir"
+          pwd >&2
           echo >&2 ".github dir"
           ls -l .github >&2
           echo >&2 ".github/actions dir"
