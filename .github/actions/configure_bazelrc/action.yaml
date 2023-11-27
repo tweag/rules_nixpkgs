@@ -5,6 +5,9 @@ inputs:
     type: string
     description: The path to the bazelrc file to use as the starting point.
     default: '.bazelrc.ci'
+  buildbuddy_api_key:
+    type: string
+    description: Buildbuddy API key
 
 runs:
   using: composite
@@ -22,7 +25,7 @@ runs:
       # TODO: Update with the correct tagged release.
     - uses: tweag/configure-bazel-remote-cache-auth@fix_output
       with:
-        buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
+        buildbuddy_api_key: ${{ inputs.buildbuddy_api_key }}
         bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
 
     - shell: bash
