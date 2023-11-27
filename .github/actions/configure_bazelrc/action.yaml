@@ -3,19 +3,35 @@ name: Configure bazelrc file and copy to $HOME/.bazelrc
 inputs:
   bazelrc_path:
     type: string
-    description: The path to the bazelrc file to configure.
-    required: true
+    description: The path to the bazelrc file to use as the starting point.
+    default: '.bazelrc.ci'
 
 runs:
   using: composite
   steps:
-    - shell: bash
+    - id: create_bazelrc_tmp
+      shell: bash
       env:
         BAZELRC: ${{ inputs.bazelrc_path }}
       run: |
-        cat >>"${BAZELRC}" <<EOF
+        bazelrc_tmp="${BAZELRC}.tmp"
+        cp "${BAZELRC}" "${bazelrc_tmp}"
+        echo "bazelrc_tmp=${bazelrc_tmp}" >> "$GITHUB_OUTPUT"
+
+      # DO NOT MERGE!!!
+      # TODO: Update with the correct tagged release.
+    - uses: tweag/configure-bazel-remote-cache-auth@fix_output
+      with:
+        buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
+        bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
+
+    - shell: bash
+      env:
+        BAZELRC_TMP: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
+      run: |
+        cat >>"${BAZELRC_TMP}" <<EOF
         common --config=ci
         # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
         common:ci --announce_rc=false
         EOF
-        cp "${BAZELRC}" $HOME/.bazelrc
+        cp "${BAZELRC_TMP}" $HOME/.bazelrc

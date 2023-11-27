@@ -36,47 +36,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-        # DO NOT MERGE
-        # TODO: Remove CHUCK DEBUG
-      - name: CHUCK DEBUG 
-        shell: bash
-        run: |
-          echo >&2 "current dir"
-          pwd >&2
-          echo >&2 ".github dir"
-          ls -l .github >&2
-          echo >&2 ".github/actions dir"
-          ls -l .github/actions >&2
-          echo >&2 ".github/actions/create_bazelrc_tmp dir"
-          ls -l .github/actions/create_bazelrc_tmp >&2
-          echo >&2 ".github/actions/configure_bazelrc dir"
-          ls -l .github/actions/configure_bazelrc >&2
       - uses: cachix/install-nix-action@v23
         with:
           nix_path: nixpkgs=./docs/nixpkgs.nix
-      - uses: ./.github/actions/create_bazelrc_tmp
-        id: create_bazelrc_tmp
-        with:
-          bazelrc_path: .bazelrc.ci
-        # DO NOT MERGE!!!
-        # TODO: Update with the correct tagged release.
-      - uses: tweag/configure-bazel-remote-cache-auth@fix_output
-        with:
-          buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
-          bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
-      - uses: ./.github/actions/configure_bazelrc/action.yaml
-        with:
-          bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
-      # - name: Configure
-      #   env:
-      #     BAZELRC_TMP: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
-      #   run: |
-      #     cat >>"${BAZELRC_TMP}" <<EOF
-      #     common --config=ci
-      #     # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
-      #     common:ci --announce_rc=false
-      #     EOF
-      #     cp "${BAZELRC_TMP}" $HOME/.bazelrc
+      - uses: ./.github/actions/configure_bazelrc
       - name: Start remote Nix server
         if: matrix.withNixRemote && matrix.os == 'ubuntu-latest'
         run: |
@@ -120,40 +83,7 @@ jobs:
       - uses: cachix/install-nix-action@v23
         with:
           nix_path: nixpkgs=./nixpkgs.nix
-      # - uses: .github/actions/create_bazelrc_tmp
-      #   id: create_bazelrc_tmp
-      #   with:
-      #     bazelrc_path: .bazelrc.ci
-      # - name: Configure
-      #   env:
-      #     BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
-      #   run: |
-      #     cp .bazelrc.ci $HOME/.bazelrc
-      #     cp .bazelrc.ci $HOME/.bazelrc
-      #     if [ -z "$BUILDBUDDY_API_KEY" ]; then
-      #         cache_setting='build --noremote_upload_local_results'
-      #     else
-      #         cache_setting="build --remote_header=x-buildbuddy-api-key=$BUILDBUDDY_API_KEY"
-      #     fi
-      #     cat >>$HOME/.bazelrc <<EOF
-      #     common --config=ci
-      #     $cache_setting
-      #     # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
-      #     common:ci --announce_rc=false
-      #     EOF
-      - uses: ./.github/actions/create_bazelrc_tmp
-        id: create_bazelrc_tmp
-        with:
-          bazelrc_path: .bazelrc.ci
-        # DO NOT MERGE!!!
-        # TODO: Update with the correct tagged release.
-      - uses: tweag/configure-bazel-remote-cache-auth@fix_output
-        with:
-          buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
-          bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
-      - uses: ./.github/actions/configure_bazelrc/action.yaml
-        with:
-          bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
+      - uses: ./.github/actions/configure_bazelrc
       - name: Build & test
         run: |
           skip() {
