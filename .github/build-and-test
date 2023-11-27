@@ -90,6 +90,12 @@ run_command() {
     echo '::endgroup::'
 }
 
+write_summary() {
+    if [ -v GITHUB_STEP_SUMMARY ]; then
+        echo "$@" >> "$GITHUB_STEP_SUMMARY"
+    fi
+}
+
 for dir in "${build_dirs[@]}"; do
     # bazel test //... fails in modules that don't define any test targets, use
     # bazel build in those instead. Workaround for
@@ -97,6 +103,23 @@ for dir in "${build_dirs[@]}"; do
     run_command build $dir
 done
 
+write_summary '### Test results'
+write_summary '| Test | Result | Elapsed Time |'
+write_summary '| ---- | :----: | -----------: |'
+
+declare start elapsed failed
 for dir in "${test_dirs[@]}"; do
+    start=$EPOCHSECONDS
+    failed=${#FAILURES[@]}
     run_command test $dir
+    elapsed=$(( EPOCHSECONDS - start ))
+    if [[ "$failed" < "${#FAILURES[@]}" ]]; then
+        write_summary "| $dir | Fail :red_circle:       | $( TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed ) |"
+    else
+        write_summary "| $dir | Pass :white_check_mark: | $( TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed ) |"
+    fi
 done
+
+# Local Variables:
+# mode: sh
+# End:
