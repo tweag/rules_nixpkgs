@@ -17,6 +17,9 @@ runs:
       env:
         BAZELRC: ${{ inputs.bazelrc_path }}
       run: |
+        # DEBUG BEGIN
+        set -x
+        # DEBUG END
         bazelrc_tmp="${BAZELRC}.tmp"
         cp "${BAZELRC}" "${bazelrc_tmp}"
         echo "bazelrc_tmp=${bazelrc_tmp}" >> "$GITHUB_OUTPUT"
