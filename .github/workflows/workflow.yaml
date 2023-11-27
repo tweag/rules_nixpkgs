@@ -41,8 +41,14 @@ jobs:
       - name: CHUCK DEBUG 
         shell: bash
         run: |
+          echo >&2 ".github dir"
           ls -l .github >&2
-          tree >&2 .github
+          echo >&2 ".github/actions dir"
+          ls -l .github/actions >&2
+          echo >&2 ".github/actions/create_bazelrc_tmp dir"
+          ls -l .github/actions/create_bazelrc_tmp >&2
+          echo >&2 ".github/actions/configure_bazelrc dir"
+          ls -l .github/actions/configure_bazelrc >&2
       - uses: cachix/install-nix-action@v23
         with:
           nix_path: nixpkgs=./docs/nixpkgs.nix
