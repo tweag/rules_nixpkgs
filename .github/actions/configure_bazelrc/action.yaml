@@ -1,0 +1,21 @@
+name: Configure bazelrc file and copy to $HOME/.bazelrc
+
+inputs:
+  bazelrc_path:
+    type: string
+    description: The path to the bazelrc file to configure.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        BAZELRC: ${{ inputs.bazelrc_path }}
+      run: |
+        cat >>"${BAZELRC}" <<EOF
+        common --config=ci
+        # no-op flag to avoid "ERROR: Config value 'ci' is not defined in any .rc file"
+        common:ci --announce_rc=false
+        EOF
+        cp "${BAZELRC}" $HOME/.bazelrc
