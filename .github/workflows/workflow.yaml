@@ -36,15 +36,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        # DO NOT MERGE
+        # TODO: Remove CHUCK DEBUG
+      - name: CHUCK DEBUG 
+        shell: bash
+        run: |
+          ls -l .github >&2
+          tree >&2 .github
       - uses: cachix/install-nix-action@v23
         with:
           nix_path: nixpkgs=./docs/nixpkgs.nix
-      # - name: Create working copy of .bazelrc for updates
-      #   id: create_bazelrc_tmp
-      #   run: |
-      #     bazelrc_tmp=".bazelrc.ci.tmp"
-      #     cp .bazelrc.ci "${bazelrc_tmp}"
-      #     echo "BAZELRC_TMP=${bazelrc_tmp}" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/create_bazelrc_tmp
         id: create_bazelrc_tmp
         with:
