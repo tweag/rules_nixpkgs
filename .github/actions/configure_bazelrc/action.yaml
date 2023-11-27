@@ -29,11 +29,11 @@ runs:
     - uses: tweag/configure-bazel-remote-cache-auth@fix_output
       with:
         buildbuddy_api_key: ${{ inputs.buildbuddy_api_key }}
-        bazelrc_path: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
+        bazelrc_path: ${{ steps.create_bazelrc_tmp.outputs.bazelrc_tmp }}
 
     - shell: bash
       env:
-        BAZELRC_TMP: ${{ steps.create_bazelrc_tmp.bazelrc_tmp }}
+        BAZELRC_TMP: ${{ steps.create_bazelrc_tmp.outputs.bazelrc_tmp }}
       run: |
         cat >>"${BAZELRC_TMP}" <<EOF
         common --config=ci
