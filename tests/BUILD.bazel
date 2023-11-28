@@ -17,4 +17,7 @@ sh_test(
         "@rules_nixpkgs_python//:srcs",
         "@rules_nixpkgs_rust//:srcs",
     ],
+    # MacOS sandbox fails this test with the following error:
+    #   sandbox-exec: sandbox_apply: Operation not permitted
+    tags = ["no-sandbox"],
 )

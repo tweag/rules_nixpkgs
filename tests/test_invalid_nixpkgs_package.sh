@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ln -s tests/invalid_nixpkgs_package/workspace.bazel WORKSPACE
-ln -s tests/invalid_nixpkgs_package/nested-build.bazel BUILD
+ln -sf tests/invalid_nixpkgs_package/workspace.bazel WORKSPACE
+ln -sf tests/invalid_nixpkgs_package/nested-build.bazel BUILD
 
 # Create copy of default.nix as we will edit it below
 cp tests/invalid_nixpkgs_package/default.nix default.nix
-
-# DEBUG BEGIN
-set -x
-# DEBUG END
 
 # We need to provide a `nixpkgs` to create an output store path which is
 # a folder (because nixpkgs_package requires the output store path to
