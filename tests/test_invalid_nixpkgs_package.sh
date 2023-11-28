@@ -3,7 +3,13 @@ set -euo pipefail
 
 ln -s tests/invalid_nixpkgs_package/workspace.bazel WORKSPACE
 ln -s tests/invalid_nixpkgs_package/nested-build.bazel BUILD
-ln -s tests/invalid_nixpkgs_package/default.nix default.nix
+
+# Create copy of default.nix as we will edit it below
+cp tests/invalid_nixpkgs_package/default.nix default.nix
+
+# DEBUG BEGIN
+set -x
+# DEBUG END
 
 # We need to provide a `nixpkgs` to create an output store path which is
 # a folder (because nixpkgs_package requires the output store path to
@@ -13,7 +19,10 @@ ln -s tests/invalid_nixpkgs_package/default.nix default.nix
 # builder script of the `hello` derivation. Since building this
 # derivation doesn't rely on `nixpkgs`, we can easily relocate the
 # `/nix/store` path in the Bazel sandbox.
-sed "s;COREUTILS-ABS-PATH;${PWD}/external/coreutils_static/bin/;g" -i default.nix
+#
+# NOTE: The MacOS version of sed does not like to appear after the commands. 
+# Also, it requires a value for the suffix.
+sed -i.bak "s;COREUTILS-ABS-PATH;${PWD}/external/coreutils_static/bin/;g" default.nix
 
 # Bring a specific version of Nix which can be executed in the Bazel
 # linux sandbox.
