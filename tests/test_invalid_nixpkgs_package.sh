@@ -16,8 +16,8 @@ cp tests/invalid_nixpkgs_package/default.nix default.nix
 # derivation doesn't rely on `nixpkgs`, we can easily relocate the
 # `/nix/store` path in the Bazel sandbox.
 #
-# NOTE: The MacOS version of sed does not like to appear after the commands. 
-# Also, it requires a value for the suffix.
+# NOTE: The MacOS version of sed does not like the -i flag to appear after the 
+# commands. Also, it requires a value for the suffix.
 sed -i.bak "s;COREUTILS-ABS-PATH;${PWD}/external/coreutils_static/bin/;g" default.nix
 
 # Bring a specific version of Nix which can be executed in the Bazel
