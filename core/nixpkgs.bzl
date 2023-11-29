@@ -2,7 +2,7 @@
 
 # Nixpkgs rules for Bazel
 
-[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
+[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg?event=schedule)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
 
 Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
 external dependencies (like system packages) into [Bazel][bazel]
@@ -85,16 +85,16 @@ def _nixpkgs_http_repository_impl(repository_ctx):
 _nixpkgs_http_repository = repository_rule(
     implementation = _nixpkgs_http_repository_impl,
     attrs = {
+        "auth": attr.string_dict(),
+        "integrity": attr.string(),
+        "sha256": attr.string(),
+        "strip_prefix": attr.string(),
         # The workspace name as specified by the user. Needed for bzlmod
         # compatibility, as other means of retrieving the name only return the
         # mangled name, not the user defined name.
         "unmangled_name": attr.string(mandatory = True),
         "url": attr.string(),
         "urls": attr.string_list(),
-        "auth": attr.string_dict(),
-        "strip_prefix": attr.string(),
-        "integrity": attr.string(),
-        "sha256": attr.string(),
     },
 )
 
@@ -326,14 +326,14 @@ import nixpkgs
 _nixpkgs_local_repository = repository_rule(
     implementation = _nixpkgs_local_repository_impl,
     attrs = {
+        "nix_file": attr.label(allow_single_file = [".nix"]),
+        "nix_file_content": attr.string(),
+        "nix_file_deps": attr.label_list(),
+        "nix_flake_lock_file": attr.label(allow_single_file = [".lock"]),
         # The workspace name as specified by the user. Needed for bzlmod
         # compatibility, as other means of retrieving the name only return the
         # mangled name, not the user defined name.
         "unmangled_name": attr.string(mandatory = True),
-        "nix_file": attr.label(allow_single_file = [".nix"]),
-        "nix_file_deps": attr.label_list(),
-        "nix_file_content": attr.string(),
-        "nix_flake_lock_file": attr.label(allow_single_file = [".lock"]),
     },
 )
 
@@ -591,23 +591,23 @@ def _nixpkgs_package_impl(repository_ctx):
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
     attrs = {
+        "attribute_path": attr.string(),
+        "build_file": attr.label(),
+        "build_file_content": attr.string(),
+        "fail_not_supported": attr.bool(default = True, doc = """
+            If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
+                                        """),
+        "nix_file": attr.label(allow_single_file = [".nix"]),
+        "nix_file_content": attr.string(),
+        "nix_file_deps": attr.label_keyed_string_dict(),
+        "nixopts": attr.string_list(),
+        "quiet": attr.bool(),
+        "repositories": attr.label_keyed_string_dict(),
+        "repository": attr.label(),
         # The workspace name as specified by the user. Needed for bzlmod
         # compatibility, as other means of retrieving the name only return the
         # mangled name, not the user defined name.
         "unmangled_name": attr.string(mandatory = True),
-        "attribute_path": attr.string(),
-        "nix_file": attr.label(allow_single_file = [".nix"]),
-        "nix_file_deps": attr.label_keyed_string_dict(),
-        "nix_file_content": attr.string(),
-        "repositories": attr.label_keyed_string_dict(),
-        "repository": attr.label(),
-        "build_file": attr.label(),
-        "build_file_content": attr.string(),
-        "nixopts": attr.string_list(),
-        "quiet": attr.bool(),
-        "fail_not_supported": attr.bool(default = True, doc = """
-            If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
-                                        """),
     },
 )
 
@@ -795,18 +795,18 @@ def _nixpkgs_flake_package_impl(repository_ctx):
 _nixpkgs_flake_package = repository_rule(
     implementation = _nixpkgs_flake_package_impl,
     attrs = {
-        "nix_flake_file": attr.label(mandatory = True, allow_single_file = ["flake.nix"]),
-        "nix_flake_lock_file": attr.label(mandatory = True, allow_single_file = ["flake.lock"]),
-        "nix_flake_file_deps": attr.label_keyed_string_dict(),
-        "package": attr.string(doc = "Defaults to `default`"),
         "build_file": attr.label(),
         "build_file_content": attr.string(),
-        "nixopts": attr.string_list(),
-        "quiet": attr.bool(),
         "fail_not_supported": attr.bool(default = True, doc = """
             If set to True (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to False calling this rule will succeed but no output will be generated.
         """),
         "legacy_path_syntax": attr.bool(default = False),
+        "nix_flake_file": attr.label(mandatory = True, allow_single_file = ["flake.nix"]),
+        "nix_flake_file_deps": attr.label_keyed_string_dict(),
+        "nix_flake_lock_file": attr.label(mandatory = True, allow_single_file = ["flake.lock"]),
+        "nixopts": attr.string_list(),
+        "package": attr.string(doc = "Defaults to `default`"),
+        "quiet": attr.bool(),
     },
 )
 
