@@ -20,10 +20,7 @@ runs:
         bazelrc_tmp="${BAZELRC}.tmp"
         cp "${BAZELRC}" "${bazelrc_tmp}"
         echo "bazelrc_tmp=${bazelrc_tmp}" >> "$GITHUB_OUTPUT"
-
-      # DO NOT MERGE!!!
-      # TODO: Update with the correct tagged release.
-    - uses: tweag/configure-bazel-remote-cache-auth@fix_output
+    - uses: tweag/configure-bazel-remote-cache-auth@v0
       with:
         buildbuddy_api_key: ${{ inputs.buildbuddy_api_key }}
         bazelrc_path: ${{ steps.create_bazelrc_tmp.outputs.bazelrc_tmp }}
