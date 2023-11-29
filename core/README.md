@@ -4,7 +4,7 @@
 
 # Nixpkgs rules for Bazel
 
-[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
+[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg?event=schedule)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
 
 Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
 external dependencies (like system packages) into [Bazel][bazel]
