@@ -2,7 +2,7 @@
 
 # Nixpkgs rules for Bazel
 
-[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
+[![Continuous integration](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml/badge.svg?event=schedule)](https://github.com/tweag/rules_nixpkgs/actions/workflows/workflow.yaml)
 
 Use [Nix][nix] and the [Nixpkgs][nixpkgs] package set to import
 external dependencies (like system packages) into [Bazel][bazel]
@@ -113,9 +113,14 @@ nixpkgs_package(
 ```
 """
 
+load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load(
     "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
     "get_cpu_value",
+)
+load(
+    "@rules_nixpkgs_cc//:cc.bzl",
+    _nixpkgs_cc_configure = "nixpkgs_cc_configure",
 )
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
@@ -125,7 +130,6 @@ load(
     _nixpkgs_local_repository = "nixpkgs_local_repository",
     _nixpkgs_package = "nixpkgs_package",
 )
-load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load(
     "@rules_nixpkgs_core//:util.bzl",
     "execute_or_fail",
@@ -133,30 +137,26 @@ load(
     "is_supported_platform",
 )
 load(
-    "@rules_nixpkgs_python//:python.bzl",
-    _nixpkgs_python_configure = "nixpkgs_python_configure",
-    _nixpkgs_python_repository = "nixpkgs_python_repository",
-)
-load(
     "@rules_nixpkgs_java//:java.bzl",
     _nixpkgs_java_configure = "nixpkgs_java_configure",
 )
 load(
-    "@rules_nixpkgs_cc//:cc.bzl",
-    _nixpkgs_cc_configure = "nixpkgs_cc_configure",
-)
-load(
-    "@rules_nixpkgs_rust//:rust.bzl",
-    _nixpkgs_rust_configure = "nixpkgs_rust_configure",
+    "@rules_nixpkgs_nodejs//:nodejs.bzl",
+    _nixpkgs_nodejs_configure = "nixpkgs_nodejs_configure",
+    _nixpkgs_nodejs_configure_platforms = "nixpkgs_nodejs_configure_platforms",
 )
 load(
     "@rules_nixpkgs_posix//:posix.bzl",
     _nixpkgs_sh_posix_configure = "nixpkgs_sh_posix_configure",
 )
 load(
-    "@rules_nixpkgs_nodejs//:nodejs.bzl",
-    _nixpkgs_nodejs_configure = "nixpkgs_nodejs_configure",
-    _nixpkgs_nodejs_configure_platforms = "nixpkgs_nodejs_configure_platforms",
+    "@rules_nixpkgs_python//:python.bzl",
+    _nixpkgs_python_configure = "nixpkgs_python_configure",
+    _nixpkgs_python_repository = "nixpkgs_python_repository",
+)
+load(
+    "@rules_nixpkgs_rust//:rust.bzl",
+    _nixpkgs_rust_configure = "nixpkgs_rust_configure",
 )
 
 # aliases for backwards compatibility prior to `bzlmod`
