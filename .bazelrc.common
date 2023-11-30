@@ -6,6 +6,25 @@ common:bzlmod --experimental_isolated_extension_usages
 
 test --test_output=errors
 
+# Remote Cache Configuration
+# --------------------------
+build:remote-cache --bes_results_url=https://app.buildbuddy.io/invocation/
+build:remote-cache --bes_backend=grpcs://remote.buildbuddy.io
+build:remote-cache --remote_cache=grpcs://remote.buildbuddy.io
+build:remote-cache --remote_timeout=3600
+# Avoid failures of the form `deadline exceeded after 14999958197ns DEADLINE_EXCEEDED`.
+# See https://github.com/tweag/rules_haskell/issues/1498.
+build:remote-cache --keep_backend_build_event_connections_alive=false
+# All clients except CI should be configured as read-only
+build:remote-cache --noremote_upload_local_results
+build:remote-cache --experimental_remote_cache_compression
+build:remote-cache --experimental_remote_cache_async
+build:remote-cache --remote_download_toplevel
+
+# Remote Cache Authentication
+# ---------------------------
+try-import %workspace%/.bazelrc.auth
+
 # User Configuration
 # ------------------
 try-import %workspace%/.bazelrc.local
