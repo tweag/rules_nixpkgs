@@ -37,9 +37,9 @@ Read how to [set up your development environment](https://bazel.build/contributi
 
 ## Bazel Remote Cache
 
-The remote cache configuration for this repository is stored in [.bazelrc.common](/.bazelrc.common)
-and grouped under the name, `remote-cache`. It is configured to allow read-only access for all
-clients and read-write for CI. 
+The remote cache configuration for this repository is stored in
+[.bazelrc.remote-cache](/.bazelrc.remote-cache) and grouped under the name, `remote-cache`. It is
+configured to allow read-only access for all clients and read-write for CI. 
 
 To enable the remote cache, 
 

@@ -1,5 +1,3 @@
-import %workspace%/.bazelrc.remote-cache
-
 build --host_platform=@rules_nixpkgs_core//platforms:host
 
 common:bzlmod --enable_bzlmod

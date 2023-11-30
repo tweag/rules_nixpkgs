@@ -1,3 +1,4 @@
+import %workspace%/.bazelrc.remote-cache
 import %workspace%/.bazelrc.common
 import %workspace%/.bazelrc.cc
 import %workspace%/.bazelrc.java
