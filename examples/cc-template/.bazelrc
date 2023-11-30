@@ -1,3 +1,5 @@
+import %workspace%/../../.bazelrc.remote-cache
+
 build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
 build --crosstool_top=@nixpkgs_config_cc//:toolchain
 
