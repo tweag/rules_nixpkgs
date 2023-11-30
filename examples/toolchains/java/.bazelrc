@@ -1,3 +1,5 @@
+import %workspace%/../../../.bazelrc.remote-cache
+
 build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
 build:nix --java_runtime_version=nixpkgs_java_11
 build:nix --tool_java_runtime_version=nixpkgs_java_11
