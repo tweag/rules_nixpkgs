@@ -2,5 +2,6 @@
 build:bzlmod --deleted_packages=docs
 build:bzlmod --registry=file://%workspace%/../../registry
 
+import %workspace%/../../.bazelrc.remote-cache
 import %workspace%/../../.bazelrc.common
 import %workspace%/../../.bazelrc.java

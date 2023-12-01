@@ -6,6 +6,10 @@ common:bzlmod --experimental_isolated_extension_usages
 
 test --test_output=errors
 
+# Remote Cache Authentication
+# ---------------------------
+try-import %workspace%/.bazelrc.auth
+
 # User Configuration
 # ------------------
 try-import %workspace%/.bazelrc.local
