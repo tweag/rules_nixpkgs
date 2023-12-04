@@ -3,3 +3,7 @@
 /**/node_modules
 
 .github/nix-server/keys
+
+# These files are specific to the host.
+.bazelrc.auth
+.bazelrc.local
