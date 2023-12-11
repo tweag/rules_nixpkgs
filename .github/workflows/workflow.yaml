@@ -147,6 +147,7 @@ jobs:
         uses: tweag/run-nix-shell@51bed9187838a0ac93b2ae2ea6216691a43e5f84 # initial_files branch
         if: ${{ runner.os == 'Linux' }}
         with:
+          pure: false
           working-directory: examples/python-container
           run: bazel build :hello_image
 
