@@ -790,7 +790,7 @@ def _nixpkgs_flake_package_impl(repository_ctx):
         extra_msg = "See: https://nixos.org/nix/",
     )
 
-    _nixpkgs_build_and_symlink(repository_ctx, [nix_path, "build"], expr_args, build_file_content)
+    _nixpkgs_build_and_symlink(repository_ctx, [nix_path, "--extra-experimental-features", "nix-command flakes", "build"], expr_args, build_file_content)
 
 _nixpkgs_flake_package = repository_rule(
     implementation = _nixpkgs_flake_package_impl,
