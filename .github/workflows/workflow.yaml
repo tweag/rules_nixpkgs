@@ -128,21 +128,6 @@ jobs:
 
           popd
 
-          # TODO: CLEAN ME UP
-          # if [[ ${{ matrix.os }} = ubuntu* ]]; then
-          #   pushd examples/python-container
-          #   echo
-          #   echo "::group::Running $(head -n1 README.md) with Nix"
-          #   nix-shell --command 'bazel build :hello_image'
-          #   popd
-
-          #   pushd examples/flakes
-          #   echo
-          #   echo "::group::Running $(head -n1 README.md) with Nix"
-          #   nix-shell --command 'bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello'
-          #   popd
-          # fi
-
       - name: Build bazel-nix-python-container with Nix
         uses: tweag/run-nix-shell@51bed9187838a0ac93b2ae2ea6216691a43e5f84 # initial_files branch
         if: ${{ runner.os == 'Linux' }}
@@ -155,6 +140,7 @@ jobs:
         uses: tweag/run-nix-shell@51bed9187838a0ac93b2ae2ea6216691a43e5f84 # initial_files branch
         if: ${{ runner.os == 'Linux' }}
         with:
+          pure: false
           working-directory: examples/flakes
           run: bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello
 
