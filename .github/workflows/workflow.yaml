@@ -1,4 +1,3 @@
-# TODO: Fix the version for tweag/run-nix-shell
 name: Continuous integration
 
 on:
@@ -129,7 +128,7 @@ jobs:
           popd
 
       - name: Build bazel-nix-python-container with Nix
-        uses: tweag/run-nix-shell@51bed9187838a0ac93b2ae2ea6216691a43e5f84 # initial_files branch
+        uses: tweag/run-nix-shell@v0
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
@@ -137,7 +136,7 @@ jobs:
           run: bazel build :hello_image
 
       - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@51bed9187838a0ac93b2ae2ea6216691a43e5f84 # initial_files branch
+        uses: tweag/run-nix-shell@v0
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
