@@ -288,6 +288,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     IS_CLANG=(
       ${if cc.isClang then "True" else "False"}
     )
+    CONLY_FLAGS=()
 
     # Write CC_TOOLCHAIN_INFO
     #
@@ -319,4 +320,5 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     write_info COVERAGE_LINK_FLAGS
     write_info SUPPORTS_START_END_LIB
     write_info IS_CLANG
+    write_info CONLY_FLAGS
   ''
