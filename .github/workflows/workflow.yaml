@@ -128,7 +128,7 @@ jobs:
           popd
 
       - name: Build bazel-nix-python-container with Nix
-        uses: tweag/run-nix-shell@v0
+        uses: tweag/run-nix-shell@9095d7ef643a726ba7bca713c7b248df76617adb # cg/shell_flags_new
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
@@ -136,7 +136,7 @@ jobs:
           run: bazel build :hello_image
 
       - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@v0
+        uses: tweag/run-nix-shell@9095d7ef643a726ba7bca713c7b248df76617adb # cg/shell_flags_new
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
