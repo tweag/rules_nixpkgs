@@ -41,8 +41,6 @@ http_archive(
     urls = [
         "https://github.com/bazelbuild/rules_rust/releases/download/0.35.0/rules_rust-v0.35.0.tar.gz"
     ],
-    # See note on examples/toolchains/rust/WORKSPACE.
-    patches = ["//:patches/001-rules-rust-crate-universe.patch"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")

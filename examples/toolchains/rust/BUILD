@@ -5,7 +5,6 @@ exports_files([
     "nixpkgs.nix",
     "nixpkgs.json",
     "openssl-static.nix",
-    "patches/001-rules-rust-crate-universe.patch",
 ])
 
 rust_binary(
