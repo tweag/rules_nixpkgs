@@ -37,10 +37,9 @@ bazel_skylib_workspace()
 
 http_archive(
     name = "rules_rust",
-    sha256 = "50272c39f20a3a3507cb56dcb5c3b348bda697a7d868708449e2fa6fb893444c",
+    sha256 = "d21c328b21f3c9ecfa4c1e92dd61ace63ff22603234067cf0fe495f75ac251ae",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.35.0/rules_rust-v0.35.0.tar.gz"
     ],
     # See note on examples/toolchains/rust/WORKSPACE.
     patches = ["//:patches/001-rules-rust-crate-universe.patch"],
