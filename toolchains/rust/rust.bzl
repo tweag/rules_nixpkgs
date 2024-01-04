@@ -20,6 +20,19 @@ let
     os = rust.toTargetOs pkgs.stdenv.targetPlatform;
     build-triple = rust.toRustTargetSpec pkgs.stdenv.buildPlatform;
     target-triple = rust.toRustTargetSpec pkgs.stdenv.targetPlatform;
+    rustc = if os == "macos" then
+      # rustc on MacOS expects the `strip` binary in PATH, create a wrapper adding the bin
+      # folder from `binutils` to the PATH
+      pkgs.symlinkJoin
+        {{
+          name = "rustc";
+          paths = [ pkgs.rustc ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/rustc --suffix PATH : ${{pkgs.binutils}}/bin
+          '';
+        }}
+      else pkgs.rustc;
     binary-ext = "";
     staticlib-ext = ".a";
     dylib-ext = if os == "macos" then ".dylib" else ".so";
@@ -27,7 +40,7 @@ in
 pkgs.buildEnv {{
     extraOutputsToInstall = ["out" "bin" "lib"];
     name = "bazel-rust-toolchain";
-    paths = [ pkgs.rustc pkgs.rustfmt pkgs.cargo pkgs.clippy ];
+    paths = [ rustc pkgs.rustfmt pkgs.cargo pkgs.clippy ];
     postBuild = ''
         cat <<EOF > $out/BUILD
         filegroup(
