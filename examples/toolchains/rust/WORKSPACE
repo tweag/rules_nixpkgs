@@ -9,24 +9,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # https://bazelbuild.github.io/rules_rust/#setup
 http_archive(
     name = "rules_rust",
-    sha256 = "50272c39f20a3a3507cb56dcb5c3b348bda697a7d868708449e2fa6fb893444c",
+    sha256 = "d21c328b21f3c9ecfa4c1e92dd61ace63ff22603234067cf0fe495f75ac251ae",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.22.0/rules_rust-v0.22.0.tar.gz",
-    ],
-    # rules_rust 0.22.0 does not yet support direct
-    # overriding toolchain used for build of cargo-bazel
-    # binary.
-    # On non-standard systems (viz. NixOS), that approach
-    # results in download of 'broken' rustc which then
-    # cannot build cargo bazel.
-    # This patch fixes the issue, allowing for toolchain
-    # specification.
-    #
-    # Note: This should be removed as soon as
-    # issue in rules_rust is resolved.
-    patches = [
-        "//:patches/001-rules-rust-crate-universe.patch",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.35.0/rules_rust-v0.35.0.tar.gz",
     ],
 )
 
