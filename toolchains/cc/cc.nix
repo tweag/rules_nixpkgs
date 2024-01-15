@@ -38,6 +38,7 @@ let
         echo "-F${CoreServices}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-F${Security}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+        echo "-F${SystemConfiguration}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
