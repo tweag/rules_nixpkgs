@@ -2309,7 +2309,7 @@ picking the python packages you need from nixpkgs.
 
 The format is generic to support the many ways to generate such packages
 sets with nixpkgs. See our python [`tests`](/testing/toolchains/python) and
-[examples](`/examples/toolchains/python`) to get started.
+[`examples`](/examples/toolchains/python) to get started.
 
 This rule is intended to mimic as closely as possible the [rules_python
 API](https://github.com/bazelbuild/rules_python#using-the-package-installation-rules).
