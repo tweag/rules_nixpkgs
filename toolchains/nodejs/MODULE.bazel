@@ -4,5 +4,10 @@ module(
 )
 
 bazel_dep(name = "rules_nixpkgs_core", version = "0.11.1")
+bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_nodejs", version = "5.5.3")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.default(name = "nixpkgs")
+use_repo(nix_repo, "nixpkgs")
