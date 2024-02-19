@@ -28,6 +28,10 @@ bazel_dep(name = "bazel_skylib", version = "1.0.3")
 bazel_dep(name = "rules_cc", version = "0.0.4")
 bazel_dep(name = "rules_nodejs", version = "5.5.3")
 
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.default(name = "nixpkgs")
+use_repo(nix_repo, "nixpkgs")
+
 nix_nodejs = use_extension("@rules_nixpkgs_nodejs//extensions:toolchain.bzl", "nix_nodejs")
 use_repo(nix_nodejs, "nixpkgs_nodejs_toolchains")
 register_toolchains("@nixpkgs_nodejs_toolchains//:all")
@@ -38,7 +42,6 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_java", version = "6.5.2")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "nixpkgs")
 [
     (
         use_repo(non_module_deps, "nixpkgs_nodejs_{}_{}_toolchain".format(os, arch)),
