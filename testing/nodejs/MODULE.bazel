@@ -42,15 +42,6 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_java", version = "6.5.2")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-[
-    (
-        use_repo(non_module_deps, "nixpkgs_nodejs_{}_{}_toolchain".format(os, arch)),
-        register_toolchains("@nixpkgs_nodejs_{}_{}_toolchain//:all".format(os, arch)),
-    )
-    for os in ["linux", "darwin"]
-    for arch in ["amd64", "arm64"]
-]
-
 use_repo(non_module_deps, "nixpkgs_config_cc")
 use_repo(non_module_deps, "nixpkgs_config_cc_info")
 use_repo(non_module_deps, "nixpkgs_config_cc_toolchains")
