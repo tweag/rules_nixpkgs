@@ -11,3 +11,7 @@ bazel_dep(name = "bazel_skylib", version = "1.0.3")
 nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
 nix_repo.default(name = "nixpkgs")
 use_repo(nix_repo, "nixpkgs")
+
+nix_nodejs = use_extension("//extensions:toolchain.bzl", "nix_nodejs")
+use_repo(nix_nodejs, "nixpkgs_nodejs_toolchains")
+register_toolchains("@nixpkgs_nodejs_toolchains//:all")
