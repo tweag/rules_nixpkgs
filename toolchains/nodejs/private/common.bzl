@@ -1,3 +1,4 @@
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@rules_nodejs//nodejs/private:toolchains_repo.bzl", "PLATFORMS")
 
 
@@ -64,3 +65,37 @@ def nodejs_nix_file_content(*, attribute_path, nix_platform = None):
         nix_platform = nix_platform,
     )
 
+
+def nixpkgs_nodejs(
+        *,
+        name,
+        nix_platform,
+        attribute_path,
+        repository = None,
+        repositories = {},
+        nix_file = None,
+        nix_file_deps = None,
+        nix_file_content = None,
+        nixopts = [],
+        fail_not_supported = True,
+        quiet = False):
+    if attribute_path == None:
+        fail("'attribute_path' is required.", "attribute_path")
+
+    if not nix_file and not nix_file_content:
+        nix_file_content = nodejs_nix_file_content(
+            attribute_path = attribute_path,
+            nix_platform = nix_platform,
+        )
+
+    nixpkgs_package(
+        name = name,
+        repository = repository,
+        repositories = repositories,
+        nix_file = nix_file,
+        nix_file_deps = nix_file_deps,
+        nix_file_content = nix_file_content,
+        nixopts = nixopts,
+        fail_not_supported = fail_not_supported,
+        quiet = quiet,
+    )

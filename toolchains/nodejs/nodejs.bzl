@@ -3,7 +3,7 @@ load("@rules_nixpkgs_core//:util.bzl", "ensure_constraints")
 load(
     "//private:common.bzl",
     "DEFAULT_PLATFORMS_MAPPING",
-    "nodejs_nix_file_content",
+    "nixpkgs_nodejs",
 )
 
 _nodejs_nix_toolchain = """
@@ -53,17 +53,10 @@ def nixpkgs_nodejs_configure(
   target_constraints = None,
   register = True,
 ):
-    if attribute_path == None:
-        fail("'attribute_path' is required.", "attribute_path")
-
-    if not nix_file and not nix_file_content:
-        nix_file_content = nodejs_nix_file_content(
-            attribute_path = attribute_path,
-            nix_platform = nix_platform,
-        )
-
-    nixpkgs_package(
+    nixpkgs_nodejs(
         name = name,
+        nix_platform = nix_platform,
+        attribute_path = attribute_path,
         repository = repository,
         repositories = repositories,
         nix_file = nix_file,
