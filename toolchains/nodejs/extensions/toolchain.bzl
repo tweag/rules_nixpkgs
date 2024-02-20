@@ -2,12 +2,9 @@
 """
 
 load(
-    "//:nodejs.bzl",
-    "nixpkgs_nodejs_configure",
-)
-load(
     "//private:common.bzl",
     "DEFAULT_PLATFORMS_MAPPING",
+    "nixpkgs_nodejs",
 )
 
 _DEFAULT_NIXPKGS = "@nixpkgs"
@@ -108,15 +105,11 @@ def _nix_nodejs_impl(module_ctx):
         exec_constraints = [str(Label(c)) for c in bazel_platform.exec_constraints]
         target_constraints = [str(Label(c)) for c in bazel_platform.target_constraints]
 
-        # TODO[AH] We only need the `nixpkgs_package`, factor it out.
-        nixpkgs_nodejs_configure(
+        nixpkgs_nodejs(
             name = repo_name,
+            nix_platform = nix_platform,
             attribute_path = _DEFAULT_ATTR,
             repository = _DEFAULT_NIXPKGS,
-            nix_platform = nix_platform,
-            exec_constraints = exec_constraints,
-            target_constraints = target_constraints,
-            register = False,
         )
 
         toolchain_names.append(name)
