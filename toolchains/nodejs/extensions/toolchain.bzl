@@ -3,8 +3,11 @@
 
 load(
     "//:nodejs.bzl",
-    "DEFAULT_PLATFORMS_MAPPING",
     "nixpkgs_nodejs_configure",
+)
+load(
+    "//private:common.bzl",
+    "DEFAULT_PLATFORMS_MAPPING",
 )
 
 _DEFAULT_NIXPKGS = "@nixpkgs"
