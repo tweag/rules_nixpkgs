@@ -41,12 +41,6 @@ def nixpkgs_repositories(*, bzlmod):
         repository = "@nixpkgs",
     )
 
-    nixpkgs_python_configure(
-        python2_attribute_path = "python2",
-        repository = "@nixpkgs",
-        register = not bzlmod,
-    )
-
     nixpkgs_python_repository(
         name = "poetry_packages",
         repositories = {
