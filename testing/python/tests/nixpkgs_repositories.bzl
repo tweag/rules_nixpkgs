@@ -35,16 +35,16 @@ def nixpkgs_repositories(*, bzlmod):
         register = not bzlmod,
     )
 
+    nixpkgs_python_configure(
+        python3_attribute_path = "python3",
+        repository = "@nixpkgs",
+        register = not bzlmod,
+    )
+
     nixpkgs_package(
         name = "nixpkgs_python_configure_test",
         nix_file = "//tests:python-test.nix",
         repository = "@nixpkgs",
-    )
-
-    nixpkgs_python_configure(
-        python2_attribute_path = "python2",
-        repository = "@nixpkgs",
-        register = not bzlmod,
     )
 
     nixpkgs_python_repository(
