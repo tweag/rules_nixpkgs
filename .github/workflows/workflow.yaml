@@ -63,6 +63,7 @@ jobs:
           fi
 
           nix-shell --pure \
+            --keep GITHUB_STEP_SUMMARY \
             --keep GITHUB_REPOSITORY \
             --keep BZLMOD_ENABLED \
             --keep BAZEL_NIX_REMOTE \
