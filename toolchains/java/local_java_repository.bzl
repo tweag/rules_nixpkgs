@@ -89,6 +89,12 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         visibility = ["//visibility:private"],
     )
     native.toolchain(
+        name = "toolchain_definition",
+        target_settings = [":%s_settings_alias" % name],
+        toolchain_type = "@bazel_tools//tools/jdk:toolchain_type",
+        toolchain = runtime_name,
+    )
+    native.toolchain(
         name = "runtime_toolchain_definition",
         target_settings = [":%s_settings_alias" % name],
         toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
