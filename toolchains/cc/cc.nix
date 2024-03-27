@@ -60,7 +60,7 @@ let
           name = "bazel-${cc.name}-wrapper";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-          paths = [ cc cc.bintools ];
+          paths = [ cc cc.bintools ] ++ pkgs.lib.optional pkgs.stdenv.isDarwin pkgs.darwin.sigtool;
           pathsToLink = [ "/bin" ];
           passthru = {
             inherit (cc) isClang targetPrefix;
