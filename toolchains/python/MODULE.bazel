@@ -1,7 +1,7 @@
 module(
     name = "rules_nixpkgs_python",
-    version = "0.10.0",
+    version = "0.11.0",
 )
 
-bazel_dep(name = "rules_nixpkgs_core", version = "0.10.0")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.11.0")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")

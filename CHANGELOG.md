@@ -6,7 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.11.0...HEAD
+
+## [0.11.0] - 2024-03-27
+
+[0.11.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.10.0...v0.11.0
+
+### Added
+
+- support for Go 1.21 and newer. See [#417].
+- support for `rules_go` 0.42.0 and newer. See [#422].
+- `nixpkgs_flake_package` now works even when the experimental features [`nix-command`](https://nixos.org/manual/nix/unstable/contributing/experimental-features.html#xp-feature-nix-command) and [`flakes`](https://nixos.org/manual/nix/unstable/contributing/experimental-features.html#xp-feature-flakes) are disabled. See [#465].
+- `sigtool` and `codesign` for the `cc` toolchain on macOS. See [#489].
+
+### Changed
+
+- `nixpkgs_flake_package` now only copies the directory containing the `nix_flake_file`, including any subdirectories, to the nix store. `nixpkgs_flake_package` would previously copy the entire containing Git repository to the nix store if `nix_flake_file` was contained in a Git repository. This is achieved via nix' [`path:` syntax](https://nixos.org/manual/nix/unstable/command-ref/new-cli/nix3-flake#types). This is a breaking change for `nix_flake_file`s inside a subdirectory of a Git repository that references a path outside its subdirectory. See [#450].
+
+### Fixed
+
+- Build failure when using `-fsanitize=address` with the `cc` toolchain. See [#437].
+- The Go toolchain now disables the `GOEXPERIMENT` `CoverageRedesign` following the example of `rules_go` and. See [#440].
+- NixOS dynamic loader issue for Java tools like `ijar` and `singlejar`. See [#451].
+- `nixpkgs_cc_configuren` with Bazel 7 was causing a `syntax error at '%': expected expression`" because of a missingtemplate tsubstitution for `conly_flags`. See [#466].
+- Build failures with linker errors caused by a missing `-F${SystemConfiguration}/Library/Frameworks` `cc` command line option. See [#475].
+- Processes getting killed on macOS during linking caused by using some tools form `darwin.cctools` instead of `stdenv.cc`. See [#479].
+
+### Removed
+
+- Python 2 support has been removed. See [#486].
+
+[#486]: https://github.com/tweag/rules_nixpkgs/pull/486
+[#479]: https://github.com/tweag/rules_nixpkgs/pull/479
+[#475]: https://github.com/tweag/rules_nixpkgs/pull/475
+[#465]: https://github.com/tweag/rules_nixpkgs/pull/465
+[#466]: https://github.com/tweag/rules_nixpkgs/pull/466
+[#451]: https://github.com/tweag/rules_nixpkgs/pull/451
+[#450]: https://github.com/tweag/rules_nixpkgs/pull/450
+[#440]: https://github.com/tweag/rules_nixpkgs/pull/440
+[#422]: https://github.com/tweag/rules_nixpkgs/pull/422
+[#417]: https://github.com/tweag/rules_nixpkgs/pull/417
+[#437]: https://github.com/tweag/rules_nixpkgs/pull/437
+[#489]: https://github.com/tweag/rules_nixpkgs/pull/489
 
 ## [0.10.0] - 2023-10-18
 
