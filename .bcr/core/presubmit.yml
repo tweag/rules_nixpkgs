@@ -2,10 +2,12 @@ bcr_test_module:
   module_path: "testing"
   matrix:
     platform: ["ubuntu2204"]
+    bazel: ["6.4.0"]
   tasks:
     run_tests:
       name: "Run test module"
       platform: ${{ platform }}
+      bazel: ${{ bazel }}
       environment:
         # The Nix installer updates ~/.profile to set PATH. However, the Bazel
         # CI setup seems to disregard ~/.profile. So we set PATH manually here.
