@@ -55,13 +55,13 @@ DEFAULT_JAVACOPTS = [
 # jdk.compiler module, and jvm_opts
 _BASE_TOOLCHAIN_CONFIGURATION = dict(
     forcibly_disable_header_compilation = False,
-    genclass = ["@remote_java_tools//:GenClass"],
-    header_compiler = ["@remote_java_tools//:TurbineDirect"],
-    header_compiler_direct = ["@remote_java_tools//:TurbineDirect"],
+    genclass = [Label("@remote_java_tools//:GenClass")],
+    header_compiler = [Label("@remote_java_tools//:TurbineDirect")],
+    header_compiler_direct = [Label("@remote_java_tools//:TurbineDirect")],
     ijar = ["@bazel_tools//tools/jdk:ijar"],
-    javabuilder = ["@remote_java_tools//:JavaBuilder"],
+    javabuilder = [Label("@remote_java_tools//:JavaBuilder")],
     javac_supports_workers = True,
-    jacocorunner = "@remote_java_tools//:jacoco_coverage_runner_filegroup",
+    jacocorunner = Label("@remote_java_tools//:jacoco_coverage_runner_filegroup"),
     jvm_opts = BASE_JDK9_JVM_OPTS,
     misc = DEFAULT_JAVACOPTS,
     singlejar = ["@bazel_tools//tools/jdk:singlejar"],
@@ -101,7 +101,7 @@ DEFAULT_TOOLCHAIN_CONFIGURATION = dict(
 # However it does allow using a wider range of `--host_javabase`s, including
 # versions newer than the current JDK.
 VANILLA_TOOLCHAIN_CONFIGURATION = dict(
-    javabuilder = ["@remote_java_tools//:VanillaJavaBuilder"],
+    javabuilder = [Label("@remote_java_tools//:VanillaJavaBuilder")],
     jvm_opts = [],
 )
 
@@ -134,8 +134,8 @@ NONPREBUILT_TOOLCHAIN_CONFIGURATION = dict(
         # Turbine is not a worker and parallel GC is faster for short-lived programs.
         "-XX:+UseParallelGC",
     ],
-    ijar = ["@remote_java_tools//:ijar_cc_binary"],
-    singlejar = ["@remote_java_tools//:singlejar_cc_bin"],
+    ijar = [Label("@remote_java_tools//:ijar_cc_binary")],
+    singlejar = [Label("@remote_java_tools//:singlejar_cc_bin")],
     java_runtime = "@bazel_tools//tools/jdk:remote_jdk11",
 )
 

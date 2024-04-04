@@ -6,3 +6,6 @@ module(
 bazel_dep(name = "rules_nixpkgs_core", version = "0.11.1")
 bazel_dep(name = "rules_java", version = "6.5.2")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
+
+toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
+use_repo(toolchains, "remote_java_tools")
