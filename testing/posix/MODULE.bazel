@@ -26,9 +26,6 @@ bazel_dep(name = "rules_sh", version = "0.3.0")
 bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_java", version = "6.5.2")
 
-java_toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
-use_repo(java_toolchains, "remote_java_tools")
-
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "nixpkgs_sh_posix_config")

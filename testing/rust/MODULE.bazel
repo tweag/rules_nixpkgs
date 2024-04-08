@@ -33,9 +33,6 @@ bazel_dep(name = "rules_rust", version = "0.35.0")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "rules_java", version = "6.5.2")
 
-java_toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
-use_repo(java_toolchains, "remote_java_tools")
-
 # we must use the extension, and we must call the `toolchain` tag
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(
