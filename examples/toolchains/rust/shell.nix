@@ -1,4 +1,4 @@
-{ pkgs ? import ./nixpkgs.nix { } }:
+{ pkgs ? import ../nixpkgs.nix { } }:
 with pkgs;
 mkShell {
   nativeBuildInputs = [ bazel_6 git nix zlib libiconv ]
