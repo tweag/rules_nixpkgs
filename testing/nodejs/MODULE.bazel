@@ -35,7 +35,7 @@ use_repo(nix_repo, "nixpkgs")
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_java", version = "6.5.2")
+bazel_dep(name = "rules_java", version = "7.3.1")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs_config_cc")

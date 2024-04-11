@@ -32,9 +32,10 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
     maybe(
         http_archive,
         "rules_java",
-        sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
-        strip_prefix = "rules_java-5.0.0",
-        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
+        urls = [
+            "https://github.com/bazelbuild/rules_java/releases/download/7.3.1/rules_java-7.3.1.tar.gz",
+        ],
+        sha256 = "4018e97c93f97680f1650ffd2a7530245b864ac543fd24fae8c02ba447cb2864",
     )
     maybe(
         http_archive,
