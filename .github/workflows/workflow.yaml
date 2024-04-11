@@ -113,7 +113,7 @@ jobs:
                   continue
               else
                   echo "::group::Running $example_name"
-                  nix-shell --pure --command 'bazel run --config=nix :hello'
+                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
                   # TODO: all toolchains should run without Nixpkgs
               fi
               popd
