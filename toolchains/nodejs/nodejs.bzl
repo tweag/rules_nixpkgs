@@ -4,25 +4,17 @@ load(
     "//private:common.bzl",
     "DEFAULT_PLATFORMS_MAPPING",
     "nixpkgs_nodejs",
+    "nodejs_toolchain",
 )
-
-_nodejs_nix_toolchain = """
-toolchain(
-    name = "nodejs_nix",
-    toolchain = "@{toolchain_repo}//:nodejs_nix_impl",
-    toolchain_type = "@rules_nodejs//nodejs:toolchain_type",
-    exec_compatible_with = {exec_constraints},
-    target_compatible_with = {target_constraints},
-)
-"""
 
 def _nixpkgs_nodejs_toolchain_impl(repository_ctx):
     exec_constraints, target_constraints = ensure_constraints(repository_ctx)
     repository_ctx.file(
         "BUILD.bazel",
         executable = False,
-        content = _nodejs_nix_toolchain.format(
-            toolchain_repo = repository_ctx.attr.toolchain_repo,
+        content = nodejs_toolchain(
+            name = "nodejs_nix",
+            label = "@{}//:nodejs_nix_impl".format(repository_ctx.attr.toolchain_repo),
             exec_constraints = exec_constraints,
             target_constraints = target_constraints,
         ),
