@@ -4,7 +4,10 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
-    srcs = glob(["**"]),
+    srcs = glob(["**"]) + [
+        "//extensions:srcs",
+        "//private:srcs",
+    ],
     visibility = ["//visibility:public"],
 )
 
