@@ -54,6 +54,17 @@ pkgs.buildEnv {{
 """
 
 
+NODEJS_TOOLCHAIN_SNIPPET = """\
+toolchain(
+    name = {name},
+    toolchain = {label},
+    toolchain_type = "@rules_nodejs//nodejs:toolchain_type",
+    exec_compatible_with = {exec_constraints},
+    target_compatible_with = {target_constraints},
+)
+"""
+
+
 def nodejs_nix_file_content(*, attribute_path, nix_platform = None):
     if nix_platform == None:
         nix_platform = "builtins.currentSystem"
@@ -98,4 +109,12 @@ def nixpkgs_nodejs(
         nixopts = nixopts,
         fail_not_supported = fail_not_supported,
         quiet = quiet,
+    )
+
+def nodejs_toolchain(*, name, label, exec_constraints, target_constraints):
+    return NODEJS_TOOLCHAIN_SNIPPET.format(
+        name = repr(name),
+        label = repr(label),
+        exec_constraints = repr(exec_constraints),
+        target_constraints = repr(target_constraints),
     )

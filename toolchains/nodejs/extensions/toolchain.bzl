@@ -5,6 +5,7 @@ load(
     "//private:common.bzl",
     "DEFAULT_PLATFORMS_MAPPING",
     "nixpkgs_nodejs",
+    "nodejs_toolchain",
 )
 
 _DEFAULT_NIXPKGS = "@nixpkgs"
@@ -13,26 +14,9 @@ _DEFAULT_ATTR = "nodejs"
 _TOOLCHAINS_REPO = "nixpkgs_nodejs_toolchains"
 _NODEJS_REPO = "nixpkgs_nodejs_{platform}"
 _NODEJS_LABEL = "@{repo}//:nodejs_nix_impl"
-_NODEJS_TOOLCHAIN = """\
-toolchain(
-    name = {name},
-    toolchain = {label},
-    toolchain_type = "@rules_nodejs//nodejs:toolchain_type",
-    exec_compatible_with = {exec_constraints},
-    target_compatible_with = {target_constraints},
-)
-"""
 
 def _nodejs_label(repo_name):
     return _NODEJS_LABEL.format(repo = repo_name)
-
-def _nodejs_toolchain(*, name, label, exec_constraints, target_constraints):
-    return _NODEJS_TOOLCHAIN.format(
-        name = repr(name),
-        label = repr(label),
-        exec_constraints = repr(exec_constraints),
-        target_constraints = repr(target_constraints),
-    )
 
 def _toolchain_name(*, name, count, prefix_digits):
     prefix = str(count)
@@ -66,7 +50,7 @@ def _toolchains_repo_impl(repository_ctx):
         target_end = target_offset + target_length
         target_constraints = repository_ctx.attr.target_constraints[target_offset:target_end]
         target_offset = target_end
-        builder.append(_nodejs_toolchain(
+        builder.append(nodejs_toolchain(
             name = name,
             label = label,
             exec_constraints = exec_constraints,
