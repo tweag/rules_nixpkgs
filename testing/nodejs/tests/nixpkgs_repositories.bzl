@@ -4,11 +4,18 @@ load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
 load("@rules_nixpkgs_nodejs//:nodejs.bzl", "nixpkgs_nodejs_configure_platforms")
 
 def nixpkgs_repositories(*, bzlmod):
-    nixpkgs_local_repository(
-        name = "nixpkgs",
-        nix_file = "//:nixpkgs.nix",
-        nix_file_deps = ["//:flake.lock"],
-    )
+    if not bzlmod:
+        nixpkgs_local_repository(
+            name = "nixpkgs",
+            nix_file = "//:nixpkgs.nix",
+            nix_file_deps = ["//:flake.lock"],
+        )
+
+        nixpkgs_nodejs_configure_platforms(
+            name = "nixpkgs_nodejs",
+            repository = "@nixpkgs",
+            register = not bzlmod,
+        )
 
     nixpkgs_cc_configure(
         name = "nixpkgs_config_cc",
@@ -24,10 +31,4 @@ def nixpkgs_repositories(*, bzlmod):
         register = not bzlmod,
         toolchain_name = "nixpkgs_java",
         toolchain_version = "11",
-    )
-
-    nixpkgs_nodejs_configure_platforms(
-        name = "nixpkgs_nodejs",
-        repository = "@nixpkgs",
-        register = not bzlmod,
     )

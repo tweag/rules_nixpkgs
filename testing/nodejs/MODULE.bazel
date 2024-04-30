@@ -28,22 +28,16 @@ bazel_dep(name = "bazel_skylib", version = "1.0.3")
 bazel_dep(name = "rules_cc", version = "0.0.4")
 bazel_dep(name = "rules_nodejs", version = "5.5.3")
 
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.default(name = "nixpkgs")
+use_repo(nix_repo, "nixpkgs")
+
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.
 bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_java", version = "6.5.2")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
-use_repo(non_module_deps, "nixpkgs")
-[
-    (
-        use_repo(non_module_deps, "nixpkgs_nodejs_{}_{}_toolchain".format(os, arch)),
-        register_toolchains("@nixpkgs_nodejs_{}_{}_toolchain//:all".format(os, arch)),
-    )
-    for os in ["linux", "darwin"]
-    for arch in ["amd64", "arm64"]
-]
-
 use_repo(non_module_deps, "nixpkgs_config_cc")
 use_repo(non_module_deps, "nixpkgs_config_cc_info")
 use_repo(non_module_deps, "nixpkgs_config_cc_toolchains")
