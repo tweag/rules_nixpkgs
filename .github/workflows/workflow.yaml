@@ -22,7 +22,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          - macos-12
         bzlmodEnabled:
           - true
           - false
@@ -75,7 +75,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          - macos-12
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
