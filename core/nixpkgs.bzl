@@ -468,6 +468,8 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
     # Build a forest of symlinks (like new_local_package() does) to the
     # Nix store.
     for target in find_children(repository_ctx, output_path):
+        if target == '':
+            fail("It appears that you nix store may have a corrupt entry. Found empty directory: {}".format(output_path))
         basename = target.rpartition("/")[-1]
         repository_ctx.symlink(target, basename)
 
