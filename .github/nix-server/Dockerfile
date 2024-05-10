@@ -1,4 +1,4 @@
-FROM ubuntu:23.04
+FROM ubuntu:lunar-20231128
 
 RUN apt-get update -qq && \
     apt-get install openssh-server curl xz-utils sudo locales ca-certificates -y && \
