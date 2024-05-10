@@ -32,9 +32,9 @@ bazel_skylib_workspace()
 
 http_archive(
     name = "rules_sh",
-    sha256 = "d668bb32f112ead69c58bde2cae62f6b8acefe759a8c95a2d80ff6a85af5ac5e",
-    strip_prefix = "rules_sh-0.3.0",
-    urls = ["https://github.com/tweag/rules_sh/archive/v0.3.0.tar.gz"],
+    sha256 = "23a4571ec8afc83db1eae99c0efd0b8b4fa1644069f0340a10f8859e086ba02c",
+    strip_prefix = "rules_sh-0.4.0",
+    urls = ["https://github.com/tweag/rules_sh/archive/v0.4.0.tar.gz"],
 )
 
 load("@rules_sh//sh:repositories.bzl", "rules_sh_dependencies")
