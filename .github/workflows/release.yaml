@@ -35,7 +35,7 @@ jobs:
           .github/workflows/release_prep.sh ${{ env.GITHUB_REF_NAME }} > release_notes.txt
           printf '${{ steps.extract-changelog.outputs.markdown }}' >> release_notes.txt
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           prerelease: true
