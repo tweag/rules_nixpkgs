@@ -61,6 +61,7 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         native.java_runtime(
             name = runtime_name,
             java_home = java_home,
+            version = version,
             visibility = visibility,
         )
 
