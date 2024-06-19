@@ -40,10 +40,11 @@ let
         echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-F${SystemConfiguration}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
         echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
+      '' + pkgs.lib.optionalString (builtins.hasAttr "libcxxabi" pkgs.llvmPackages) ''
+        echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
       '';
     };
   cc =
