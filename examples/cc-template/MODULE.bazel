@@ -1,0 +1,26 @@
+module(name = "rules_nixpkgs_guide")
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = ["//:flake.lock"],
+)
+use_repo(nix_repo, "nixpkgs")
+
+bazel_dep(name = "rules_nixpkgs_cc")
+local_path_override(
+    module_name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
+)
+
+# TODO remove transitive rules_nixpkgs_cc dependencies.
+#   Once there is a module extension for the cc toolchain.
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.4")
