@@ -397,9 +397,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # load rules_nixpkgs
 http_archive(
     name = "io_tweag_rules_nixpkgs",
-    strip_prefix = "rules_nixpkgs-0.9.0",
-    urls = ["https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.9.0.tar.gz"],
-    sha256 = "b01f170580f646ee3cde1ea4c117d00e561afaf3c59eda604cf09194a824ff10",
+    sha256 = "2a555348d7f8593fca2bf3fc6ce53c5d62929de81b6c292e23f16c557c0ae45a",
+    strip_prefix = "rules_nixpkgs-0.11.1",
+    urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
 )
 
 # load everything that rules_nixpkgs rules need to work
