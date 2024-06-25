@@ -1,3 +1,4 @@
 .direnv/
 bazel-*/
 MODULE.bazel.lock
+.bazelrc.user
