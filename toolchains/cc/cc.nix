@@ -4,6 +4,7 @@
 , ccExpr ? null
 , ccPkgs ? import <nixpkgs> { config = { }; overlays = [ ]; }
 , ccLang ? "c++"
+, ccStd ? "c++0x"
 }:
 
 let
@@ -165,10 +166,10 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
       include_dirs_for c++
       if is_compiler_option_supported -fno-canonical-system-headers; then
         include_dirs_for c -fno-canonical-system-headers
-        include_dirs_for c++ -std=c++0x -fno-canonical-system-headers
+        include_dirs_for c++ -std=${ccStd} -fno-canonical-system-headers
       elif is_compiler_option_supported -no-canonical-prefixes; then
         include_dirs_for c -no-canonical-prefixes
-        include_dirs_for c++ -std=c++0x -no-canonical-prefixes
+        include_dirs_for c++ -std=${ccStd} -no-canonical-prefixes
       fi
     } 2>&1 | sort -u))
     unset IFS
@@ -201,7 +202,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     )
     CXX_FLAGS=(
       -x ${ccLang}
-      -std=c++0x
+      -std=${ccStd}
     )
     LINK_FLAGS=(
       $(
