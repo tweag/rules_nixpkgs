@@ -10,7 +10,7 @@ filegroup(
 
 bzl_library(
     name = "rust",
-    srcs = ["//:rust.bzl"],
+    srcs = ["//:rust.bzl", "//:wasm.bzl"],
     deps = [
         "@rules_nixpkgs_core//:nixpkgs",
     ],
