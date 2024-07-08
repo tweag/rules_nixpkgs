@@ -1,0 +1,17 @@
+{
+    "extends": [
+        "github>tweag/renovate-presets:ruleset_base",
+        "github>tweag/renovate-presets:mergify"
+    ],
+    "ignorePaths": ["registry/**"],
+    "packageRules": [
+        {
+            "matchFileNames": [
+                "toolchains/*/MODULE.bazel",
+                "core/MODULE.bazel"
+            ],
+            "enabled": false
+        }
+    ],
+    "gitAuthor": "Renovate Bot <bot@renovateapp.com>"
+}

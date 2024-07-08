@@ -1,0 +1,36 @@
+module(name = "rules_nixpkgs_guide")
+
+bazel_dep(name = "rules_nixpkgs_core")
+# Remove to use rules_nixpkgs_core from the BCR
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = ["//:flake.lock"],
+)
+use_repo(nix_repo, "nixpkgs")
+
+bazel_dep(name = "rules_nixpkgs_cc")
+# Replace by archive_override to download a rules_nixpkgs_cc revision.
+# (rules_nixpkgs_cc is not available on the BCR, yet.)
+#
+#     archive_override(
+#         module_name = "rules_nixpkgs_cc",
+#         urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
+#         integrity = "sha256-KlVTSNf4WT/KK/P8bOU8XWKSnegbbCkuI/FsVXwK5Fo=",
+#         strip_prefix = "rules_nixpkgs-0.11.1/toolchains/cc",
+#     )
+local_path_override(
+    module_name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
+)
+
+# TODO remove transitive rules_nixpkgs_cc dependencies.
+#   Once there is a module extension for the cc toolchain.
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.9")

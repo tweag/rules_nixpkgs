@@ -1,7 +1,7 @@
 {
   inputs = {
     # Track a specific tag on the nixpkgs repo.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     # The flake format itself is very minimal, so the use of this
     # library is common.
@@ -30,7 +30,7 @@
 
             # ... which makes available the following dependencies,
             # all sourced from the `pkgs` package set:
-            packages = with pkgs; [ bazel_5 bazel-buildtools cacert nix git ];
+            packages = with pkgs; [ bazel_7 bazel-buildtools cacert nix git ];
           };
       });
 }

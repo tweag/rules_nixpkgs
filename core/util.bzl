@@ -131,7 +131,10 @@ def find_children(repository_ctx, target_dir):
         "-print0",
     ]
     exec_result = execute_or_fail(repository_ctx, find_args)
-    return exec_result.stdout.rstrip("\000").split("\000")
+    if exec_result.stdout != "":
+        return exec_result.stdout.rstrip("\000").split("\000")
+    else:
+        return []  # Special case because splitting the empty string yields [""]
 
 def default_constraints(repository_ctx):
     """Calculate the default CPU and OS constraints based on the host platform.
@@ -145,12 +148,14 @@ def default_constraints(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
     cpu = {
         "darwin": "@platforms//cpu:x86_64",
+        "darwin_x86_64": "@platforms//cpu:x86_64",
         "darwin_arm64": "@platforms//cpu:arm64",
         "aarch64": "@platforms//cpu:arm64",
     }.get(cpu_value, "@platforms//cpu:x86_64")
     os = {
         "darwin": "@platforms//os:osx",
         "darwin_arm64": "@platforms//os:osx",
+        "darwin_x86_64": "@platforms//os:osx",
     }.get(cpu_value, "@platforms//os:linux")
     return [cpu, os]
 

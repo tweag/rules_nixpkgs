@@ -61,6 +61,7 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         native.java_runtime(
             name = runtime_name,
             java_home = java_home,
+            version = version,
             visibility = visibility,
         )
 
@@ -92,6 +93,12 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         name = "runtime_toolchain_definition",
         target_settings = [":%s_settings_alias" % name],
         toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
+        toolchain = runtime_name,
+    )
+    native.toolchain(
+        name = "bootstrap_runtime_toolchain_definition",
+        target_settings = [":%s_settings_alias" % name],
+        toolchain_type = "@bazel_tools//tools/jdk:bootstrap_runtime_toolchain_type",
         toolchain = runtime_name,
     )
 

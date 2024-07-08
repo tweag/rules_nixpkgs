@@ -4,6 +4,7 @@
 , ccExpr ? null
 , ccPkgs ? import <nixpkgs> { config = { }; overlays = [ ]; }
 , ccLang ? "c++"
+, ccStd ? "c++0x"
 }:
 
 let
@@ -40,10 +41,11 @@ let
         echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-F${SystemConfiguration}/Library/Frameworks" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
         echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
         echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
+      '' + pkgs.lib.optionalString (builtins.hasAttr "libcxxabi" pkgs.llvmPackages) ''
+        echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
       '';
     };
   cc =
@@ -164,10 +166,10 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
       include_dirs_for c++
       if is_compiler_option_supported -fno-canonical-system-headers; then
         include_dirs_for c -fno-canonical-system-headers
-        include_dirs_for c++ -std=c++0x -fno-canonical-system-headers
+        include_dirs_for c++ -std=${ccStd} -fno-canonical-system-headers
       elif is_compiler_option_supported -no-canonical-prefixes; then
         include_dirs_for c -no-canonical-prefixes
-        include_dirs_for c++ -std=c++0x -no-canonical-prefixes
+        include_dirs_for c++ -std=${ccStd} -no-canonical-prefixes
       fi
     } 2>&1 | sort -u))
     unset IFS
@@ -200,7 +202,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     )
     CXX_FLAGS=(
       -x ${ccLang}
-      -std=c++0x
+      -std=${ccStd}
     )
     LINK_FLAGS=(
       $(

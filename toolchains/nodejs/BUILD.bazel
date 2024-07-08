@@ -4,7 +4,10 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
-    srcs = glob(["**"]),
+    srcs = glob(["**"]) + [
+        "//extensions:srcs",
+        "//private:srcs",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -14,5 +17,6 @@ bzl_library(
     deps = [
         "@rules_nixpkgs_core//:nixpkgs",
         "@rules_nodejs//nodejs:bzl",
+        "//private:common",
     ],
 )

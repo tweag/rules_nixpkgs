@@ -219,7 +219,7 @@ repository:
 {
   inputs = {
     # Track a specific tag on the nixpkgs repo.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     # The flake format itself is very minimal, so the use of this
     # library is common.
@@ -300,7 +300,7 @@ play well together.
 As with all dependencies, it's good to upgrade the version of the `nixpkgs`
 input from time to time, which will bump the versions of all Nix-provided
 dependencies. In the example above, the `nixpkgs` dependency is set to follow
-the `nixos-22.05` tag, and we can pull the latest commit from that branch using:
+the `nixos-24.05` tag, and we can pull the latest commit from that branch using:
 
 ```
 $ nix flake lock --update-input nixpkgs
@@ -308,12 +308,12 @@ $ nix flake lock --update-input nixpkgs
 
 It is also possible to change the Nixpkgs dependency to any branch: for
 instance, we could switch to `master` and receive bleeding-edge dependencies, or
-(more practically) we could choose to follow a newer tag (22.11 is available
-right now) by making the following change in `flake.nix`:
+(more practically) we could choose to follow a newer tag (e.g. assume 24.11 is
+available) by making the following change in `flake.nix`:
 
 ```diff
--    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
-+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
++    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
 ```
 
 To update _all_ dependencies, one uses:
@@ -397,9 +397,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # load rules_nixpkgs
 http_archive(
     name = "io_tweag_rules_nixpkgs",
-    strip_prefix = "rules_nixpkgs-0.9.0",
-    urls = ["https://github.com/tweag/rules_nixpkgs/archive/refs/tags/v0.9.0.tar.gz"],
-    sha256 = "b01f170580f646ee3cde1ea4c117d00e561afaf3c59eda604cf09194a824ff10",
+    sha256 = "2a555348d7f8593fca2bf3fc6ce53c5d62929de81b6c292e23f16c557c0ae45a",
+    strip_prefix = "rules_nixpkgs-0.11.1",
+    urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
 )
 
 # load everything that rules_nixpkgs rules need to work
@@ -431,7 +431,7 @@ Nixpkgs commit hash.)
 # A hermetic CC toolchain
 
 We can now define a CC toolchain that will be provisioned by Nix using package
-definitions from the 22.05 release of Nixpkgs.
+definitions from the 24.05 release of Nixpkgs.
 
 ```bazel
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure")
