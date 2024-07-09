@@ -2,7 +2,8 @@ bcr_test_module:
   module_path: "testing"
   matrix:
     platform: ["ubuntu2204"]
-    bazel: ["6.4.0"]
+    bazel:
+      - "6.x"
   tasks:
     run_tests:
       name: "Run test module"
