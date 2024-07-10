@@ -67,6 +67,9 @@ jobs:
             --keep BZLMOD_ENABLED \
             --keep BAZEL_NIX_REMOTE \
             --run 'bash .github/build-and-test'
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
   # test-examples:
   #   name: Build & Test - Examples
   #   strategy:
