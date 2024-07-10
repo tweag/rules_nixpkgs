@@ -1,4 +1,4 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_test")
+load("@rules_nodejs//:index.bzl", "nodejs_test")
 load(":nodejs-test.bzl", "nodejs_test_suite")
 
 package(default_testonly = 1)

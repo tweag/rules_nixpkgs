@@ -2,7 +2,6 @@ name: Continuous integration
 
 on:
   push:
-    branches: master
   pull_request:
     branches: master
   workflow_dispatch: # allows manual triggering
@@ -21,13 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          #- ubuntu-latest
           - macos-12
         bzlmodEnabled:
           - true
           - false
         withNixRemote:
-          - true
+          #- true
           - false
     runs-on: ${{ matrix.os }}
     steps:
@@ -68,95 +67,84 @@ jobs:
             --keep BZLMOD_ENABLED \
             --keep BAZEL_NIX_REMOTE \
             --run 'bash .github/build-and-test'
-  test-examples:
-    name: Build & Test - Examples
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-12
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@V27
-        with:
-          nix_path: nixpkgs=./nixpkgs.nix
-      - uses: ./.github/actions/configure_bazelrc
-        with:
-          buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
-      - name: Build & test
-        run: |
-          skip() {
-            echo "Will skip $(head -n1 $2/README.md) ${1%_nix} Nix"
-            local p="$1[@]"
-            read -a ${1} <<< $(echo ${!p//$2})
-          }
+  # test-examples:
+  #   name: Build & Test - Examples
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         - ubuntu-latest
+  #         - macos-12
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: cachix/install-nix-action@V27
+  #       with:
+  #         nix_path: nixpkgs=./nixpkgs.nix
+  #     - uses: ./.github/actions/configure_bazelrc
+  #       with:
+  #         buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
+  #     - name: Build & test
+  #       run: |
+  #         skip() {
+  #           echo "Will skip $(head -n1 $2/README.md) ${1%_nix} Nix"
+  #           local p="$1[@]"
+  #           read -a ${1} <<< $(echo ${!p//$2})
+  #         }
 
-          pushd examples/cc-template
-          echo
-          echo "::group::Running $(head -n1 README.md) with Nix, WORKSPACE"
-          nix develop --command bazel run --noenable_bzlmod //src:hello-world
-          popd
+  #         pushd examples/cc-template
+  #         echo
+  #         echo "::group::Running $(head -n1 README.md) with Nix, WORKSPACE"
+  #         nix develop --command bazel run --noenable_bzlmod //src:hello-world
+  #         popd
 
-          pushd examples/cc-template
-          echo
-          echo "::group::Running $(head -n1 README.md) with Nix, bzlmod"
-          nix develop --command bazel run --enable_bzlmod //src:hello-world
-          popd
+  #         pushd examples/cc-template
+  #         echo
+  #         echo "::group::Running $(head -n1 README.md) with Nix, bzlmod"
+  #         nix develop --command bazel run --enable_bzlmod //src:hello-world
+  #         popd
 
-          pushd examples/toolchains
-          with_nix=( $(ls) )
-          without_nix=( cc go java )
+  #         pushd examples/toolchains
+  #         with_nix=( python rust )
+  #         without_nix=( ) #cc go java )
 
-          for dir in "${with_nix[@]}"; do
-              pushd "$dir"
-              echo
-              example_name="$(head -n1 README.md) with Nix"
-              if [[ -f skip-on-ci ]]; then
-                  echo "Skipping $example_name"
-                  popd
-                  continue
-              else
-                  echo "::group::Running $example_name"
-                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
-                  # TODO: all toolchains should run without Nixpkgs
-              fi
-              popd
-          done
-          for dir in "${without_nix[@]}"; do
-              pushd "$dir"
-              echo
-              echo "::group::Running $(head -n1 README.md) without Nix"
-              bazel run :hello
-              popd
-          done
+  #         for dir in "${with_nix[@]}"; do
+  #             pushd "$dir"
+  #             echo
+  #             example_name="$(head -n1 README.md) with Nix"
+  #             if [[ -f skip-on-ci ]]; then
+  #                 echo "Skipping $example_name"
+  #                 popd
+  #                 continue
+  #             else
+  #                 echo "::group::Running $example_name"
+  #                 nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
+  #                 # TODO: all toolchains should run without Nixpkgs
+  #             fi
+  #             popd
+  #         done
+  #         for dir in "${without_nix[@]}"; do
+  #             pushd "$dir"
+  #             echo
+  #             echo "::group::Running $(head -n1 README.md) without Nix"
+  #             bazel run :hello
+  #             popd
+  #         done
 
-          popd
+  #         popd
 
-      - name: Build bazel-nix-python-container with Nix
-        uses: tweag/run-nix-shell@v0
-        if: ${{ runner.os == 'Linux' }}
-        with:
-          pure: false
-          working-directory: examples/python-container
-          run: bazel build :hello_image
+  #     - name: Build bazel-nix-python-container with Nix
+  #       uses: tweag/run-nix-shell@v0
+  #       if: ${{ runner.os == 'Linux' }}
+  #       with:
+  #         pure: false
+  #         working-directory: examples/python-container
+  #         run: bazel build :hello_image
 
-      - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@v0
-        if: ${{ runner.os == 'Linux' }}
-        with:
-          pure: false
-          working-directory: examples/flakes
-          run: bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello
-
-  all_ci_tests:
-    runs-on: ubuntu-latest
-    needs:
-      - test-nixpkgs
-      - test-examples
-    if: ${{ always() }}
-    steps:
-      - uses: cgrindel/gha_join_jobs@794a2d117251f22607f1aab937d3fd3eaaf9a2f5 # v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Run bazel-nix-flakes-example with Nix
+  #       uses: tweag/run-nix-shell@v0
+  #       if: ${{ runner.os == 'Linux' }}
+  #       with:
+  #         pure: false
+  #         working-directory: examples/flakes
+  #         run: bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello

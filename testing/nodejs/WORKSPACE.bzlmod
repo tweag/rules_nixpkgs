@@ -7,8 +7,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # TODO[AH] Migrate rules_nixpkgs_nodejs to use rules_js for any JavaScript
 # targets, rules_nodejs can still be used for the core functionality, the
 # toolchain in particular.
-http_archive(
-    name = "build_bazel_rules_nodejs",
-    sha256 = "a1295b168f183218bc88117cf00674bcd102498f294086ff58318f830dd9d9d1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.5/rules_nodejs-5.8.5.tar.gz"],
-)
+#http_archive(
+#    name = "build_bazel_rules_nodejs",
+#    sha256 = "a1295b168f183218bc88117cf00674bcd102498f294086ff58318f830dd9d9d1",
+#    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.5/rules_nodejs-5.8.5.tar.gz"],
+#)
