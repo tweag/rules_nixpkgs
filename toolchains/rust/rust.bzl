@@ -29,7 +29,7 @@ let
           paths = [ pkgs.rustc ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
-            wrapProgram $out/bin/rustc --suffix PATH : ${{pkgs.binutils}}/bin
+            wrapProgram $out/bin/rustc --suffix PATH : ${{pkgs.darwin.cctools}}/bin
           '';
         }}
       else pkgs.rustc;
