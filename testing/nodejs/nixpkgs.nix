@@ -1,1 +1,0 @@
-../../docs/nixpkgs.nix
