@@ -27,8 +27,14 @@ jobs:
           - true
           - false
         withNixRemote:
-          - true
+          # FIXME: disable nix-remote checks as they don't work
+          #        see https://github.com/tweag/rules_nixpkgs/issues/564
+          #- true
           - false
+        exclude:
+          # skip nix remote jobs on MacOS
+          - os: macos-12
+            withNixRemote: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +45,7 @@ jobs:
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
       - name: Start remote Nix server
-        if: matrix.withNixRemote && matrix.os == 'ubuntu-latest'
+        if: matrix.withNixRemote
         run: |
           # Generate temporary SSH keys.
           mkdir -p $HOME/.ssh
@@ -52,22 +58,22 @@ jobs:
           cp .github/nix-server/keys/* $HOME/.ssh/
 
           sudo cp .github/nix-server/config /etc/ssh/ssh_config
+
+          echo "Setting BAZEL_NIX_REMOTE env variable"
+          echo BAZEL_NIX_REMOTE=nix-server >> "$GITHUB_ENV"
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
-          NIX_REMOTE_ENABLED: matrix.withNixRemote && matrix.os == 'ubuntu-latest'
         run: |
-          if [ "$NIX_REMOTE_ENABLED" = "true" ]; then
-            echo "Setting BAZEL_NIX_REMOTE env variable"
-            export BAZEL_NIX_REMOTE=nix-server
-          fi
-
           nix-shell --pure \
             --keep GITHUB_STEP_SUMMARY \
             --keep GITHUB_REPOSITORY \
             --keep BZLMOD_ENABLED \
             --keep BAZEL_NIX_REMOTE \
             --run 'bash .github/build-and-test'
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
   test-examples:
     name: Build & Test - Examples
     strategy:
