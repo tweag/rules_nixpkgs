@@ -2,22 +2,22 @@ workspace(name = "rules_nixpkgs_nodejs_testing")
 
 local_repository(
     name = "rules_nixpkgs_nodejs",
-    path = "../../toolchains/nodejs",
+    path = "..",
 )
 
 local_repository(
     name = "rules_nixpkgs_core",
-    path = "../../core",
+    path = "../../../core",
 )
 
 local_repository(
     name = "rules_nixpkgs_cc",
-    path = "../../toolchains/cc",
+    path = "../../cc",
 )
 
 local_repository(
     name = "rules_nixpkgs_java",
-    path = "../../toolchains/java",
+    path = "../../java",
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
