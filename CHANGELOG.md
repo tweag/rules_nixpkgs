@@ -6,7 +6,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.12.0...HEAD
+
+## [0.12.0] - 2024-07-12
+
+[0.12.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.11.1...v0.12.0
+
+### Added
+
+- Make the C++ -std flag configurable. See [#557].
+- Add module extension for nodejs toolchain. See [#505].
+- Add bzlmod version of example to the guide. See [#556].
+
+### Changed
+
+- Update to Bazel 6. See [#503].
+- Update the rules_nixpkgs guide. See [#554].
+
+### Fixed
+
+- Make `rules_nixpkgs_java` depend on `remote_java_tools` properly. See [#497].
+- Catch case in which find_children is called on an empty dir by @numine777 in [#526]
+- Make `nixpkgs_java_configure` work with Bazel 7. See [#499].
+- Fix `java_test` failure with JDK 17+. See [#553].
+- Fix CPU detection on Darwin with Bazel 7. See [#554].
+- Fix cc toolchain on Darwin using nixpkgs >= 23.11. See [#543].
+
+[#497]: https://github.com/tweag/rules_nixpkgs/pull/497
+[#499]: https://github.com/tweag/rules_nixpkgs/pull/499
+[#503]: https://github.com/tweag/rules_nixpkgs/pull/503
+[#505]: https://github.com/tweag/rules_nixpkgs/pull/505
+[#526]: https://github.com/tweag/rules_nixpkgs/pull/526
+[#543]: https://github.com/tweag/rules_nixpkgs/pull/543
+[#553]: https://github.com/tweag/rules_nixpkgs/pull/553
+[#554]: https://github.com/tweag/rules_nixpkgs/pull/554
+[#556]: https://github.com/tweag/rules_nixpkgs/pull/556
+[#557]: https://github.com/tweag/rules_nixpkgs/pull/557
 
 ## [0.11.0] - 2024-03-27
 
