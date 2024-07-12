@@ -6,7 +6,7 @@ TAG=$1
 PREFIX="rules_nixpkgs-${TAG:1}"
 ARCHIVE="rules_nixpkgs-${TAG:1}.tar.gz"
 git archive --format=tar.gz --prefix="${PREFIX}/" -o $ARCHIVE HEAD
-SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $TAG}')
+SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
 cat << EOF
 ## Using Bzlmod with Bazel 6
