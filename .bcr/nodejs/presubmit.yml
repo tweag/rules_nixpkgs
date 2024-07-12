@@ -1,19 +1,19 @@
-bcr_test_module:
-  module_path: "testing"
-  matrix:
-    platform: ["ubuntu2204"]
-    bazel:
-      - "6.x"
-  tasks:
-    run_tests:
-      name: "Run test module"
-      platform: ${{ platform }}
-      bazel: ${{ bazel }}
-      environment:
-        # The Nix installer updates ~/.profile to set PATH. However, the Bazel
-        # CI setup seems to disregard ~/.profile. So we set PATH manually here.
-        PATH: /var/lib/buildkite-agent/.nix-profile/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      shell_commands:
-        - curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
-      test_targets:
-        - "//..."
+matrix:
+  platform:
+  - debian10
+  - ubuntu2004
+  - macos
+  # XXX not fully supported yet
+  #- macos_arm64
+  bazel:
+  - 7.x
+  - 6.x
+tasks:
+  # XXX use testing module once all dependencies are available from the BCR
+  verify_targets:
+    name: Verify build targets
+    platform: ${{ platform }}
+    bazel: ${{ bazel }}
+    build_targets:
+    - '@rules_nixpkgs_nodejs//:nodejs'
+    - '@rules_nixpkgs_nodejs//extensions:toolchain'
