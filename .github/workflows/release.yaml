@@ -41,4 +41,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create --draft --notes-file release_notes.txt v${{ inputs.version }} rules_nixpkgs-${{ inputs.version }}.tar.gz
+          gh release create \
+            --draft \
+            --notes-file release_notes.txt \
+            --title v${{ inputs.version }} \
+            v${{ inputs.version }} \
+            rules_nixpkgs-${{ inputs.version }}.tar.gz
