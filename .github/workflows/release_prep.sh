@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Set by GH actions, see
-# https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-TAG=${GITHUB_REF_NAME}
+TAG=$1
 # The prefix is chosen to match what GitHub generates for source archives
 PREFIX="rules_nixpkgs-${TAG:1}"
 ARCHIVE="rules_nixpkgs-${TAG:1}.tar.gz"
 git archive --format=tar.gz --prefix="${PREFIX}/" -o $ARCHIVE ${TAG}
-SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
+SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $TAG}')
 
 cat << EOF
 ## Using Bzlmod with Bazel 6
