@@ -9,7 +9,7 @@ bazel_dep(name = "bazel_skylib", version = "1.0.3")
 nix_repo = use_extension("//extensions:repository.bzl", "nix_repo")
 nix_repo.github(
     name = "nixpkgs",
-    tag = "22.11",
-    sha256 = "ddc3428d9e1a381b7476750ac4dbea7a42885cbbe6e1af44b21d6447c9609a6f",
+    tag = "24.05",
+    sha256 = "911314b81780f26fdaf87e17174210bdbd40c86bac1795212f257cdc236a1e78",
 )
 use_repo(nix_repo, "nixpkgs")
