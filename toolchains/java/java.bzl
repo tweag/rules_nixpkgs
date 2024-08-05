@@ -178,6 +178,70 @@ def nixpkgs_java_configure(
 
     ##### Bazel 6
 
+    #### with with [Bzlmod](https://bazel.build/versions/6.5.0/external/overview#bzlmod)
+
+    Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
+    ```bzl
+    bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
+    bazel_dep(name = "rules_nixpkgs_java", version = "0.12.0")
+    bazel_dep(name = "rules_java", version = "7.3.1")
+    bazel_dep(name = "platforms", version = "0.0.9")
+
+    nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+    nix_repo.github(
+        name = "nixpkgs",
+        org = "NixOS",
+        repo = "nixpkgs",
+        commit = "ff0dbd94265ac470dda06a657d5fe49de93b4599",
+        sha256 = "1bf0f88ee9181dd993a38d73cb120d0435e8411ea9e95b58475d4426c0948e98",
+    )
+    use_repo(nix_repo, "nixpkgs")
+
+    non_module_dependencies = use_extension("//:non_module_dependencies.bzl", "non_module_dependencies")
+    use_repo(non_module_dependencies, "nixpkgs_java_runtime_toolchain")
+
+    register_toolchains("@nixpkgs_java_runtime_toolchain//:all")
+
+    archive_override(
+        module_name = "rules_nixpkgs_java",
+        urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.12.0/rules_nixpkgs-0.12.0.tar.gz",
+        integrity = "",
+        strip_prefix = "rules_nixpkgs-0.12.0/toolchains/java",
+    )
+    ```
+
+    Add the following to a `.bzl` file, like `non_module_dependencies.bzl`, to import a JDK from nixpkgs:
+    ```bzl
+    load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
+
+    def _non_module_dependencies_impl(_ctx):
+        nixpkgs_java_configure(
+            name = "nixpkgs_java_runtime",
+            attribute_path = "openjdk19.home",
+            repository = "@nixpkgs",
+            toolchain = True,
+            toolchain_name = "nixpkgs_java",
+            toolchain_version = "19",
+            register = False,
+        )
+
+    non_module_dependencies = module_extension(
+        implementation = _non_module_dependencies_impl,
+    )
+    ```
+
+    Add the following configuration to `.bazelrc` to enable this Java runtime:
+    ```
+    common --enable_bzlmod
+    build --host_platform=@rules_nixpkgs_core//platforms:host
+    build --java_runtime_version=nixpkgs_java_19
+    build --tool_java_runtime_version=nixpkgs_java_19
+    build --java_language_version=19
+    build --tool_java_language_version=19
+    ```
+
+    #### with `WORKSPACE`
+
     Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
     ```bzl
     load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
@@ -197,6 +261,68 @@ def nixpkgs_java_configure(
     build --tool_java_runtime_version=nixpkgs_java_11
     build --java_language_version=11
     build --tool_java_language_version=11
+    ```
+
+    ##### Bazel 7 with [Bzlmod](https://bazel.build/versions/7.0.0/external/overview#bzlmod)
+
+    Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
+    ```bzl
+    bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
+    bazel_dep(name = "rules_nixpkgs_java", version = "0.12.0")
+    bazel_dep(name = "rules_java", version = "7.5.0")
+    bazel_dep(name = "platforms", version = "0.0.9")
+
+    nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+    nix_repo.github(
+        name = "nixpkgs",
+        org = "NixOS",
+        repo = "nixpkgs",
+        commit = "ff0dbd94265ac470dda06a657d5fe49de93b4599",
+        sha256 = "1bf0f88ee9181dd993a38d73cb120d0435e8411ea9e95b58475d4426c0948e98",
+    )
+    use_repo(nix_repo, "nixpkgs")
+
+    non_module_dependencies = use_extension("//:non_module_dependencies.bzl", "non_module_dependencies")
+    use_repo(non_module_dependencies, "nixpkgs_java_runtime_toolchain")
+
+    register_toolchains("@nixpkgs_java_runtime_toolchain//:all")
+
+    archive_override(
+        module_name = "rules_nixpkgs_java",
+        urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.12.0/rules_nixpkgs-0.12.0.tar.gz",
+        integrity = "",
+        strip_prefix = "rules_nixpkgs-0.12.0/toolchains/java",
+    )
+    ```
+
+    Add the following to a `.bzl` file, like `non_module_dependencies.bzl`, to import a JDK from nixpkgs:
+    ```bzl
+    load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
+
+    def _non_module_dependencies_impl(_ctx):
+        nixpkgs_java_configure(
+            name = "nixpkgs_java_runtime",
+            attribute_path = "openjdk19.home",
+            repository = "@nixpkgs",
+            toolchain = True,
+            toolchain_name = "nixpkgs_java",
+            toolchain_version = "19",
+            register = False,
+        )
+
+    non_module_dependencies = module_extension(
+        implementation = _non_module_dependencies_impl,
+    )
+    ```
+
+    Add the following configuration to `.bazelrc` to enable this Java runtime:
+    ```
+    build --host_platform=@rules_nixpkgs_core//platforms:host
+    build --java_runtime_version=nixpkgs_java_19
+    build --tool_java_runtime_version=nixpkgs_java_19
+    build --java_language_version=19
+    build --tool_java_language_version=19
+    build --extra_toolchains=@nixpkgs_java_runtime_toolchain//:all # necessary on NixOS only
     ```
 
     Args:
