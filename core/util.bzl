@@ -148,12 +148,14 @@ def default_constraints(repository_ctx):
     cpu_value = get_cpu_value(repository_ctx)
     cpu = {
         "darwin": "@platforms//cpu:x86_64",
+        "darwin_x86_64": "@platforms//cpu:x86_64",
         "darwin_arm64": "@platforms//cpu:arm64",
         "aarch64": "@platforms//cpu:arm64",
     }.get(cpu_value, "@platforms//cpu:x86_64")
     os = {
         "darwin": "@platforms//os:osx",
         "darwin_arm64": "@platforms//os:osx",
+        "darwin_x86_64": "@platforms//os:osx",
     }.get(cpu_value, "@platforms//os:linux")
     return [cpu, os]
 

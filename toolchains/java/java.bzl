@@ -26,6 +26,7 @@ with import <nixpkgs> { config = {}; overlays = []; };
 { attrPath
 , attrSet
 , filePath
+, javaToolchainVersion
 }:
 
 let
@@ -41,6 +42,10 @@ let
     else
       "${javaHome}/${filePath}"
     ;
+  versionArg = if javaToolchainVersion == null then
+    "# version not set"
+  else
+    "version = ${javaToolchainVersion},";
 in
 
 pkgs.runCommand "bazel-nixpkgs-java-runtime"
@@ -58,6 +63,7 @@ pkgs.runCommand "bazel-nixpkgs-java-runtime"
     java_runtime(
         name = "runtime",
         java_home = r"${javaHomePath}",
+        ${versionArg}
         visibility = ["//visibility:public"],
     )
     EOF
@@ -364,6 +370,12 @@ def nixpkgs_java_configure(
         "filePath",
         java_home_path,
     ])
+    if toolchain_version:
+        nixopts.extend([
+            "--argstr",
+            "javaToolchainVersion",
+            toolchain_version,
+        ])
 
     nixpkgs_package(
         name = name,

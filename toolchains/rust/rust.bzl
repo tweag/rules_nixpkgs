@@ -29,7 +29,7 @@ let
           paths = [ pkgs.rustc ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
-            wrapProgram $out/bin/rustc --suffix PATH : ${{pkgs.binutils}}/bin
+            wrapProgram $out/bin/rustc --suffix PATH : ${{pkgs.darwin.cctools}}/bin
           '';
         }}
       else pkgs.rustc;
@@ -39,8 +39,9 @@ let
 in
 pkgs.buildEnv {{
     extraOutputsToInstall = ["out" "bin" "lib"];
+    ignoreCollisions = true;
     name = "bazel-rust-toolchain";
-    paths = [ rustc pkgs.rustfmt pkgs.cargo pkgs.clippy ];
+    paths = [ rustc (pkgs.rustc.unwrapped or null) pkgs.rustfmt pkgs.cargo pkgs.clippy ];
     postBuild = ''
         cat <<EOF > $out/BUILD
         filegroup(

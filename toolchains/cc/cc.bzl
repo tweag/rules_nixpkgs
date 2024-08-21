@@ -125,7 +125,7 @@ def _parse_cc_toolchain_info(content, filename):
 def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     host_cpu = get_cpu_value(repository_ctx)
     cpu_value = repository_ctx.attr.cross_cpu or host_cpu
-    darwin = cpu_value == "darwin" or cpu_value == "darwin_arm64"
+    darwin = cpu_value == "darwin" or cpu_value == "darwin_arm64" or cpu_value == "darwin_x86_64"
 
     cc_toolchain_info_file = repository_ctx.path(repository_ctx.attr.cc_toolchain_info)
     if not cc_toolchain_info_file.exists and not repository_ctx.attr.fail_not_supported:
@@ -311,6 +311,7 @@ def nixpkgs_cc_configure(
         target_constraints = None,
         register = True,
         cc_lang = "c++",
+        cc_std = "c++0x",
         cross_cpu = ""):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
@@ -382,6 +383,7 @@ def nixpkgs_cc_configure(
       target_constraints: Constraints for the target platform.
       register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
       cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
+      cc_std: string, `"c++0x"` by default. Used to populate `CXX_FLAG` so the compiler uses the given language standard. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
       cross_cpu: string, `""` by default. Used if you want to add a cross compilation C/C++ toolchain. Set this to the CPU architecture for the target CPU. For example x86_64, would be k8.
     """
     nixopts = list(nixopts)
@@ -413,6 +415,9 @@ def nixpkgs_cc_configure(
             "--argstr",
             "ccLang",
             cc_lang,
+            "--argstr",
+            "ccStd",
+            cc_std,
         ])
     elif nix_expr:
         nixopts.extend([
@@ -425,6 +430,9 @@ def nixpkgs_cc_configure(
             "--argstr",
             "ccLang",
             cc_lang,
+            "--argstr",
+            "ccStd",
+            cc_std,
         ])
     else:
         nixopts.extend([
@@ -434,6 +442,9 @@ def nixpkgs_cc_configure(
             "--argstr",
             "ccLang",
             cc_lang,
+            "--argstr",
+            "ccStd",
+            cc_std,
         ])
 
     # Invoke `cc.nix` which generates `CC_TOOLCHAIN_INFO`.

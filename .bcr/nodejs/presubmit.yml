@@ -1,0 +1,19 @@
+matrix:
+  platform:
+  - debian10
+  - ubuntu2004
+  - macos
+  # XXX not fully supported yet
+  #- macos_arm64
+  bazel:
+  - 7.x
+  - 6.x
+tasks:
+  # XXX use testing module once all dependencies are available from the BCR
+  verify_targets:
+    name: Verify build targets
+    platform: ${{ platform }}
+    bazel: ${{ bazel }}
+    build_targets:
+    - '@rules_nixpkgs_nodejs//:nodejs'
+    - '@rules_nixpkgs_nodejs//extensions:toolchain'

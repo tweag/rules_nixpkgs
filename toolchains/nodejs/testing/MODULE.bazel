@@ -3,30 +3,30 @@ module(name = "rules_nixpkgs_nodejs_testing")
 bazel_dep(name = "rules_nixpkgs_nodejs")
 local_path_override(
     module_name = "rules_nixpkgs_nodejs",
-    path = "../../toolchains/nodejs",
+    path = "../",
 )
 
 bazel_dep(name = "rules_nixpkgs_core")
 local_path_override(
     module_name = "rules_nixpkgs_core",
-    path = "../../core",
+    path = "../../../core",
 )
 
 bazel_dep(name = "rules_nixpkgs_cc")
 local_path_override(
     module_name = "rules_nixpkgs_cc",
-    path = "../../toolchains/cc",
+    path = "../../cc",
 )
 
 bazel_dep(name = "rules_nixpkgs_java")
 local_path_override(
     module_name = "rules_nixpkgs_java",
-    path = "../../toolchains/java",
+    path = "../../java",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.6.1")
-bazel_dep(name = "rules_cc", version = "0.0.4")
-bazel_dep(name = "rules_nodejs", version = "5.8.3")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_nodejs", version = "5.8.5")
 
 nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
 nix_repo.default(name = "nixpkgs")

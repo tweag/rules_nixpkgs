@@ -1,46 +1,49 @@
-# Cut a release whenever a new tag is pushed to the repo.
-name: Release
+# Create a draft release when triggered via Github's UI or Github CLI
+name: Prepare Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 0.11.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  tests:
-    # Do only release when CI succeeds.
-    uses: ./.github/workflows/workflow.yaml
-
   release:
-    # Do only release when CI succeeds.
-    needs: [tests]
+    name: Prepare Release
     runs-on: ubuntu-latest
     steps:
+      - name: Check version
+        run: |
+          if ! [[ '${{ inputs.version }}' =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
+             echo '${{ inputs.version }} does not match expected format `major.minor.patch`' >&2
+             exit 1
+           fi
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Get version number
-        id: get-version
-        run: set -x; echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+        with:
+          ref: master           # only create releases from main branch
       - name: Read section from CHANGELOG.md
         id: extract-changelog
         uses: sean0x42/markdown-extract@v2
         with:
          file: CHANGELOG.md
-         pattern: ${{ steps.get-version.outputs.version }}
+         pattern: ${{ inputs.version }}
       - name: Prepare release notes and artifacts
         run: |
-          .github/workflows/release_prep.sh ${{ env.GITHUB_REF_NAME }} > release_notes.txt
+          .github/workflows/release_prep.sh v${{ inputs.version }} > release_notes.txt
           printf '${{ steps.extract-changelog.outputs.markdown }}' >> release_notes.txt
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          prerelease: true
-          # Use GH feature to populate the changelog automatically
-          generate_release_notes: true
-          body_path: release_notes.txt
-          fail_on_unmatched_files: true
-          files: rules_nixpkgs*-*.tar.gz
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create \
+            --draft \
+            --notes-file release_notes.txt \
+            --title v${{ inputs.version }} \
+            v${{ inputs.version }} \
+            rules_nixpkgs-${{ inputs.version }}.tar.gz

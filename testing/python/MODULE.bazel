@@ -24,8 +24,8 @@ local_path_override(
     path = "../../toolchains/cc",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.6.1")
-bazel_dep(name = "rules_cc", version = "0.0.4")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.9")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.

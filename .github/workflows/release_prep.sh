@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Set by GH actions, see
-# https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-TAG=${GITHUB_REF_NAME}
+TAG=$1
 # The prefix is chosen to match what GitHub generates for source archives
 PREFIX="rules_nixpkgs-${TAG:1}"
 ARCHIVE="rules_nixpkgs-${TAG:1}.tar.gz"
-git archive --format=tar.gz --prefix="${PREFIX}/" -o $ARCHIVE ${TAG}
+git archive --format=tar.gz --prefix="${PREFIX}/" -o $ARCHIVE HEAD
 SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
 cat << EOF
-## Using Bzlmod with Bazel 6
+## Using Bzlmod with Bazel 6+
 
 1. Enable with \`common --enable_bzlmod\` in \`.bazelrc\`.
 2. Add to your \`MODULE.bazel\` file:
 
+### For the core module
+
 \`\`\`starlark
 bazel_dep(name = "rules_nixpkgs_core", version = "${TAG:1}")
+\`\`\`
+
+### For the nodejs module
+
+\`\`\`starlark
+bazel_dep(name = "rules_nixpkgs_nodejs", version = "${TAG:1}")
 \`\`\`
 
 ## Using WORKSPACE

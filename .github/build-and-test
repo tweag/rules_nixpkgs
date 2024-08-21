@@ -36,11 +36,11 @@ if [[ ${BZLMOD_ENABLED-} = true ]]; then
     )
     declare -ra test_dirs=(
         core/testing
+        toolchains/nodejs/testing
         testing/core
         testing/core/tests/intermediate_module
         testing/go-bzlmod
         testing/java
-        testing/nodejs
         testing/posix
         testing/rust
         testing/python
@@ -62,10 +62,10 @@ else
         toolchains/posix
         toolchains/rust
         toolchains/nodejs
+        toolchains/nodejs/testing
         testing/core
         testing/go-workspace
         testing/java
-        testing/nodejs
         testing/posix
         testing/rust
         testing/python
