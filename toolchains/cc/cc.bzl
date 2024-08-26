@@ -221,7 +221,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
             "%{coverage_compile_flags}": get_starlark_list(info.coverage_compile_flags),
             "%{coverage_link_flags}": get_starlark_list(info.coverage_link_flags),
             "%{supports_start_end_lib}": repr(info.supports_start_end_lib),
-            "%{extra_flags_per_feature}": repr(info.extra_flags_per_feature),
+            "%{extra_flags_per_feature}": repr(dict(info.extra_flags_per_feature)),
             "%{conly_flags}": get_starlark_list(info.conly_flags),
         },
     )
