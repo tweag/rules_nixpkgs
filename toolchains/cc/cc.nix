@@ -298,7 +298,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
         if [[ -x ${cc}/bin/ld.gold ]]; then echo True; else echo False; fi
       )
     )
-    COVERAGE_LINK_FLAGS=()
+    EXTRA_FLAGS_PER_FEATURE=()
     IS_CLANG=(
       ${if cc.isClang then "True" else "False"}
     )
