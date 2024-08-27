@@ -141,10 +141,22 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     # `@bazel_tools//tools/cpp:unix_cc_configure.bzl`.
     # Uses the corresponding templates from `@bazel_tools` as well, see the
     # private attributes of the `_nixpkgs_cc_toolchain_config` rule.
-    repository_ctx.symlink(
-        repository_ctx.path(repository_ctx.attr._unix_cc_toolchain_config),
-        "cc_toolchain_config.bzl",
-    )
+    unix_cc_toolchain_config_contents = repository_ctx.read(repository_ctx.path(repository_ctx.attr._unix_cc_toolchain_config))
+    if unix_cc_toolchain_config_contents.count("supports_dynamic_linker_feature") == 2:
+        # We are working with Bazel before https://github.com/bazelbuild/bazel/pull/23438
+        # macOS is missing the "supports_dynamic_linker" feature.
+        # Let's add it ourselves in between two macOS features.
+        parts = unix_cc_toolchain_config_contents.rsplit("fdo_optimize_feature,", 1)
+        if len(parts) != 2:
+            fail("failed to patch unix_cc_toolchain_config")
+        unix_cc_toolchain_config_contents = parts[0] + "fdo_optimize_feature, supports_dynamic_linker_feature," + parts[1]
+        repository_ctx.file("cc_toolchain_config.bzl", unix_cc_toolchain_config_contents)
+    else:
+        # The unix_cc_toolchain_config file is new enough. No patches needed.
+        repository_ctx.symlink(
+            repository_ctx.path(repository_ctx.attr._unix_cc_toolchain_config),
+            "cc_toolchain_config.bzl",
+        )
     repository_ctx.symlink(
         repository_ctx.path(repository_ctx.attr._armeabi_cc_toolchain_config),
         "armeabi_cc_toolchain_config.bzl",
