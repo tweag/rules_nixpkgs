@@ -27,9 +27,7 @@ jobs:
           - true
           - false
         withNixRemote:
-          # FIXME: disable nix-remote checks as they don't work
-          #        see https://github.com/tweag/rules_nixpkgs/issues/564
-          #- true
+          - true
           - false
         exclude:
           # skip nix remote jobs on MacOS
