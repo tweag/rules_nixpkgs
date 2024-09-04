@@ -298,7 +298,6 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
         if [[ -x ${cc}/bin/ld.gold ]]; then echo True; else echo False; fi
       )
     )
-    EXTRA_FLAGS_PER_FEATURE=()
     IS_CLANG=(
       ${if cc.isClang then "True" else "False"}
     )
@@ -333,7 +332,6 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     write_info COVERAGE_COMPILE_FLAGS
     write_info COVERAGE_LINK_FLAGS
     write_info SUPPORTS_START_END_LIB
-    write_info EXTRA_FLAGS_PER_FEATURE
     write_info IS_CLANG
     write_info CONLY_FLAGS
   ''
