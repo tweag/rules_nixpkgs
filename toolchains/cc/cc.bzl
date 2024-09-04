@@ -78,7 +78,6 @@ def _parse_cc_toolchain_info(content, filename):
         "COVERAGE_COMPILE_FLAGS",
         "COVERAGE_LINK_FLAGS",
         "SUPPORTS_START_END_LIB",
-        "EXTRA_FLAGS_PER_FEATURE",
         "IS_CLANG",
         "CONLY_FLAGS",
     ])
@@ -119,7 +118,6 @@ def _parse_cc_toolchain_info(content, filename):
         coverage_compile_flags = info["COVERAGE_COMPILE_FLAGS"],
         coverage_link_flags = info["COVERAGE_LINK_FLAGS"],
         supports_start_end_lib = info["SUPPORTS_START_END_LIB"] == ["True"],
-        extra_flags_per_feature = info["EXTRA_FLAGS_PER_FEATURE"],
         is_clang = info["IS_CLANG"] == ["True"],
         conly_flags = info["CONLY_FLAGS"],
     )
@@ -221,7 +219,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
             "%{coverage_compile_flags}": get_starlark_list(info.coverage_compile_flags),
             "%{coverage_link_flags}": get_starlark_list(info.coverage_link_flags),
             "%{supports_start_end_lib}": repr(info.supports_start_end_lib),
-            "%{extra_flags_per_feature}": repr(dict(info.extra_flags_per_feature)),
+            "%{extra_flags_per_feature}": "{}",
             "%{conly_flags}": get_starlark_list(info.conly_flags),
         },
     )
