@@ -10,6 +10,11 @@
       "email": "andreas.herrmann@tweag.io",
       "github": "aherrmann",
       "name": "Andreas Herrmann"
+    },
+    {
+      "email": "malte.poll@moduscreate.com",
+      "github": "malt3",
+      "name": "Malte Poll"
     }
   ],
   "versions": ["0.12.0"],
