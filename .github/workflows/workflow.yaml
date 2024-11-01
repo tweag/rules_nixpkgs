@@ -139,6 +139,7 @@ jobs:
         uses: tweag/run-nix-shell@v0
         with:
           derivation-path: examples/toolchains/cc_cross_osx_to_linux_amd64
+          working-directory: examples/toolchains/cc_cross_osx_to_linux_amd64
           run: bazel run --config=cross :hello_image
 
       - name: Build bazel-nix-python-container with Nix
