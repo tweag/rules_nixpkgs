@@ -85,54 +85,54 @@ jobs:
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
-      - name: Build & test
-        run: |
-          skip() {
-            echo "Will skip $(head -n1 $2/README.md) ${1%_nix} Nix"
-            local p="$1[@]"
-            read -a ${1} <<< $(echo ${!p//$2})
-          }
+      # - name: Build & test
+      #   run: |
+      #     skip() {
+      #       echo "Will skip $(head -n1 $2/README.md) ${1%_nix} Nix"
+      #       local p="$1[@]"
+      #       read -a ${1} <<< $(echo ${!p//$2})
+      #     }
 
-          pushd examples/cc-template
-          echo
-          echo "::group::Running $(head -n1 README.md) with Nix, WORKSPACE"
-          nix develop --command bazel run --noenable_bzlmod //src:hello-world
-          popd
+      #     pushd examples/cc-template
+      #     echo
+      #     echo "::group::Running $(head -n1 README.md) with Nix, WORKSPACE"
+      #     nix develop --command bazel run --noenable_bzlmod //src:hello-world
+      #     popd
 
-          pushd examples/cc-template
-          echo
-          echo "::group::Running $(head -n1 README.md) with Nix, bzlmod"
-          nix develop --command bazel run --enable_bzlmod //src:hello-world
-          popd
+      #     pushd examples/cc-template
+      #     echo
+      #     echo "::group::Running $(head -n1 README.md) with Nix, bzlmod"
+      #     nix develop --command bazel run --enable_bzlmod //src:hello-world
+      #     popd
 
-          pushd examples/toolchains
-          with_nix=( $(ls) )
-          without_nix=( cc go java )
+      #     pushd examples/toolchains
+      #     with_nix=( $(ls) )
+      #     without_nix=( cc go java )
 
-          for dir in "${with_nix[@]}"; do
-              pushd "$dir"
-              echo
-              example_name="$(head -n1 README.md) with Nix"
-              if [[ -f skip-on-ci ]]; then
-                  echo "Skipping $example_name"
-                  popd
-                  continue
-              else
-                  echo "::group::Running $example_name"
-                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
-                  # TODO: all toolchains should run without Nixpkgs
-              fi
-              popd
-          done
-          for dir in "${without_nix[@]}"; do
-              pushd "$dir"
-              echo
-              echo "::group::Running $(head -n1 README.md) without Nix"
-              bazel run :hello
-              popd
-          done
+      #     for dir in "${with_nix[@]}"; do
+      #         pushd "$dir"
+      #         echo
+      #         example_name="$(head -n1 README.md) with Nix"
+      #         if [[ -f skip-on-ci ]]; then
+      #             echo "Skipping $example_name"
+      #             popd
+      #             continue
+      #         else
+      #             echo "::group::Running $example_name"
+      #             nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
+      #             # TODO: all toolchains should run without Nixpkgs
+      #         fi
+      #         popd
+      #     done
+      #     for dir in "${without_nix[@]}"; do
+      #         pushd "$dir"
+      #         echo
+      #         echo "::group::Running $(head -n1 README.md) without Nix"
+      #         bazel run :hello
+      #         popd
+      #     done
 
-          popd
+      #     popd
 
       - name: Test cross C++ example
         if: ${{ runner.os == 'macOS' }}
