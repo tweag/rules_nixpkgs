@@ -1,7 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("//toolchains:runfiles.bzl", "runfiles")
 
 cc_binary(
     name = "hello",
@@ -12,15 +11,9 @@ cc_binary(
     ],
 )
 
-runfiles(
-    name = "hello_runfiles",
-    binary = ":hello",
-    root = "/app"
-)
-
 pkg_tar(
     name = "hello_tar",
-    srcs = [":hello_runfiles"],
+    srcs = [":hello"],
 )
 
 oci_image(
