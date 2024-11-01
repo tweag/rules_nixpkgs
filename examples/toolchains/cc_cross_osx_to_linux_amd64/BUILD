@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 cc_binary(
@@ -26,7 +26,7 @@ oci_image(
     entrypoint = ["/app/hello"],
 )
 
-oci_tarball(
+oci_load(
     name = "hello_image_tarball",
     image = ":hello_image",
     repo_tags = ["cross_example:latest"],
