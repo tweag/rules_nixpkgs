@@ -135,6 +135,13 @@ jobs:
 
           popd
 
+      - name: Test cross C++ example
+        if: ${{ runner.os == 'macOS' }}
+        uses: tweag/run-nix-shell@v0
+        with:
+          working-directory: examples/toolchains/cc_cross_osx_to_linux_amd64
+          run: bazel run --config=cross :hello_image
+
       - name: Build bazel-nix-python-container with Nix
         uses: tweag/run-nix-shell@v0
         if: ${{ runner.os == 'Linux' }}
