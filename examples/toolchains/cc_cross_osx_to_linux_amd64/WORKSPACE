@@ -12,6 +12,7 @@ load(
     "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
     "nixpkgs_cc_configure",
     "nixpkgs_local_repository",
+    "nixpkgs_python_configure",
 )
 
 nixpkgs_local_repository(
@@ -25,6 +26,8 @@ nixpkgs_cc_configure(
     nix_file = "//toolchains:cc.nix",
     repository = "@nixpkgs",
 )
+
+nixpkgs_python_configure(repository = "@nixpkgs")
 
 nixpkgs_cc_configure(
     name = "nixpkgs_cross_cc",
