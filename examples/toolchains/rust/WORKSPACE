@@ -62,9 +62,9 @@ nixpkgs_package(
     ],
 )
 
-load("@rules_rust//rust:repositories.bzl", "rust_repositories")
+load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies")
 
-rust_repositories()
+rules_rust_dependencies()
 
 # crate_universe as a way of governing deps
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
