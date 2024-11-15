@@ -95,6 +95,7 @@ OPENSSL_CRATE_ANNOTATION = crate.annotation(
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//crate_universe/private:urls.bzl", "CARGO_BAZEL_URLS", "CARGO_BAZEL_SHA256S")
+load("@rules_rust//rust/platform:triple_mappings.bzl", "SUPPORTED_PLATFORM_TRIPLES")
 
 crates_repository(
     name = "crate_index",
@@ -125,6 +126,8 @@ crates_repository(
     ),
     rust_toolchain_cargo_template = "@nix_rust//:bin/{tool}",
     rust_toolchain_rustc_template = "@nix_rust//:bin/{tool}",
+    # the `wasm32-wasip1` target is not supported by nix_rustc (or named differently)
+    supported_platform_triples = [ triple for triple in SUPPORTED_PLATFORM_TRIPLES if triple != "wasm32-wasip1"],
 )
 
 load("@crate_index//:defs.bzl", "crate_repositories")
