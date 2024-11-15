@@ -70,7 +70,6 @@ rules_rust_dependencies()
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
 
 crate_universe_dependencies(
-    bootstrap = True,
     rust_toolchain_cargo_template = "@nix_rust//:bin/{tool}",
     rust_toolchain_rustc_template = "@nix_rust//:bin/{tool}",
 )
@@ -94,6 +93,9 @@ OPENSSL_CRATE_ANNOTATION = crate.annotation(
         ],
 )
 
+# buildifier: disable=bzl-visibility
+load("@rules_rust//crate_universe/private:urls.bzl", "CARGO_BAZEL_URLS", "CARGO_BAZEL_SHA256S")
+
 crates_repository(
     name = "crate_index",
     # Ensure the caro openssl-sys crate
@@ -111,7 +113,13 @@ crates_repository(
             features = [],
         ),
     },
-    generator = "@cargo_bazel_bootstrap//:cargo-bazel",
+    # rules_rust provides static binaries for linux, but does not use them by default
+    generator_urls = CARGO_BAZEL_URLS | {
+        "x86_64-unknown-linux-gnu": CARGO_BAZEL_URLS["x86_64-unknown-linux-musl"],
+    },
+    generator_sha256s = CARGO_BAZEL_SHA256S | {
+        "x86_64-unknown-linux-gnu": CARGO_BAZEL_SHA256S["x86_64-unknown-linux-musl"],
+    },
     render_config = render_config(
         default_package_name = "",
     ),
