@@ -1,4 +1,4 @@
-load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
+load("@rules_cc//cc/private/toolchain:lib_cc_configure.bzl", "get_cpu_value")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
