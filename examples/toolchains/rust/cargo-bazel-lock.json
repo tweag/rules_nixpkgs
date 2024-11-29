@@ -1,5 +1,5 @@
 {
-  "checksum": "37bb718b562c2aa348987c089bf229259fefd493217783470d5cbab635f5d96c",
+  "checksum": "7f7d82ec2821b07887547659086f5c71632af4fda0f7f74885ff887df2547043",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -1093,14 +1093,14 @@
     "aarch64-apple-ios-sim": [
       "aarch64-apple-ios-sim"
     ],
-    "aarch64-fuchsia": [
-      "aarch64-fuchsia"
-    ],
     "aarch64-linux-android": [
       "aarch64-linux-android"
     ],
     "aarch64-pc-windows-msvc": [
       "aarch64-pc-windows-msvc"
+    ],
+    "aarch64-unknown-fuchsia": [
+      "aarch64-unknown-fuchsia"
     ],
     "aarch64-unknown-linux-gnu": [
       "aarch64-unknown-linux-gnu"
@@ -1170,9 +1170,6 @@
     "x86_64-apple-ios": [
       "x86_64-apple-ios"
     ],
-    "x86_64-fuchsia": [
-      "x86_64-fuchsia"
-    ],
     "x86_64-linux-android": [
       "x86_64-linux-android"
     ],
@@ -1181,6 +1178,9 @@
     ],
     "x86_64-unknown-freebsd": [
       "x86_64-unknown-freebsd"
+    ],
+    "x86_64-unknown-fuchsia": [
+      "x86_64-unknown-fuchsia"
     ],
     "x86_64-unknown-linux-gnu": [
       "x86_64-unknown-linux-gnu"

@@ -4,6 +4,10 @@ module(
 )
 
 bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
+local_path_override(
+   module_name = "rules_nixpkgs_core",
+   path = "../../core",
+)
 bazel_dep(name = "rules_java", version = "7.3.1")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
