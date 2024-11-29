@@ -10,7 +10,7 @@ def nixpkgs_repositories(*, bzlmod):
 
     nixpkgs_java_configure(
         name = "nixpkgs_java_runtime",
-        attribute_path = "jdk11.home",
+        attribute_path = "jdk17.home",
         repository = "@nixpkgs",
         toolchain = True,
         register = not bzlmod,

@@ -20,12 +20,12 @@ def nixpkgs_repositories(*, bzlmod):
     # Tests implicitly depend on Java
     nixpkgs_java_configure(
         name = "nixpkgs_java_runtime",
-        attribute_path = "jdk11.home",
+        attribute_path = "jdk17.home",
         repository = "@nixpkgs",
         toolchain = True,
         register = not bzlmod,
         toolchain_name = "nixpkgs_java",
-        toolchain_version = "11",
+        toolchain_version = "17",
     )
 
     # Python depends on a CC toolchain being available

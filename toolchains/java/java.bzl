@@ -134,38 +134,17 @@ def nixpkgs_java_configure(
 
     #### Example
 
-    ##### Bazel 4
-
-    Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
-    ```bzl
-    load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
-    nixpkgs_java_configure(
-        attribute_path = "jdk11.home",
-        repository = "@nixpkgs",
-    )
-    ```
-
-    Add the following configuration to `.bazelrc` to enable this Java runtime:
-    ```
-    build --javabase=@nixpkgs_java_runtime//:runtime
-    build --host_javabase=@nixpkgs_java_runtime//:runtime
-    # Adjust this to match the Java version provided by this runtime.
-    # See `bazel query 'kind(java_toolchain, @bazel_tools//tools/jdk:all)'` for available options.
-    build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-    build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-    ```
-
     ##### Bazel 5
 
     Add the following to your `WORKSPACE` file to import a JDK from nixpkgs:
     ```bzl
     load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
     nixpkgs_java_configure(
-        attribute_path = "jdk11.home",
+        attribute_path = "jdk17.home",
         repository = "@nixpkgs",
         toolchain = True,
         toolchain_name = "nixpkgs_java",
-        toolchain_version = "11",
+        toolchain_version = "17",
     )
     ```
 
@@ -246,21 +225,21 @@ def nixpkgs_java_configure(
     ```bzl
     load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_java_configure")
     nixpkgs_java_configure(
-        attribute_path = "jdk11.home",
+        attribute_path = "jdk17.home",
         repository = "@nixpkgs",
         toolchain = True,
         toolchain_name = "nixpkgs_java",
-        toolchain_version = "11",
+        toolchain_version = "17",
     )
     ```
 
     Add the following configuration to `.bazelrc` to enable this Java runtime:
     ```
     build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
-    build --java_runtime_version=nixpkgs_java_11
-    build --tool_java_runtime_version=nixpkgs_java_11
-    build --java_language_version=11
-    build --tool_java_language_version=11
+    build --java_runtime_version=nixpkgs_java_17
+    build --tool_java_runtime_version=nixpkgs_java_17
+    build --java_language_version=17
+    build --tool_java_language_version=17
     ```
 
     ##### Bazel 7 with [Bzlmod](https://bazel.build/versions/7.0.0/external/overview#bzlmod)
@@ -269,7 +248,7 @@ def nixpkgs_java_configure(
     ```bzl
     bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
     bazel_dep(name = "rules_nixpkgs_java", version = "0.12.0")
-    bazel_dep(name = "rules_java", version = "7.5.0")
+    bazel_dep(name = "rules_java", version = "7.12.2")
     bazel_dep(name = "platforms", version = "0.0.9")
 
     nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
