@@ -8,7 +8,7 @@ Rules for importing a POSIX toolchain from Nixpkgs.
 """
 
 load(
-    "@rules_nixpkgs_core//:private/get_cpu_value.bzl",
+    "@rules_nixpkgs_core//private/cc_toolchain:lib_cc_configure.bzl",
     "get_cpu_value",
 )
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
