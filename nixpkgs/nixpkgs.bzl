@@ -115,7 +115,7 @@ nixpkgs_package(
 
 load("@bazel_tools//tools/cpp:cc_configure.bzl", "cc_autoconf_impl")
 load(
-    "@rules_nixpkgs_core//:private/get_cpu_value.bzl",
+    "@rules_nixpkgs_core//:private/cc_toolchain/lib_cc_configure.bzl",
     "get_cpu_value",
 )
 load(
