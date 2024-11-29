@@ -1,3 +1,4 @@
+load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # see https://github.com/tweag/rules_nixpkgs/pull/613
 # taken from https://github.com/bazelbuild/rules_cc/blob/8395ec0172270f3bf92cd7b06c9b5b3f1f679e88/cc/private/toolchain/lib_cc_configure.bzl#L225
@@ -13,7 +14,15 @@ def get_cpu_value(repository_ctx):
     arch = repository_ctx.os.arch
     if os_name.startswith("mac os"):
         # Check if we are on x86_64 or arm64 and return the corresponding cpu value.
-        return "darwin_" + ("arm64" if arch == "aarch64" else "x86_64")
+        if arch == "aarch64":
+            return "darwin_arm64"
+
+        # NOTE(cb) for backward compatibility return "darwin" for Bazel < 7 on x86_64
+        if versions.is_at_least("7.0.0", versions.get()):
+            return "darwin_x86_64"
+        else:
+            return "darwin"
+
     if os_name.find("freebsd") != -1:
         return "freebsd"
     if os_name.find("openbsd") != -1:
