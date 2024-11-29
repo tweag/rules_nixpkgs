@@ -9,9 +9,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # https://bazelbuild.github.io/rules_rust/#setup
 http_archive(
     name = "rules_rust",
-    sha256 = "85e2013727ab26fb22abdffe4b2ac0c27a2d5b6296167ba63d8f6e13140f51f9",
+    sha256 = "af4f56caae50a99a68bfce39b141b509dd68548c8204b98ab7a1cafc94d5bb02",
     urls = [
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.53.0/rules_rust-v0.53.0.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.54.1/rules_rust-v0.54.1.tar.gz",
     ],
 )
 
@@ -62,15 +62,14 @@ nixpkgs_package(
     ],
 )
 
-load("@rules_rust//rust:repositories.bzl", "rust_repositories")
+load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies")
 
-rust_repositories()
+rules_rust_dependencies()
 
 # crate_universe as a way of governing deps
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
 
 crate_universe_dependencies(
-    bootstrap = True,
     rust_toolchain_cargo_template = "@nix_rust//:bin/{tool}",
     rust_toolchain_rustc_template = "@nix_rust//:bin/{tool}",
 )
@@ -94,6 +93,10 @@ OPENSSL_CRATE_ANNOTATION = crate.annotation(
         ],
 )
 
+# buildifier: disable=bzl-visibility
+load("@rules_rust//crate_universe/private:urls.bzl", "CARGO_BAZEL_URLS", "CARGO_BAZEL_SHA256S")
+load("@rules_rust//rust/platform:triple_mappings.bzl", "SUPPORTED_PLATFORM_TRIPLES")
+
 crates_repository(
     name = "crate_index",
     # Ensure the caro openssl-sys crate
@@ -111,12 +114,20 @@ crates_repository(
             features = [],
         ),
     },
-    generator = "@cargo_bazel_bootstrap//:cargo-bazel",
+    # rules_rust provides static binaries for linux, but does not use them by default
+    generator_urls = CARGO_BAZEL_URLS | {
+        "x86_64-unknown-linux-gnu": CARGO_BAZEL_URLS["x86_64-unknown-linux-musl"],
+    },
+    generator_sha256s = CARGO_BAZEL_SHA256S | {
+        "x86_64-unknown-linux-gnu": CARGO_BAZEL_SHA256S["x86_64-unknown-linux-musl"],
+    },
     render_config = render_config(
         default_package_name = "",
     ),
     rust_toolchain_cargo_template = "@nix_rust//:bin/{tool}",
     rust_toolchain_rustc_template = "@nix_rust//:bin/{tool}",
+    # the `wasm32-wasip1` target is not supported by nix_rustc (or named differently)
+    supported_platform_triples = [ triple for triple in SUPPORTED_PLATFORM_TRIPLES if triple != "wasm32-wasip1"],
 )
 
 load("@crate_index//:defs.bzl", "crate_repositories")
