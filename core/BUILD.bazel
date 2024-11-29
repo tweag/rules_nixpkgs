@@ -26,6 +26,7 @@ bzl_library(
     srcs = [
         "nixpkgs.bzl",
         "util.bzl",
+        "private/get_cpu_value.bzl",
     ],
     deps = [
         ":bazel_tools",
