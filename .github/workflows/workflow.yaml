@@ -22,7 +22,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-12
+          - macos-13
         bzlmodEnabled:
           - true
           - false
@@ -31,7 +31,7 @@ jobs:
           - false
         exclude:
           # skip nix remote jobs on MacOS
-          - os: macos-12
+          - os: macos-13
             withNixRemote: true
     runs-on: ${{ matrix.os }}
     steps:
@@ -76,7 +76,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-12
+          - macos-13
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
