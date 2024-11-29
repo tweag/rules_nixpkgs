@@ -23,8 +23,11 @@ using `nixpkgs_cc_configure(..., cc_lang = "cuda")` or similar.
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(
-    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
+    "@rules_nixpkgs_core//:private/get_cpu_value.bzl",
     "get_cpu_value",
+)
+load(
+    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
     "get_starlark_list",
     "write_builtin_include_directory_paths",
 )
