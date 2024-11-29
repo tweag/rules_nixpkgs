@@ -9,6 +9,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # toolchain in particular.
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "a1295b168f183218bc88117cf00674bcd102498f294086ff58318f830dd9d9d1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/v6.3.2/rules_nodejs-5.8.5.tar.gz"],
+    sha256 = "158619723f1d8bd535dd6b93521f4e03cf24a5e107126d05685fbd9540ccad10",
+    strip_prefix = "rules_nodejs-6.3.2",
+    urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.3.2/rules_nodejs-v6.3.2.tar.gz"],
 )
