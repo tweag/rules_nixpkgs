@@ -122,7 +122,6 @@ cc_toolchain_config(
     coverage_compile_flags = [%{coverage_compile_flags}],
     coverage_link_flags = [%{coverage_link_flags}],
     supports_start_end_lib = %{supports_start_end_lib},
-    extra_flags_per_feature = %{extra_flags_per_feature},
 )
 
 # Android tooling requires a default toolchain for the armeabi-v7a cpu.
