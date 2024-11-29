@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 [Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.12.0...HEAD
 
+### Removed
+
+- `nixpkgs_cc_configure_deprecated` was removed since it depended on Bazel's `cc_autoconf_impl`, which [was removed from `@bazel_tools`](https://github.com/bazelbuild/bazel/commit/1c4e78a9ceab9794140324d64833c628e382a3da) and moved into a private package in `rules_cc` in Bazel 8.
+
 ## [0.12.0] - 2024-07-12
 
 [0.12.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.11.1...v0.12.0
