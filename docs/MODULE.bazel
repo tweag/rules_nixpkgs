@@ -3,5 +3,5 @@ module(
     version = "0.12.0",
 )
 
-bazel_dep(name = "rules_sh", version = "0.4.0")
+bazel_dep(name = "rules_sh", version = "0.5.0")
 bazel_dep(name = "io_bazel_stardoc", version = "0.5.1")
