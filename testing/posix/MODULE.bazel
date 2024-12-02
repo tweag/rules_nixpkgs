@@ -19,7 +19,7 @@ local_path_override(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "rules_sh", version = "0.4.0")
+bazel_dep(name = "rules_sh", version = "0.5.0")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.
