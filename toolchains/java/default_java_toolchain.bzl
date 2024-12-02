@@ -84,7 +84,7 @@ DEFAULT_TOOLCHAIN_CONFIGURATION = dict(
         # Turbine is not a worker and parallel GC is faster for short-lived programs.
         "-XX:+UseParallelGC",
     ],
-    java_runtime = "@bazel_tools//tools/jdk:remote_jdk11",
+    java_runtime = "@bazel_tools//tools/jdk:remote_jdk17",
 )
 
 # The 'vanilla' toolchain is an unsupported alternative to the default.
@@ -121,7 +121,7 @@ PREBUILT_TOOLCHAIN_CONFIGURATION = dict(
     ],
     ijar = ["@bazel_tools//tools/jdk:ijar_prebuilt_binary"],
     singlejar = ["@bazel_tools//tools/jdk:prebuilt_singlejar"],
-    java_runtime = "@bazel_tools//tools/jdk:remote_jdk11",
+    java_runtime = "@bazel_tools//tools/jdk:remote_jdk17",
 )
 
 # The new toolchain is using all the tools from sources.
@@ -136,7 +136,7 @@ NONPREBUILT_TOOLCHAIN_CONFIGURATION = dict(
     ],
     ijar = [Label("@remote_java_tools//:ijar_cc_binary")],
     singlejar = [Label("@remote_java_tools//:singlejar_cc_bin")],
-    java_runtime = "@bazel_tools//tools/jdk:remote_jdk11",
+    java_runtime = "@bazel_tools//tools/jdk:remote_jdk17",
 )
 
 def default_java_toolchain(name, configuration = DEFAULT_TOOLCHAIN_CONFIGURATION, toolchain_definition = True, exec_compatible_with = [], target_compatible_with = [], **kwargs):

@@ -8,7 +8,7 @@ local_path_override(
    module_name = "rules_nixpkgs_core",
    path = "../../core",
 )
-bazel_dep(name = "rules_java", version = "7.3.1")
+bazel_dep(name = "rules_java", version = "7.12.2")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
 toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")

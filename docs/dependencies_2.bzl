@@ -32,11 +32,11 @@ def docs_dependencies_2():
     rules_java_dependencies()
 
     nixpkgs_java_configure(
-        attribute_path = "jdk11.home",
+        attribute_path = "jdk17.home",
         repository = "@nixpkgs",
         toolchain = True,
         toolchain_name = "nixpkgs_java",
-        toolchain_version = "11",
+        toolchain_version = "17",
     )
 
     rules_java_toolchains()
