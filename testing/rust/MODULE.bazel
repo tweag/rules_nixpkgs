@@ -43,7 +43,7 @@ rust.toolchain(
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "nixpkgs_config_rust_toolchain")
-register_toolchains("@nixpkgs_config_rust_toolchain//:rust_nix")
+register_toolchains("@nixpkgs_config_rust_toolchain//:all")
 
 use_repo(non_module_deps, "nixpkgs_config_cc")
 use_repo(non_module_deps, "nixpkgs_config_cc_info")
