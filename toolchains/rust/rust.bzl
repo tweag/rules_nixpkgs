@@ -1,6 +1,6 @@
 """<!-- Edit the docstring in `toolchains/rust/rust.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
 
-Rules for importing a Rust toolchain from Nixpkgs.
+Rules for importing a Rust and rustfmt toolchain from Nixpkgs.
 
 # Rules
 
@@ -108,7 +108,7 @@ pkgs.buildEnv {{
             visibility = ["//visibility:public"],
         )
 
-        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain')
+        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain', 'rustfmt_toolchain')
         rust_toolchain(
             name = "rust_nix_impl",
             rust_doc = ":rust_doc",
@@ -127,6 +127,12 @@ pkgs.buildEnv {{
             stdlib_linkflags = {stdlib_linkflags},
             visibility = ["//visibility:public"],
         )
+
+        rustfmt_toolchain(
+            name = "rustfmt_nix_impl",
+            rustfmt = ":rustfmt",
+            visibility = ["//visibility:public"],
+        )
         EOF
     '';
 }}
@@ -137,6 +143,14 @@ toolchain(
     name = "rust_nix",
     toolchain = "@{toolchain_repo}//:rust_nix_impl",
     toolchain_type = "@rules_rust//rust:toolchain",
+    exec_compatible_with = {exec_constraints},
+    target_compatible_with = {target_constraints},
+)
+
+toolchain(
+    name = "rustfmt_nix",
+    toolchain = "@{toolchain_repo}//:rustfmt_nix_impl",
+    toolchain_type = "@rules_rust//rust/rustfmt:toolchain_type",
     exec_compatible_with = {exec_constraints},
     target_compatible_with = {target_constraints},
 )
