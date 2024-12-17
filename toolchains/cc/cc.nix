@@ -1,10 +1,14 @@
-{ ccType
-, ccAttrPath ? null
-, ccAttrSet ? null
-, ccExpr ? null
-, ccPkgs ? import <nixpkgs> { config = { }; overlays = [ ]; }
-, ccLang ? "c++"
-, ccStd ? "c++0x"
+{
+  ccType,
+  ccAttrPath ? null,
+  ccAttrSet ? null,
+  ccExpr ? null,
+  ccPkgs ? import <nixpkgs> {
+    config = { };
+    overlays = [ ];
+  },
+  ccLang ? "c++",
+  ccStd ? "c++0x",
 }:
 
 let
@@ -15,7 +19,8 @@ let
   # `CODESIGN_ALLOCATE` to an absolute path here and override the hook for
   # `darwinCC` below.
   postLinkSignHook =
-    with pkgs; writeTextFile {
+    with pkgs;
+    writeTextFile {
       name = "post-link-sign-hook";
       executable = true;
 
@@ -24,29 +29,52 @@ let
           ${darwin.sigtool}/bin/codesign -f -s - "$linkerOutput"
       '';
     };
-  darwinCC =
+  oldDarwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.wrapCCWith rec {
       cc = stdenv.cc.cc;
       bintools = stdenv.cc.bintools.override { inherit postLinkSignHook; };
-      extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
-        echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
-        echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
-        echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
-        echo "-isystem ${pkgs.llvmPackages.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
-        echo "-F${CoreFoundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
-        echo "-F${CoreServices}/Library/Frameworks" >> $out/nix-support/cc-cflags
-        echo "-F${Security}/Library/Frameworks" >> $out/nix-support/cc-cflags
-        echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
-        echo "-F${SystemConfiguration}/Library/Frameworks" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
-        echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
-      '' + pkgs.lib.optionalString (builtins.hasAttr "libcxxabi" pkgs.llvmPackages) ''
-        echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
-      '';
+      extraBuildCommands =
+        with pkgs.darwin.apple_sdk.frameworks;
+        ''
+          echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
+          echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
+          echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
+          echo "-isystem ${pkgs.llvmPackages.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
+          echo "-F${CoreFoundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+          echo "-F${CoreServices}/Library/Frameworks" >> $out/nix-support/cc-cflags
+          echo "-F${Security}/Library/Frameworks" >> $out/nix-support/cc-cflags
+          echo "-F${Foundation}/Library/Frameworks" >> $out/nix-support/cc-cflags
+          echo "-F${SystemConfiguration}/Library/Frameworks" >> $out/nix-support/cc-cflags
+          echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
+          echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
+          echo "-L${pkgs.darwin.libobjc}/lib" >> $out/nix-support/cc-cflags
+          echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
+        ''
+        + pkgs.lib.optionalString (builtins.hasAttr "libcxxabi" pkgs.llvmPackages) ''
+          echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
+        '';
+    };
+  # for nixpkgs 24.11 and later
+  darwinCC =
+    # Work around https://github.com/NixOS/nixpkgs/issues/42059.
+    # See also https://github.com/NixOS/nixpkgs/pull/41589.
+    pkgs.wrapCCWith rec {
+      cc = stdenv.cc.cc;
+      extraBuildCommands =
+        with pkgs.darwin.apple_sdk.frameworks;
+        ''
+          echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
+          echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
+          echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
+          echo "-isystem ${pkgs.llvmPackages.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
+          echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
+          echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
+        ''
+        + pkgs.lib.optionalString (builtins.hasAttr "libcxxabi" pkgs.llvmPackages) ''
+          echo "-L${pkgs.llvmPackages.libcxxabi}/lib" >> $out/nix-support/cc-cflags
+        '';
     };
   cc =
     if ccType == "ccTypeAttribute" then
@@ -56,19 +84,29 @@ let
     else
       pkgs.buildEnv (
         let
-          cc = if stdenv.isDarwin then darwinCC else stdenv.cc;
+          cc =
+            if !stdenv.isDarwin then
+              stdenv.cc
+            else if pkgs.lib.versionOlder pkgs.lib.version "24.11pre" then
+              oldDarwinCC
+            else
+              darwinCC;
         in
         {
           name = "bazel-${cc.name}-wrapper";
           # XXX: `gcov` is missing in `/bin`.
           #   It exists in `stdenv.cc.cc` but that collides with `stdenv.cc`.
-          paths = [ cc cc.bintools ] ++ pkgs.lib.optional pkgs.stdenv.isDarwin pkgs.darwin.sigtool;
+          paths = [
+            cc
+            cc.bintools
+          ] ++ pkgs.lib.optional pkgs.stdenv.isDarwin pkgs.darwin.sigtool;
           pathsToLink = [ "/bin" ];
           passthru = {
             inherit (cc) isClang targetPrefix;
             orignalName = cc.name;
           };
-        } // (pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+        }
+        // (pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
           # only add tools from darwin.cctools, but don't overwrite existing tools
           postBuild = ''
             for tool in libtool objdump; do
@@ -77,18 +115,16 @@ let
                fi
             done
           '';
-        }
-        )
-      )
-  ;
+        })
+      );
 in
 pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
-{
-  executable = false;
-  # Pointless to do this on a remote machine.
-  preferLocalBuild = true;
-  allowSubstitutes = false;
-}
+  {
+    executable = false;
+    # Pointless to do this on a remote machine.
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+  }
   ''
     # This constructs the substitutions for
     # `@bazel_tools//tools/cpp:BUILD.tpl` following the example of
@@ -211,9 +247,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
         add_linker_option_if_supported -Wl,-z,relro,-z,now -z
       )
       ${
-        if stdenv.isDarwin
-        then "-undefined dynamic_lookup -headerpad_max_install_names"
-        else "-B${cc}/bin"
+        if stdenv.isDarwin then "-undefined dynamic_lookup -headerpad_max_install_names" else "-B${cc}/bin"
       }
       $(
         # Have gcc return the exit code from ld.
@@ -256,9 +290,7 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     )
     OPT_LINK_FLAGS=(
       ${
-        if stdenv.isDarwin
-        then ""
-        else "$(add_linker_option_if_supported -Wl,--gc-sections -gc-sections)"
+        if stdenv.isDarwin then "" else "$(add_linker_option_if_supported -Wl,--gc-sections -gc-sections)"
       }
     )
     UNFILTERED_COMPILE_FLAGS=(
@@ -278,20 +310,10 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     )
     DBG_COMPILE_FLAGS=(-g)
     COVERAGE_COMPILE_FLAGS=(
-      ${
-        if stdenv.isDarwin then
-          "-fprofile-instr-generate -fcoverage-mapping"
-        else
-          "--coverage"
-      }
+      ${if stdenv.isDarwin then "-fprofile-instr-generate -fcoverage-mapping" else "--coverage"}
     )
     COVERAGE_LINK_FLAGS=(
-      ${
-        if stdenv.isDarwin then
-          "-fprofile-instr-generate"
-        else
-          "--coverage"
-      }
+      ${if stdenv.isDarwin then "-fprofile-instr-generate" else "--coverage"}
     )
     SUPPORTS_START_END_LIB=(
       $(
