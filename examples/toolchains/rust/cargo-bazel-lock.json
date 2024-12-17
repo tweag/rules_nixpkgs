@@ -1,5 +1,5 @@
 {
-  "checksum": "7f7d82ec2821b07887547659086f5c71632af4fda0f7f74885ff887df2547043",
+  "checksum": "a4a1aa9b0f9099653e722c7291732bd034a609ef107fb3508577bd889fc01234",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -1161,9 +1161,6 @@
     "wasm32-unknown-unknown": [
       "wasm32-unknown-unknown"
     ],
-    "wasm32-wasi": [
-      "wasm32-wasi"
-    ],
     "x86_64-apple-darwin": [
       "x86_64-apple-darwin"
     ],
@@ -1195,5 +1192,6 @@
   "direct_deps": [
     "openssl 0.10.45"
   ],
-  "direct_dev_deps": []
+  "direct_dev_deps": [],
+  "unused_patches": []
 }
