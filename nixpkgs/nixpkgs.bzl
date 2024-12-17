@@ -113,10 +113,6 @@ nixpkgs_package(
 """
 
 load(
-    "@rules_nixpkgs_core//:private/cc_toolchain/lib_cc_configure.bzl",
-    "get_cpu_value",
-)
-load(
     "@rules_nixpkgs_cc//:cc.bzl",
     _nixpkgs_cc_configure = "nixpkgs_cc_configure",
 )
