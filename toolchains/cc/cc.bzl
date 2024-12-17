@@ -140,8 +140,16 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     # `@bazel_tools//tools/cpp:unix_cc_configure.bzl`.
     # Uses the corresponding templates from `@bazel_tools` as well, see the
     # private attributes of the `_nixpkgs_cc_toolchain_config` rule.
+
+    bazel_version_match_8, _ = is_bazel_version_at_least("8.0.0")
+    unix_toolchain_config = repository_ctx.attr._unix_cc_toolchain_config
+    if not bazel_version_match_8:
+        # Bazel 7 and prior requires a matching unix_cc_toolchain_config
+        # (with the appropriate features for that Bazel version)
+        unix_toolchain_config = Label("@bazel_tools//tools/cpp:unix_cc_toolchain_config.bzl")
+
     repository_ctx.symlink(
-        repository_ctx.path(repository_ctx.attr._unix_cc_toolchain_config),
+        repository_ctx.path(unix_toolchain_config),
         "cc_toolchain_config.bzl",
     )
     repository_ctx.symlink(
