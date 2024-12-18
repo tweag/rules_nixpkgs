@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
-    srcs = glob(["**"]),
+    srcs = glob(["**"]) + ["//private/cc_toolchain:srcs"],
     visibility = ["//visibility:public"],
 )
 
@@ -24,9 +24,9 @@ bzl_library(
 bzl_library(
     name = "nixpkgs",
     srcs = [
+        "//private/cc_toolchain:srcs",
         "nixpkgs.bzl",
         "util.bzl",
-        "private/get_cpu_value.bzl",
     ],
     deps = [
         ":bazel_tools",
