@@ -33,9 +33,9 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
         http_archive,
         "rules_java",
         urls = [
-            "https://github.com/bazelbuild/rules_java/releases/download/7.3.1/rules_java-7.3.1.tar.gz",
+            "https://github.com/bazelbuild/rules_java/releases/download/7.12.2/rules_java-7.12.2.tar.gz",
         ],
-        sha256 = "4018e97c93f97680f1650ffd2a7530245b864ac543fd24fae8c02ba447cb2864",
+        sha256 = "a9690bc00c538246880d5c83c233e4deb83fe885f54c21bb445eb8116a180b83",
     )
     maybe(
         http_archive,
