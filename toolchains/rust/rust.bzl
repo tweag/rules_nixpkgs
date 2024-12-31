@@ -125,6 +125,7 @@ pkgs.buildEnv {{
             target_triple = "${{target-triple}}",
             default_edition = "{default_edition}",
             stdlib_linkflags = {stdlib_linkflags},
+            strip_level = {strip_level},
             visibility = ["//visibility:public"],
         )
 
@@ -190,11 +191,13 @@ def nixpkgs_rust_configure(
         quiet = False,
         exec_constraints = None,
         target_constraints = None,
+        strip_level = None,
         register = True):
     if not nix_file and not nix_file_content:
         nix_file_content = _rust_nix_contents.format(
             default_edition = default_edition,
             stdlib_linkflags = '["-lpthread", "-ldl"]',
+            strip_level = str(strip_level),
         )
 
     nixpkgs_package(
