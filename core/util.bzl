@@ -1,6 +1,6 @@
-load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:versions.bzl", "versions")
+load("//private/cc_toolchain:lib_cc_configure.bzl", "get_cpu_value")
 
 def fail_on_err(return_value, prefix = None):
     """Fail if the given return value indicates an error.

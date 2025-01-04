@@ -26,7 +26,7 @@ local_path_override(
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
-bazel_dep(name = "rules_rust", version = "0.53.0")
+bazel_dep(name = "rules_rust", version = "0.56.0")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.
@@ -43,7 +43,7 @@ rust.toolchain(
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")
 use_repo(non_module_deps, "nixpkgs_config_rust_toolchain")
-register_toolchains("@nixpkgs_config_rust_toolchain//:rust_nix")
+register_toolchains("@nixpkgs_config_rust_toolchain//:all")
 
 use_repo(non_module_deps, "nixpkgs_config_cc")
 use_repo(non_module_deps, "nixpkgs_config_cc_info")

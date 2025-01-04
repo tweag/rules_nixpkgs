@@ -1,22 +1,17 @@
 queue_rules:
   - name: default
-    merge_method: merge
-    conditions:
-      - check-success~=Build & Test - Nixpkgs - .*
-      - check-success~=Build & Test - Examples \(.*\)
-
-pull_request_rules:
-  - name: merge using the merge queue
-    conditions:
+    queue_conditions:
       - base=master
       - check-success~=Build & Test - Nixpkgs - .*
       - check-success~=Build & Test - Examples \(.*\)
       - "#approved-reviews-by>=1"
       - "label=merge-queue"
-    actions:
-      queue:
-        name: default
-        method: merge
+    merge_conditions:
+      - check-success~=Build & Test - Nixpkgs - .*
+      - check-success~=Build & Test - Examples \(.*\)
+    merge_method: merge
+
+pull_request_rules:
   - name: remove from merge-queue after merge
     conditions:
       - merged
@@ -24,3 +19,7 @@ pull_request_rules:
       label:
         remove:
           - "merge-queue"
+  - name: merge using the merge queue
+    conditions: []
+    actions:
+      queue:

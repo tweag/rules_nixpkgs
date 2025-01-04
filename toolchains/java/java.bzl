@@ -8,7 +8,7 @@
 """
 
 load(
-    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
+    "@rules_nixpkgs_core//private/cc_toolchain:lib_cc_configure.bzl",
     "get_cpu_value",
 )
 load(

@@ -23,11 +23,12 @@ using `nixpkgs_cc_configure(..., cc_lang = "cuda")` or similar.
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(
-    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
+    "@rules_nixpkgs_core//private/cc_toolchain:lib_cc_configure.bzl",
     "get_cpu_value",
     "get_starlark_list",
     "write_builtin_include_directory_paths",
 )
+
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load(
     "@rules_nixpkgs_core//:util.bzl",
@@ -44,7 +45,7 @@ def _parse_cc_toolchain_info(content, filename):
       filename: string, The path to the `CC_TOOLCHAIN_INFO` file, used for error reporting.
 
     Returns:
-      struct, The substitutions for `@bazel_tools//tools/cpp:BUILD.tpl`.
+      struct, The substitutions for `@rules_nixpkgs_core//private/cc_toolchain:BUILD.tpl`.
     """
 
     # Parse the content of CC_TOOLCHAIN_INFO.
@@ -139,8 +140,16 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     # `@bazel_tools//tools/cpp:unix_cc_configure.bzl`.
     # Uses the corresponding templates from `@bazel_tools` as well, see the
     # private attributes of the `_nixpkgs_cc_toolchain_config` rule.
+
+    bazel_version_match_8, _ = is_bazel_version_at_least("8.0.0")
+    unix_toolchain_config = repository_ctx.attr._unix_cc_toolchain_config
+    if not bazel_version_match_8:
+        # Bazel 7 and prior requires a matching unix_cc_toolchain_config
+        # (with the appropriate features for that Bazel version)
+        unix_toolchain_config = Label("@bazel_tools//tools/cpp:unix_cc_toolchain_config.bzl")
+
     repository_ctx.symlink(
-        repository_ctx.path(repository_ctx.attr._unix_cc_toolchain_config),
+        repository_ctx.path(unix_toolchain_config),
         "cc_toolchain_config.bzl",
     )
     repository_ctx.symlink(
@@ -231,22 +240,22 @@ _nixpkgs_cc_toolchain_config = repository_rule(
         "fail_not_supported": attr.bool(),
         "cross_cpu": attr.string(),
         "_unix_cc_toolchain_config": attr.label(
-            default = Label("@bazel_tools//tools/cpp:unix_cc_toolchain_config.bzl"),
+            default = Label("@rules_nixpkgs_core//private/cc_toolchain:unix_cc_toolchain_config.bzl"),
         ),
         "_armeabi_cc_toolchain_config": attr.label(
-            default = Label("@bazel_tools//tools/cpp:armeabi_cc_toolchain_config.bzl"),
+            default = Label("@rules_nixpkgs_core//private/cc_toolchain:armeabi_cc_toolchain_config.bzl"),
         ),
         "_generate_system_module_map": attr.label(
-            default = Label("@bazel_tools//tools/cpp:generate_system_module_map.sh"),
+            default = Label("@rules_nixpkgs_core//private/cc_toolchain:generate_system_module_map.sh"),
         ),
         "_osx_cc_wrapper": attr.label(
-            default = Label("@bazel_tools//tools/cpp:osx_cc_wrapper.sh.tpl"),
+            default = Label("@rules_nixpkgs_core//private/cc_toolchain:osx_cc_wrapper.sh.tpl"),
         ),
         "_linux_cc_wrapper": attr.label(
-            default = Label("@bazel_tools//tools/cpp:linux_cc_wrapper.sh.tpl"),
+            default = Label("@rules_nixpkgs_core//private/cc_toolchain:linux_cc_wrapper.sh.tpl"),
         ),
         "_build": attr.label(
-            default = Label("@bazel_tools//tools/cpp:BUILD.tpl"),
+            default = Label("@rules_nixpkgs_core//private/cc_toolchain:BUILD.tpl"),
         ),
     },
 )
