@@ -28,8 +28,8 @@ load(
 )
 
 nixpkgs_package(
-    name = "nix_2_18",
-    attribute_path = "nixVersions.nix_2_18",
+    name = "nix_2_24",
+    attribute_path = "nixVersions.nix_2_24",
     repositories = {"nixpkgs": "@nixpkgs"},
 )
 
