@@ -6,6 +6,11 @@ local_repository(
 )
 
 local_repository(
+    name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
+)
+
+local_repository(
     name = "rules_nixpkgs_core",
     path = "../../core",
 )
