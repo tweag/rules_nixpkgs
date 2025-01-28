@@ -1,9 +1,9 @@
 module(name = "rules_nixpkgs_java_testing")
 
-bazel_dep(name = "rules_nixpkgs_java")
+bazel_dep(name = "rules_nixpkgs_cc")
 local_path_override(
-    module_name = "rules_nixpkgs_java",
-    path = "../../toolchains/java",
+    module_name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
 )
 
 bazel_dep(name = "rules_nixpkgs_core")
@@ -12,7 +12,14 @@ local_path_override(
     path = "../../core",
 )
 
+bazel_dep(name = "rules_nixpkgs_java")
+local_path_override(
+    module_name = "rules_nixpkgs_java",
+    path = "../../toolchains/java",
+)
+
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.9")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.
@@ -25,7 +32,14 @@ single_version_override(
 )
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
+
+# The Java toolchain requires a CC toolchain.
 use_repo(non_module_deps, "nixpkgs")
+use_repo(non_module_deps, "nixpkgs_config_cc")
+use_repo(non_module_deps, "nixpkgs_config_cc_info")
+use_repo(non_module_deps, "nixpkgs_config_cc_toolchains")
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
+
 use_repo(non_module_deps, "nixpkgs_java_runtime")
 use_repo(non_module_deps, "nixpkgs_java_runtime_toolchain")
 register_toolchains("@nixpkgs_java_runtime_toolchain//:all")

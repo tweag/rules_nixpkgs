@@ -1,4 +1,5 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_local_repository")
+load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
 load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
 
 def nixpkgs_repositories(*, bzlmod):
@@ -6,6 +7,12 @@ def nixpkgs_repositories(*, bzlmod):
         name = "nixpkgs",
         nix_file = "//:nixpkgs.nix",
         nix_file_deps = ["//:flake.lock"],
+    )
+
+    nixpkgs_cc_configure(
+        name = "nixpkgs_config_cc",
+        repository = "@nixpkgs",
+        register = not bzlmod,
     )
 
     nixpkgs_java_configure(
