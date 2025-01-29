@@ -13,6 +13,18 @@ local_repository(
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "remote_java_tools",
+    sha256 = "30a7d845bec3dd054ac45b5546c2fdf1922c0b1040b2a13b261fcc2e2d63a2f4",
+    urls = [
+        "https://mirror.bazel.build/bazel_java_tools/releases/java/v13.3/java_tools-v13.3.zip",
+        "https://github.com/bazelbuild/java_tools/releases/download/java_v13.3/java_tools-v13.3.zip",
+    ],
+    # zlib needs to be upgradeded from 1.3 to 1.3.1 to work with apple-sdk_11 and later
+    patches = ["//patches:remote_java_tools.patch"],
+    patch_args = ["-d", "java_tools/zlib", "-p1"],
+)
+
+http_archive(
     name = "bazel_skylib",
     sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
     urls = [
