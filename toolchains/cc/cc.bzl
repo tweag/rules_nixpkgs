@@ -316,7 +316,8 @@ def nixpkgs_cc_configure(
         register = True,
         cc_lang = "c++",
         cc_std = "c++0x",
-        cross_cpu = ""):
+        cross_cpu = "",
+        apple_sdk_path = ""):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -389,6 +390,7 @@ def nixpkgs_cc_configure(
       cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
       cc_std: string, `"c++0x"` by default. Used to populate `CXX_FLAG` so the compiler uses the given language standard. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
       cross_cpu: string, `""` by default. Used if you want to add a cross compilation C/C++ toolchain. Set this to the CPU architecture for the target CPU. For example x86_64, would be k8.
+      apple_sdk_path: string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain form the Nix expression under this attribute path.  Uses default repository if no `nix_file` or `nix_file_content` is provided.
     """
     nixopts = list(nixopts)
     nix_file_deps = list(nix_file_deps)
@@ -450,6 +452,9 @@ def nixpkgs_cc_configure(
             "ccStd",
             cc_std,
         ])
+    
+    if apple_sdk_path:
+        nixopts.extend(["--argstr", "appleSDKPath", apple_sdk_path])
 
     # Invoke `cc.nix` which generates `CC_TOOLCHAIN_INFO`.
     nixpkgs_package(

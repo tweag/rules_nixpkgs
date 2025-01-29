@@ -9,6 +9,7 @@
   },
   ccLang ? "c++",
   ccStd ? "c++0x",
+  appleSDKPath ? "apple-sdk",
 }:
 
 let
@@ -61,9 +62,9 @@ let
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
     pkgs.wrapCCWith rec {
+      apple-sdk = pkgs."${appleSDKPath}";
       cc = stdenv.cc.cc;
       extraBuildCommands =
-        with pkgs.darwin.apple_sdk.frameworks;
         ''
           echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
           echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
