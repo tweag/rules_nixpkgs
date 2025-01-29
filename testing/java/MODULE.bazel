@@ -18,6 +18,11 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 #   become a module extension in rules_nixpkgs_java.
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_java", version = "7.3.1")
+single_version_override(
+    module_name = "rules_java",
+    patches = ["//patches:rules_java.patch"],
+    patch_strip = 1,
+)
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs")

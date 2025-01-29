@@ -1,0 +1,21 @@
+diff -Naur a/java/repositories.bzl b/java/repositories.bzl
+--- a/java/repositories.bzl	2025-01-29 11:26:18
++++ b/java/repositories.bzl	2025-01-29 11:28:26
+@@ -48,6 +48,8 @@
+             "mirror_url": "https://mirror.bazel.build/bazel_java_tools/releases/java/v13.3/java_tools-v13.3.zip",
+             "github_url": "https://github.com/bazelbuild/java_tools/releases/download/java_v13.3/java_tools-v13.3.zip",
+             "sha": "30a7d845bec3dd054ac45b5546c2fdf1922c0b1040b2a13b261fcc2e2d63a2f4",
++            "patches": ["@@//patches:remote_java_tools.patch"],
++            "patch_args": ["-d", "java_tools/zlib", "-p1"]
+         },
+     },
+ }
+@@ -63,6 +65,8 @@
+                 config["mirror_url"],
+                 config["github_url"],
+             ],
++            patches = config.get("patches", []),
++            patch_args = config.get("patch_args", []),
+         )
+ 
+ def local_jdk_repo():
