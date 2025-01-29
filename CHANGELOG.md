@@ -6,11 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.13.0...HEAD
+
+## [0.13.0] - 2025-01-29
+
+[0.13.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.12.0...v0.13.0
+
+### Added
+
+- Support for Bazel 8. See [#622].
+- Support for new `apple-sdk` from Nixpkgs 24.11 and later. See [#639].
+- Documentation for `nixpkgs_java_configure` with bzlmod. See [#498].
+- Add `extra_flags_per_feature` to cc toolchain. See [#575].
+- Add `rustfmt_toolchain`. See [#625].
 
 ### Removed
 
-- `nixpkgs_cc_configure_deprecated` was removed since it depended on Bazel's `cc_autoconf_impl`, which [was removed from `@bazel_tools`](https://github.com/bazelbuild/bazel/commit/1c4e78a9ceab9794140324d64833c628e382a3da) and moved into a private package in `rules_cc` in Bazel 8.
+- `nixpkgs_cc_configure_deprecated` was removed since it depended on Bazel's `cc_autoconf_impl`, which [was removed from `@bazel_tools`](https://github.com/bazelbuild/bazel/commit/1c4e78a9ceab9794140324d64833c628e382a3da) and moved into a private package in `rules_cc` in Bazel 8. See [#621].
+
+[#498]: https://github.com/tweag/rules_nixpkgs/pull/498
+[#575]: https://github.com/tweag/rules_nixpkgs/pull/575
+[#621]: https://github.com/tweag/rules_nixpkgs/pull/621
+[#622]: https://github.com/tweag/rules_nixpkgs/pull/622
+[#625]: https://github.com/tweag/rules_nixpkgs/pull/625
+[#639]: https://github.com/tweag/rules_nixpkgs/pull/639
 
 ## [0.12.0] - 2024-07-12
 
