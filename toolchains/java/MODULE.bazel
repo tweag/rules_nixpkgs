@@ -1,9 +1,9 @@
 module(
     name = "rules_nixpkgs_java",
-    version = "0.12.0",
+    version = "0.13.0",
 )
 
-bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
 local_path_override(
    module_name = "rules_nixpkgs_core",
    path = "../../core",

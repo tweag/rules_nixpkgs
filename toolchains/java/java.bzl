@@ -182,8 +182,8 @@ def nixpkgs_java_configure(
 
     Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
     ```bzl
-    bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
-    bazel_dep(name = "rules_nixpkgs_java", version = "0.12.0")
+    bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
+    bazel_dep(name = "rules_nixpkgs_java", version = "0.13.0")
     bazel_dep(name = "rules_java", version = "7.3.1")
     bazel_dep(name = "platforms", version = "0.0.9")
 
@@ -204,9 +204,9 @@ def nixpkgs_java_configure(
 
     archive_override(
         module_name = "rules_nixpkgs_java",
-        urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.12.0/rules_nixpkgs-0.12.0.tar.gz",
+        urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.13.0/rules_nixpkgs-0.13.0.tar.gz",
         integrity = "",
-        strip_prefix = "rules_nixpkgs-0.12.0/toolchains/java",
+        strip_prefix = "rules_nixpkgs-0.13.0/toolchains/java",
     )
     ```
 
@@ -267,8 +267,8 @@ def nixpkgs_java_configure(
 
     Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
     ```bzl
-    bazel_dep(name = "rules_nixpkgs_core", version = "0.12.0")
-    bazel_dep(name = "rules_nixpkgs_java", version = "0.12.0")
+    bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
+    bazel_dep(name = "rules_nixpkgs_java", version = "0.13.0")
     bazel_dep(name = "rules_java", version = "7.5.0")
     bazel_dep(name = "platforms", version = "0.0.9")
 
@@ -289,9 +289,9 @@ def nixpkgs_java_configure(
 
     archive_override(
         module_name = "rules_nixpkgs_java",
-        urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.12.0/rules_nixpkgs-0.12.0.tar.gz",
+        urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.13.0/rules_nixpkgs-0.13.0.tar.gz",
         integrity = "",
-        strip_prefix = "rules_nixpkgs-0.12.0/toolchains/java",
+        strip_prefix = "rules_nixpkgs-0.13.0/toolchains/java",
     )
     ```
 
