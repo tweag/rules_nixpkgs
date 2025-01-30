@@ -34,9 +34,11 @@ jobs:
          file: CHANGELOG.md
          pattern: ${{ inputs.version }}
       - name: Prepare release notes and artifacts
+        env:
+          EXTRACTED_CHANGELOG: ${{ steps.extract-changelog.outputs.markdown }}
         run: |
           .github/workflows/release_prep.sh v${{ inputs.version }} > release_notes.txt
-          printf '${{ steps.extract-changelog.outputs.markdown }}' >> release_notes.txt
+          echo "${EXTRACTED_CHANGELOG}" >> release_notes.txt
       - name: Create draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
