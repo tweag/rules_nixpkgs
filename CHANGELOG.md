@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Removed
 
-- `nixpkgs_cc_configure_deprecated` was removed since it depended on Bazel's `cc_autoconf_impl`, which [was removed from `@bazel_tools`](https://github.com/bazelbuild/bazel/commit/1c4e78a9ceab9794140324d64833c628e382a3da) and moved into a private package in `rules_cc` in Bazel 8. See [#621].
+- `nixpkgs_cc_configure_deprecated` was removed since it depended on Bazel's `cc_autoconf_impl`, which [was removed from `@bazel_tools`][bazel_tools_to_rules_cc] and moved into a private package in `rules_cc` in Bazel 8. See [#621].
 
 [#498]: https://github.com/tweag/rules_nixpkgs/pull/498
 [#575]: https://github.com/tweag/rules_nixpkgs/pull/575
@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [#622]: https://github.com/tweag/rules_nixpkgs/pull/622
 [#625]: https://github.com/tweag/rules_nixpkgs/pull/625
 [#639]: https://github.com/tweag/rules_nixpkgs/pull/639
+[bazel_tools_to_rules_cc]: https://github.com/bazelbuild/bazel/commit/1c4e78a9ceab9794140324d64833c628e382a3da
 
 ## [0.12.0] - 2024-07-12
 
