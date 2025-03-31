@@ -259,7 +259,7 @@ def nixpkgs_git_repository(
     _nixpkgs_http_repository(
         name = name,
         unmangled_name = name,
-        url = "https://github.com/NixOS/nixpkgs/archive/%s.tar.gz" % revision,
+        url = "%s/archive/%s.tar.gz" % (remote, revision),
         sha256 = sha256,
         strip_prefix = "nixpkgs-%s" % revision,
         **kwargs
