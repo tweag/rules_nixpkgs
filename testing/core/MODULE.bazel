@@ -162,6 +162,20 @@ use_repo(
     "relative-imports",
 )
 
+# Test FlakeHub tarball support using the flake extension
+nix_repo.flake(
+    name = "flakehub_nixpkgs",
+    lock_file = "//:flakehub_test.lock",
+)
+use_repo(nix_repo, "flakehub_nixpkgs")
+
+nix_pkg.attr(
+    name = "flakehub-test",
+    attr = "hello",
+    repo = "@flakehub_nixpkgs",
+)
+use_repo(nix_pkg, "flakehub-test")
+
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")
 use_repo(non_module_deps, "flake-hello")
