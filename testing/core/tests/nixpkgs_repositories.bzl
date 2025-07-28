@@ -13,6 +13,7 @@ def nixpkgs_repositories(*, bzlmod):
     http_nixpkgs = "@http_nixpkgs"
     file_nixpkgs = "@file_nixpkgs"
     nixpkgs_content = "@nixpkgs_content"
+    flakehub_nixpkgs = "@flakehub_nixpkgs"
     if not bzlmod:
         nixpkgs_local_repository(
             name = "nixpkgs",
@@ -216,4 +217,16 @@ filegroup(
         nix_flake_file = "//:flake.nix",
         nix_flake_lock_file = "//:flake.lock",
         package = "hello-with-build-file",
+    )
+
+    # Test FlakeHub tarball support
+    nixpkgs_local_repository(
+        name = "flakehub_nixpkgs",
+        nix_flake_lock_file = "//:flakehub_test.lock",
+    )
+
+    nixpkgs_package(
+        name = "flakehub-test",
+        attribute_path = "hello",
+        repository = flakehub_nixpkgs,
     )
