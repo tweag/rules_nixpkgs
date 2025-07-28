@@ -412,8 +412,8 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
 
     nix_host = repository_ctx.getenv("BAZEL_NIX_REMOTE")
     if nix_host:
-        nix_store_key = repository_ctx.getenv('BAZEL_NIX_REMOTE_KEY')
         nix_store_user = repository_ctx.getenv('BAZEL_NIX_REMOTE_USER')
+        nix_store_key = repository_ctx.getenv('BAZEL_NIX_REMOTE_KEY')
         nix_store = "ssh-ng://{user}{host}?max-connections=1{key}".format(
                 user = "{}@".format(nix_store_user) if nix_store_user else "",
                 host = nix_host,
