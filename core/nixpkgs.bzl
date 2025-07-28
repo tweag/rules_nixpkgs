@@ -290,11 +290,18 @@ let
   lock = builtins.fromJSON (builtins.readFile ./{});
   src = lock.nodes.nixpkgs.locked;
   nixpkgs =
-    assert src.type == "github";
-    fetchTarball {{
-      url = "https://github.com/${{src.owner}}/${{src.repo}}/archive/${{src.rev}}.tar.gz";
-      sha256 = src.narHash;
-    }};
+    if src.type == "github" then
+      fetchTarball {{
+        url = "https://github.com/${{src.owner}}/${{src.repo}}/archive/${{src.rev}}.tar.gz";
+        sha256 = src.narHash;
+      }}
+    else if src.type == "tarball" then
+      fetchTarball {{
+        url = src.url;
+        sha256 = src.narHash;
+      }}
+    else
+      abort "Unsupported nixpkgs source type: ${{src.type}}";
 in
 import nixpkgs
             """.format(lock_filename),
