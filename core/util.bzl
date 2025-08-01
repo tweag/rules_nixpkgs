@@ -355,3 +355,44 @@ def is_bazel_version_at_least(threshold):
         threshold_met,
         from_source_version,
     )
+
+def find_license_spdx_id(repository_ctx):
+    """ Get the SPDX identifier of the package loaded by the given repository context.
+
+    Args:
+        repository_ctx: context of a nixpkgs_package or nixpkgs_flake_package target
+
+    Returns:
+        SPDX identifier, if it can be found, None otherwise
+    """
+    path_expr = repository_ctx.attr.nix_license_path
+    if not path_expr:
+      return None
+
+    nix_instantiate = executable_path(
+        repository_ctx,
+        "nix-instantiate",
+        extra_msg = "See: https://nixos.org/nix/",
+    )
+    expr = "with import <nixpkgs> {}; " + path_expr
+    args = [nix_instantiate, "--eval", "--expr", expr]
+
+    exec_result = execute_or_fail(
+        repository_ctx,
+        args,
+        failure_message = "Failed to find spdxId for '@{}'.".format(repository_ctx.name),
+        quiet = repository_ctx.attr.quiet,
+    )
+    spdxId = exec_result.stdout.strip().strip('"')
+    return spdxId
+
+def download_license(repository_ctx, spdx_id, output):
+    """ Download the license text of the given SPDX identifier.
+
+    Args:
+        repository_ctx: The repository context of the current repository rule.
+        spdx_id: The SPDX identifier, see https://spdx.org/licenses/
+        output: Path to write the downloaded license text to
+    """
+    url = "https://spdx.org/licenses/{}.txt".format(spdx_id)
+    repository_ctx.download(url, output=output)

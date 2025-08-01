@@ -433,9 +433,9 @@ string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain fo
 ### nixpkgs_flake_package
 
 <pre>
-nixpkgs_flake_package(<a href="#nixpkgs_flake_package-name">name</a>, <a href="#nixpkgs_flake_package-nix_flake_file">nix_flake_file</a>, <a href="#nixpkgs_flake_package-nix_flake_lock_file">nix_flake_lock_file</a>, <a href="#nixpkgs_flake_package-nix_flake_file_deps">nix_flake_file_deps</a>, <a href="#nixpkgs_flake_package-package">package</a>,
-                      <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>, <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>,
-                      <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
+nixpkgs_flake_package(<a href="#nixpkgs_flake_package-name">name</a>, <a href="#nixpkgs_flake_package-nix_flake_file">nix_flake_file</a>, <a href="#nixpkgs_flake_package-nix_flake_lock_file">nix_flake_lock_file</a>, <a href="#nixpkgs_flake_package-nix_flake_file_deps">nix_flake_file_deps</a>,
+                      <a href="#nixpkgs_flake_package-nix_license_path">nix_license_path</a>, <a href="#nixpkgs_flake_package-package">package</a>, <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>,
+                      <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
 </pre>
 
 Make the content of a local Nix Flake package available in the Bazel workspace.
@@ -506,6 +506,20 @@ default is <code>[]</code>
 <p>
 
 Additional dependencies of `nix_flake_file` if any.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-nix_license_path">
+<td><code>nix_license_path</code></td>
+<td>
+
+optional.
+default is <code>""</code>
+
+<p>
+
+nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'
 
 </p>
 </td>
@@ -1850,9 +1864,9 @@ optional.
 ### nixpkgs_package
 
 <pre>
-nixpkgs_package(<a href="#nixpkgs_package-name">name</a>, <a href="#nixpkgs_package-attribute_path">attribute_path</a>, <a href="#nixpkgs_package-nix_file">nix_file</a>, <a href="#nixpkgs_package-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_package-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_package-repository">repository</a>,
-                <a href="#nixpkgs_package-repositories">repositories</a>, <a href="#nixpkgs_package-build_file">build_file</a>, <a href="#nixpkgs_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_package-nixopts">nixopts</a>, <a href="#nixpkgs_package-quiet">quiet</a>, <a href="#nixpkgs_package-fail_not_supported">fail_not_supported</a>,
-                <a href="#nixpkgs_package-kwargs">kwargs</a>)
+nixpkgs_package(<a href="#nixpkgs_package-name">name</a>, <a href="#nixpkgs_package-attribute_path">attribute_path</a>, <a href="#nixpkgs_package-nix_file">nix_file</a>, <a href="#nixpkgs_package-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_package-nix_file_content">nix_file_content</a>, <a href="#nixpkgs_package-nix_license_path">nix_license_path</a>,
+                <a href="#nixpkgs_package-repository">repository</a>, <a href="#nixpkgs_package-repositories">repositories</a>, <a href="#nixpkgs_package-build_file">build_file</a>, <a href="#nixpkgs_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_package-nixopts">nixopts</a>, <a href="#nixpkgs_package-quiet">quiet</a>,
+                <a href="#nixpkgs_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_package-kwargs">kwargs</a>)
 </pre>
 
 Make the content of a Nixpkgs package available in the Bazel workspace.
@@ -1933,6 +1947,20 @@ default is <code>""</code>
 <p>
 
 An expression for a Nix derivation.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_package-nix_license_path">
+<td><code>nix_license_path</code></td>
+<td>
+
+optional.
+default is <code>""</code>
+
+<p>
+
+nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'
 
 </p>
 </td>
