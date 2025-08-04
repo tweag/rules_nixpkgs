@@ -12,7 +12,7 @@ rules\_nixpkgs\_cc, etc. These modules define Bazel extensions that expose Nix
 concepts and functionality to Bazel modules and allow Bazel modules to define
 and import Nix repositories, packages, and toolchains.
 
-## rules\_nixkgs Module Separation
+## rules\_nixpkgs Module Separation
 
 rules\_nixpkgs is split into multiple Bazel modules to avoid introducing
 excessive transitive dependencies:
@@ -207,7 +207,7 @@ Support the use of Nix built packages as Bazel toolchains.
   * Repository rules are assigned names in a global scope for the current
     module extension.
   * Recent Bazel versions (starting from 6.3) introduced ["isolated" module
-    extensions][isolted-ext].
+    extensions][isolated-ext].
 * Impact
   * Module extensions must either reconcile or avoid name clashes due to
     external workspaces defined based on tags requested by different Bazel
@@ -311,11 +311,11 @@ Support the use of Nix built packages as Bazel toolchains.
     `nixos-22.11` channel, there is no canonical name that can be assigned to a
     nixpkgs repository that a user could be reasonably expected to predict and
     manually spell out in `use_repo` stanzas or attributes.
-  * Nix packages may be definied by a specific nixpkgs repository they are
+  * Nix packages may be defined by a specific nixpkgs repository they are
     based on, as well as user provided sources, additional arguments, and an
     attribute path. Outside of the most simple use-cases, like `pkgs.hello` to
     accept `hello` from an arbitrary nixpkgs repository, there is no canonical
-    name that can be assigned to a nixkgs repositor that a user could be
+    name that can be assigned to a nixpkgs repository that a user could be
     reasonably expected to predict and manually spell out in `use_repo` stanzas
     or attributes.
 * Impact
@@ -364,7 +364,7 @@ Support the use of Nix built packages as Bazel toolchains.
     a globally unified version of a Nix repository and Nix package.
   * rules\_nixpkgs itself or the root module should be able to set the global
     defaults.
-  * rules\_nixkgs module extensions should support targeted overrides of Nix
+  * rules\_nixpkgs module extensions should support targeted overrides of Nix
     repositories and packages in transitive module dependencies.
     Note, Bazel itself supports this via module overrides from the root module.
     Implementation of this feature is deferred until the need arises. If
@@ -410,7 +410,7 @@ Support the use of Nix built packages as Bazel toolchains.
     extension.\
     This is [intended behavior and a supported use-case][bzlmod-import].
 * Impact
-  * The module extension for defining nixkgs repositories could invoke a
+  * The module extension for defining nixpkgs repositories could invoke a
     repository rule that generates a Starlark file that contains the required
     metadata to expose the repositories to other rules\_nixpkgs module
     extensions, e.g. to the module extension for Nix packages. This needs to
@@ -505,10 +505,10 @@ use_repo(nix_pkg, "jq", "gawk")
 ### Local Nix Package
 
 A Bazel module can import a custom Nix package from an expression or file and
-provide a custom BUILD file template if required using an isoloated extension.
+provide a custom BUILD file template if required using an isolated extension.
 The possibilities for customization are too great to attempt global unification
 of such packages. If two different Bazel modules effectively request the same
-such Nix package, then rules\_nixkgs will still generate two separate external
+such Nix package, then rules\_nixpkgs will still generate two separate external
 repositories to import the package for each module.
 
 ```python
@@ -536,7 +536,7 @@ use_repo(nix_pkg_isolated, "jq", "awk")
 The root module (and rules_nixpkgs_core) can override a globally unified
 package, providing a custom repository, Nix expression, or BUILD file template,
 such that other modules referring to the same attribute path will import the
-same overriden instance.
+same overridden instance.
 
 ```python
 use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
