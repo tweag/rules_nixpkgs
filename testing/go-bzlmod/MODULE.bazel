@@ -24,7 +24,7 @@ local_path_override(
     path = "../../toolchains/java",
 )
 
-bazel_dep(name = "rules_go", version = "0.50.1")
+bazel_dep(name = "rules_go", version = "0.56.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
