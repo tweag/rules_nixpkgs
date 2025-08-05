@@ -2,7 +2,7 @@
 
 <!-- Edit the docstring in `toolchains/rust/rust.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
 
-Rules for importing a Rust and rustfmt toolchain from Nixpkgs.
+Rules for importing a Rust, rustfmt and rust_analyzer toolchains from Nixpkgs.
 
 # Rules
 

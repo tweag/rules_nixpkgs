@@ -1,6 +1,6 @@
 """<!-- Edit the docstring in `toolchains/rust/rust.bzl` and run `bazel run //docs:update-README.md` to change this repository's `README.md`. -->
 
-Rules for importing a Rust and rustfmt toolchain from Nixpkgs.
+Rules for importing a Rust, rustfmt and rust_analyzer toolchains from Nixpkgs.
 
 # Rules
 
@@ -41,7 +41,7 @@ pkgs.buildEnv {{
     extraOutputsToInstall = ["out" "bin" "lib"];
     ignoreCollisions = true;
     name = "bazel-rust-toolchain";
-    paths = [ rustc (pkgs.rustc.unwrapped or null) pkgs.rustfmt pkgs.cargo pkgs.clippy ];
+    paths = [ rustc (pkgs.rustc.unwrapped or null) pkgs.rustfmt pkgs.rust-analyzer pkgs.cargo pkgs.clippy ];
     postBuild = ''
         cat <<EOF > $out/BUILD
         filegroup(
@@ -51,8 +51,26 @@ pkgs.buildEnv {{
         )
 
         filegroup(
+            name = "rustc_srcs",
+            srcs = glob(["lib/rustlib/rustc-src/**"]),
+            visibility = ["//visibility:public"]
+        )
+
+        filegroup(
             name = "rustfmt",
             srcs = ["bin/rustfmt"],
+            visibility = ["//visibility:public"],
+        )
+
+        filegroup(
+            name = "rust-analyzer-proc-macro-srv",
+            srcs = ["libexec/rust-analyzer-proc-macro-srv"],
+            visibility = ["//visibility:public"],
+        )
+
+        filegroup(
+            name = "rust_analyzer",
+            srcs = ["bin/rust-analyzer"],
             visibility = ["//visibility:public"],
         )
 
@@ -108,7 +126,7 @@ pkgs.buildEnv {{
             visibility = ["//visibility:public"],
         )
 
-        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain', 'rustfmt_toolchain')
+        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain', 'rustfmt_toolchain', 'rust_analyzer_toolchain')
         rust_toolchain(
             name = "rust_nix_impl",
             rust_doc = ":rust_doc",
@@ -133,6 +151,14 @@ pkgs.buildEnv {{
             rustfmt = ":rustfmt",
             visibility = ["//visibility:public"],
         )
+
+        rust_analyzer_toolchain(
+            name = "rust_analyzer_nix_impl",
+            proc_macro_srv = ":rust-analyzer-proc-macro-srv",
+            rustc = ":rustc",
+            rustc_srcs = ":rustc_srcs",
+            visibility = ["//visibility:public"],
+        )
         EOF
     '';
 }}
@@ -151,6 +177,14 @@ toolchain(
     name = "rustfmt_nix",
     toolchain = "@{toolchain_repo}//:rustfmt_nix_impl",
     toolchain_type = "@rules_rust//rust/rustfmt:toolchain_type",
+    exec_compatible_with = {exec_constraints},
+    target_compatible_with = {target_constraints},
+)
+
+toolchain(
+    name = "rust_analyzer_nix",
+    toolchain = "@{toolchain_repo}//:rust_analyzer_nix_impl",
+    toolchain_type = "@rules_rust//rust/rust_analyzer:toolchain_type",
     exec_compatible_with = {exec_constraints},
     target_compatible_with = {target_constraints},
 )
