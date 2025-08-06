@@ -1,0 +1,110 @@
+module(
+    name = "hello_world",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../../core",
+)
+
+bazel_dep(name = "rules_nixpkgs_rust", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_rust",
+    path = "../../../toolchains/rust",
+)
+
+bazel_dep(name = "rules_nixpkgs_cc", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_cc",
+    path = "../../../toolchains/cc",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_rust", version = "0.63.0")
+
+# rules_rust also uses the cc compiler
+bazel_dep(name = "rules_cc", version = "0.1.4")
+
+#
+# Nixpkgs
+#
+
+# It is recommended to keep nixpkgs of nix-shell (which provide Bazel),
+# and nixpkgs of Bazel Workspace in sync - otherwise one may
+# got hit with nasty glibc mismatch errors.
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.json",
+    ],
+)
+use_repo(nix_repo, "nixpkgs")
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+nix_pkg.file(
+    name = "openssl-static",
+    attr = "default",
+    file = "//:openssl-static.nix",
+    file_deps = [
+        "//:nixpkgs.json",
+    ],
+)
+use_repo(nix_pkg, "openssl-static")
+
+#
+# Toolchains
+#
+
+cc_configure = use_extension("//:extension.bzl", "cc_configure")
+use_repo(cc_configure, "nixpkgs_config_cc")
+use_repo(cc_configure, "nixpkgs_config_cc_toolchains")
+use_repo(cc_configure, "nixpkgs_config_cc_info")
+
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
+
+rust_configure = use_extension("//:extension.bzl", "rust_configure")
+use_repo(rust_configure, "nixpkgs_rust")
+use_repo(rust_configure, "nixpkgs_rust_toolchain")
+
+register_toolchains("@nixpkgs_rust_toolchain//:rust_nix")
+
+#
+# Crates
+#
+
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.annotation(
+    build_script_data = [
+        "@openssl-static//:include",
+        "@openssl-static//:lib",
+    ],
+    build_script_env = {
+        "OPENSSL_INCLUDE_DIR": "../rules_nixpkgs_core~~nix_pkg~openssl-static/include",
+        "OPENSSL_LIB_DIR": "../rules_nixpkgs_core~~nix_pkg~openssl-static/lib",
+        "OPENSSL_STATIC": "1",
+    },
+    crate = "openssl-sys",
+    data = [
+        "@openssl-static//:include",
+        "@openssl-static//:lib",
+    ],
+    rustc_flags = [
+        "-Lexternal/rules_nixpkgs_core~~nix_pkg~openssl-static/lib",
+    ],
+)
+crate.spec(
+    package = "openssl",
+    version = "0.10.40",
+)
+crate.from_specs(
+    cargo_lockfile = "//:Cargo.lock",
+    lockfile = "//:cargo-bazel-lock.json",
+)
+
+inject_repo(crate, "openssl-static")
+
+use_repo(crate, "crates")
