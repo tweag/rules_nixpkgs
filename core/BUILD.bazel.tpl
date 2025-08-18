@@ -1,4 +1,14 @@
-package(default_visibility = ["//visibility:public"])
+load("@rules_license//rules:license.bzl", "license")
+
+package(
+    default_visibility = ["//visibility:public"],
+    default_package_metadata = ["//:license"],
+)
+
+license(
+    name = "license",
+    license_text = "LICENSE",
+)
 
 filegroup(
     name = "bin",
