@@ -41,6 +41,8 @@ load(
     "external_repository_root",
     "find_children",
     "is_supported_platform",
+    "find_license_spdx_id",
+    "download_license",
 )
 
 def _nixpkgs_http_repository_impl(repository_ctx):
@@ -491,6 +493,15 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
     elif build_file_content:
         fail("One of 'build_file' or 'build_file_content' was specified but Nix derivation already contains 'BUILD' or 'BUILD.bazel'.")
 
+    # Create a LICENSE file, if it does not exist already
+    license_file = repository_ctx.path("LICENSE")
+    if not license_file.exists:
+      spdx_id = find_license_spdx_id(repository_ctx)
+      if spdx_id:
+        download_license(repository_ctx, spdx_id, license_file)
+      else:
+        repository_ctx.file(license_file, content = "Unspecified license")
+
 def _nixpkgs_package_impl(repository_ctx):
     repository = repository_ctx.attr.repository
     repositories = repository_ctx.attr.repositories
@@ -610,6 +621,7 @@ _nixpkgs_package = repository_rule(
         "nix_file": attr.label(allow_single_file = [".nix"]),
         "nix_file_content": attr.string(),
         "nix_file_deps": attr.label_keyed_string_dict(),
+        "nix_license_path": attr.string(doc = "nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'"),
         "nixopts": attr.string_list(),
         "quiet": attr.bool(),
         "repositories": attr.label_keyed_string_dict(),
@@ -627,6 +639,7 @@ def nixpkgs_package(
         nix_file = None,
         nix_file_deps = [],
         nix_file_content = "",
+        nix_license_path = "",
         repository = None,
         repositories = {},
         build_file = None,
@@ -645,6 +658,7 @@ def nixpkgs_package(
       nix_file: A file containing an expression for a Nix derivation.
       nix_file_deps: Dependencies of `nix_file` if any.
       nix_file_content: An expression for a Nix derivation.
+      nix_license_path: nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'
       repository: A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`
       repositories: A dictionary mapping `NIX_PATH` entries to repository labels.
 
@@ -712,6 +726,7 @@ def nixpkgs_package(
         nix_file = nix_file,
         nix_file_deps = nix_file_deps,
         nix_file_content = nix_file_content,
+        nix_license_path = nix_license_path,
         repository = repository,
         repositories = repositories,
         build_file = build_file,
@@ -814,6 +829,7 @@ _nixpkgs_flake_package = repository_rule(
         "nix_flake_file": attr.label(mandatory = True, allow_single_file = ["flake.nix"]),
         "nix_flake_file_deps": attr.label_keyed_string_dict(),
         "nix_flake_lock_file": attr.label(mandatory = True, allow_single_file = ["flake.lock"]),
+        "nix_license_path": attr.string(doc = "nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'"),
         "nixopts": attr.string_list(),
         "package": attr.string(doc = "Defaults to `default`"),
         "quiet": attr.bool(),
@@ -825,6 +841,7 @@ def nixpkgs_flake_package(
         nix_flake_file,
         nix_flake_lock_file,
         nix_flake_file_deps = [],
+        nix_license_path = "",
         package = None,
         build_file = None,
         build_file_content = "",
@@ -848,6 +865,7 @@ def nixpkgs_flake_package(
       nix_flake_file: Label to `flake.nix` that will be evaluated.
       nix_flake_lock_file: Label to `flake.lock` that corresponds to `nix_flake_file`.
       nix_flake_file_deps: Additional dependencies of `nix_flake_file` if any.
+      nix_license_path: nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'
       package: Nix Flake package to make available.  The default package will be used if not specified.
       build_file: The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.
       build_file_content: Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package-build_file_content) for more information.
@@ -874,6 +892,7 @@ def nixpkgs_flake_package(
         nix_flake_file = nix_flake_file,
         nix_flake_lock_file = nix_flake_lock_file,
         nix_flake_file_deps = nix_flake_file_deps,
+        nix_license_path = nix_license_path,
         package = package,
         build_file = build_file,
         build_file_content = build_file_content,

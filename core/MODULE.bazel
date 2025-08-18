@@ -5,6 +5,7 @@ module(
 
 bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
+bazel_dep(name = "rules_license", version = "1.0.0")
 
 nix_repo = use_extension("//extensions:repository.bzl", "nix_repo")
 nix_repo.github(
