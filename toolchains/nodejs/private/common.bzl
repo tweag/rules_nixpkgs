@@ -1,5 +1,5 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
-load("@rules_nodejs//nodejs/private:toolchains_repo.bzl", "PLATFORMS")
+load("@rules_nodejs//nodejs/private:nodejs_toolchains_repo.bzl", "PLATFORMS")
 
 
 def _mk_mapping(rules_nodejs_platform_name):
@@ -41,10 +41,17 @@ pkgs.buildEnv {{
         visibility = ["//visibility:public"],
     )
 
+    filegroup(
+        name = "npm",
+        srcs = ["bin/npm"],
+        visibility = ["//visibility:public"],
+    )
+
     load("@rules_nodejs//nodejs:toolchain.bzl", "node_toolchain")
     node_toolchain(
         name = "nodejs_nix_impl",
         target_tool = ":nodejs",
+        npm = ":npm",
         visibility = ["//visibility:public"],
     )
 
