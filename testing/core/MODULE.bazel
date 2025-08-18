@@ -180,3 +180,5 @@ non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")
 use_repo(non_module_deps, "flake-hello")
 use_repo(non_module_deps, "flake-hello-with-build-file")
+
+bazel_dep(name = "rules_license", version = "1.0.0")
