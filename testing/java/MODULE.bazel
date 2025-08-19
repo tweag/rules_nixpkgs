@@ -23,7 +23,7 @@ bazel_dep(name = "rules_cc", version = "0.0.9")
 
 # TODO[AH] Remove these transitive dependencies once nixpkgs_java_configure has
 #   become a module extension in rules_nixpkgs_java.
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_java", version = "7.3.1")
 single_version_override(
     module_name = "rules_java",
