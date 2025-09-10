@@ -487,7 +487,7 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
     # provided by `build_file` or `build_file_content`.
     if not repository_ctx.path("BUILD").exists and not repository_ctx.path("BUILD.bazel").exists:
         if build_file_content:
-            repository_ctx.file("BUILD", content = build_file_content)
+            repository_ctx.file("BUILD", content = build_file_content.replace("{{NIX_STORE_PATH}}", output_path))
         else:
             repository_ctx.template("BUILD", Label("@rules_nixpkgs_core//:BUILD.bazel.tpl"))
     elif build_file_content:
