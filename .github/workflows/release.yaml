@@ -24,12 +24,12 @@ jobs:
              exit 1
            fi
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           ref: master           # only create releases from main branch
       - name: Read section from CHANGELOG.md
         id: extract-changelog
-        uses: sean0x42/markdown-extract@v2
+        uses: sean0x42/markdown-extract@4178293dd16a52514b6cb2c01f4d309d264b2736 # v2
         with:
          file: CHANGELOG.md
          pattern: ${{ inputs.version }}
