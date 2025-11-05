@@ -22,10 +22,10 @@ local_path_override(
 )
 
 bazel_dep(name = "platforms", version = "1.0.0")
-bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "rules_rust", version = "0.67.0")
 
 # rules_rust also uses the cc compiler
-bazel_dep(name = "rules_cc", version = "0.1.4")
+bazel_dep(name = "rules_cc", version = "0.2.8")
 
 #
 # Nixpkgs
@@ -98,7 +98,7 @@ crate.annotation(
 )
 crate.spec(
     package = "openssl",
-    version = "0.10.40",
+    version = "0.10.74",
 )
 crate.from_specs(
     cargo_lockfile = "//:Cargo.lock",
