@@ -86,6 +86,7 @@ crate.annotation(
         "OPENSSL_INCLUDE_DIR": "../rules_nixpkgs_core~~nix_pkg~openssl-static/include",
         "OPENSSL_LIB_DIR": "../rules_nixpkgs_core~~nix_pkg~openssl-static/lib",
         "OPENSSL_STATIC": "1",
+        "OPENSSL_NO_VENDOR": "1",
     },
     crate = "openssl-sys",
     data = [

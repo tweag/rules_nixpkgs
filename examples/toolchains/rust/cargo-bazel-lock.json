@@ -1,5 +1,5 @@
 {
-  "checksum": "5362740e49a80b82b49435f047a71a7bd0ef794ceeed0741bbf6d542fccc99bb",
+  "checksum": "5bc9d6c0ba4fc6183cadbca568065f555f257a81a176470746c0cc203b4ba131",
   "crates": {
     "bitflags 2.9.1": {
       "name": "bitflags",
@@ -664,6 +664,7 @@
           "common": {
             "OPENSSL_INCLUDE_DIR": "../rules_nixpkgs_core~~nix_pkg~openssl-static/include",
             "OPENSSL_LIB_DIR": "../rules_nixpkgs_core~~nix_pkg~openssl-static/lib",
+            "OPENSSL_NO_VENDOR": "1",
             "OPENSSL_STATIC": "1"
           },
           "selects": {}

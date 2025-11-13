@@ -94,7 +94,7 @@
   "moduleExtensions": {
     "//:extension.bzl%cc_configure": {
       "general": {
-        "bzlTransitiveDigest": "mK+mc0V8muu9U7/14/47pHZLNHQaQIvkaB11rr0RfHY=",
+        "bzlTransitiveDigest": "3vBy05f51eCUA7magPjz/BREhXaqWWi8WMIzD8ZOe4g=",
         "usagesDigest": "e1gUTuxGFLrVLncQKxWqQeGAr0MsFutWVSF4va6YjC0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -109,6 +109,7 @@
               "nix_file": "@@rules_nixpkgs_cc~//:cc.nix",
               "nix_file_deps": {},
               "nix_file_content": "",
+              "nix_license_path": "",
               "repository": "@@rules_nixpkgs_core~~nix_repo~nixpkgs//:nixpkgs",
               "repositories": {},
               "build_file_content": "exports_files(['CC_TOOLCHAIN_INFO'])",
@@ -188,7 +189,7 @@
     },
     "//:extension.bzl%rust_configure": {
       "general": {
-        "bzlTransitiveDigest": "mK+mc0V8muu9U7/14/47pHZLNHQaQIvkaB11rr0RfHY=",
+        "bzlTransitiveDigest": "3vBy05f51eCUA7magPjz/BREhXaqWWi8WMIzD8ZOe4g=",
         "usagesDigest": "o0/6E4kRXLttKHB3H3nbXBUoM0ZBeAuXAwibfCZJyYc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -201,7 +202,8 @@
               "unmangled_name": "nixpkgs_rust",
               "attribute_path": "",
               "nix_file_deps": {},
-              "nix_file_content": "let\n    pkgs = import <nixpkgs> { config = {}; overrides = []; };\n    rust = pkgs.rust;\n    os = rust.toTargetOs pkgs.stdenv.targetPlatform;\n    build-triple = rust.toRustTargetSpec pkgs.stdenv.buildPlatform;\n    target-triple = rust.toRustTargetSpec pkgs.stdenv.targetPlatform;\n    rustc = if os == \"macos\" then\n      # rustc on MacOS expects the `strip` binary in PATH, create a wrapper adding the bin\n      # folder from `binutils` to the PATH\n      pkgs.symlinkJoin\n        {\n          name = \"rustc\";\n          paths = [ pkgs.rustc ];\n          nativeBuildInputs = [ pkgs.makeWrapper ];\n          postBuild = ''\n            wrapProgram $out/bin/rustc --suffix PATH : ${pkgs.darwin.cctools}/bin\n          '';\n        }\n      else pkgs.rustc;\n    binary-ext = \"\";\n    staticlib-ext = \".a\";\n    dylib-ext = if os == \"macos\" then \".dylib\" else \".so\";\nin\npkgs.buildEnv {\n    extraOutputsToInstall = [\"out\" \"bin\" \"lib\"];\n    ignoreCollisions = true;\n    name = \"bazel-rust-toolchain\";\n    paths = [ rustc (pkgs.rustc.unwrapped or null) pkgs.rustfmt pkgs.cargo pkgs.clippy ];\n    postBuild = ''\n        cat <<EOF > $out/BUILD\n        filegroup(\n            name = \"rustc\",\n            srcs = [\"bin/rustc\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rustfmt\",\n            srcs = [\"bin/rustfmt\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"cargo\",\n            srcs = [\"bin/cargo\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"clippy_driver\",\n            srcs = [\"bin/clippy-driver\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rustc_lib\",\n            srcs = glob(\n                [\n                    \"bin/*.so\",\n                    \"lib/*.so\",\n                    \"lib/rustlib/*/codegen-backends/*.so\",\n                    \"lib/rustlib/*/codegen-backends/*.dylib\",\n                    \"lib/rustlib/*/bin/rust-lld\",\n                    \"lib/rustlib/*/lib/*.so\",\n                    \"lib/rustlib/*/lib/*.dylib\",\n                ],\n                allow_empty = True,\n            ),\n            visibility = [\"//visibility:public\"],\n        )\n\n        load(\"@rules_rust//rust:toolchain.bzl\", \"rust_stdlib_filegroup\")\n        rust_stdlib_filegroup(\n            name = \"rust_std\",\n            srcs = glob(\n                [\n                    \"lib/rustlib/*/lib/*.rlib\",\n                    \"lib/rustlib/*/lib/*.so\",\n                    \"lib/rustlib/*/lib/*.dylib\",\n                    \"lib/rustlib/*/lib/*.a\",\n                    \"lib/rustlib/*/lib/self-contained/**\",\n                ],\n                # Some patterns (e.g. `lib/*.a`) don't match anything, see https://github.com/bazelbuild/rules_rust/pull/245\n                allow_empty = True,\n            ),\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rust_doc\",\n            srcs = [\"bin/rustdoc\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain', 'rustfmt_toolchain')\n        rust_toolchain(\n            name = \"rust_nix_impl\",\n            rust_doc = \":rust_doc\",\n            rust_std = \":rust_std\",\n            rustc = \":rustc\",\n            rustfmt = \":rustfmt\",\n            cargo = \":cargo\",\n            clippy_driver = \":clippy_driver\",\n            rustc_lib = \":rustc_lib\",\n            binary_ext = \"${binary-ext}\",\n            staticlib_ext = \"${staticlib-ext}\",\n            dylib_ext = \"${dylib-ext}\",\n            exec_triple = \"${build-triple}\",\n            target_triple = \"${target-triple}\",\n            default_edition = \"2021\",\n            stdlib_linkflags = [\"-lpthread\", \"-ldl\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        rustfmt_toolchain(\n            name = \"rustfmt_nix_impl\",\n            rustfmt = \":rustfmt\",\n            visibility = [\"//visibility:public\"],\n        )\n        EOF\n    '';\n}\n",
+              "nix_file_content": "let\n    pkgs = import <nixpkgs> { config = {}; overrides = []; };\n    rust = pkgs.rust;\n    os = rust.toTargetOs pkgs.stdenv.targetPlatform;\n    build-triple = rust.toRustTargetSpec pkgs.stdenv.buildPlatform;\n    target-triple = rust.toRustTargetSpec pkgs.stdenv.targetPlatform;\n    rustc = if os == \"macos\" then\n      # rustc on MacOS expects the `strip` binary in PATH, create a wrapper adding the bin\n      # folder from `binutils` to the PATH\n      pkgs.symlinkJoin\n        {\n          name = \"rustc\";\n          paths = [ pkgs.rustc ];\n          nativeBuildInputs = [ pkgs.makeWrapper ];\n          postBuild = ''\n            wrapProgram $out/bin/rustc --suffix PATH : ${pkgs.darwin.cctools}/bin\n          '';\n        }\n      else pkgs.rustc;\n    binary-ext = \"\";\n    staticlib-ext = \".a\";\n    dylib-ext = if os == \"macos\" then \".dylib\" else \".so\";\nin\npkgs.buildEnv {\n    extraOutputsToInstall = [\"out\" \"bin\" \"lib\"];\n    ignoreCollisions = true;\n    name = \"bazel-rust-toolchain\";\n    paths = [ rustc (pkgs.rustc.unwrapped or null) pkgs.rustfmt pkgs.rust-analyzer pkgs.cargo pkgs.clippy ];\n    postBuild = ''\n        cat <<EOF > $out/BUILD\n        filegroup(\n            name = \"rustc\",\n            srcs = [\"bin/rustc\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rustc_srcs\",\n            srcs = glob([\"lib/rustlib/rustc-src/**\"]),\n            visibility = [\"//visibility:public\"]\n        )\n\n        filegroup(\n            name = \"rustfmt\",\n            srcs = [\"bin/rustfmt\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rust-analyzer-proc-macro-srv\",\n            srcs = [\"libexec/rust-analyzer-proc-macro-srv\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rust_analyzer\",\n            srcs = [\"bin/rust-analyzer\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"cargo\",\n            srcs = [\"bin/cargo\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"clippy_driver\",\n            srcs = [\"bin/clippy-driver\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rustc_lib\",\n            srcs = glob(\n                [\n                    \"bin/*.so\",\n                    \"lib/*.so\",\n                    \"lib/rustlib/*/codegen-backends/*.so\",\n                    \"lib/rustlib/*/codegen-backends/*.dylib\",\n                    \"lib/rustlib/*/bin/rust-lld\",\n                    \"lib/rustlib/*/lib/*.so\",\n                    \"lib/rustlib/*/lib/*.dylib\",\n                ],\n                allow_empty = True,\n            ),\n            visibility = [\"//visibility:public\"],\n        )\n\n        load(\"@rules_rust//rust:toolchain.bzl\", \"rust_stdlib_filegroup\")\n        rust_stdlib_filegroup(\n            name = \"rust_std\",\n            srcs = glob(\n                [\n                    \"lib/rustlib/*/lib/*.rlib\",\n                    \"lib/rustlib/*/lib/*.so\",\n                    \"lib/rustlib/*/lib/*.dylib\",\n                    \"lib/rustlib/*/lib/*.a\",\n                    \"lib/rustlib/*/lib/self-contained/**\",\n                ],\n                # Some patterns (e.g. `lib/*.a`) don't match anything, see https://github.com/bazelbuild/rules_rust/pull/245\n                allow_empty = True,\n            ),\n            visibility = [\"//visibility:public\"],\n        )\n\n        filegroup(\n            name = \"rust_doc\",\n            srcs = [\"bin/rustdoc\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        load('@rules_rust//rust:toolchain.bzl', 'rust_toolchain', 'rustfmt_toolchain', 'rust_analyzer_toolchain')\n        rust_toolchain(\n            name = \"rust_nix_impl\",\n            rust_doc = \":rust_doc\",\n            rust_std = \":rust_std\",\n            rustc = \":rustc\",\n            rustfmt = \":rustfmt\",\n            cargo = \":cargo\",\n            clippy_driver = \":clippy_driver\",\n            rustc_lib = \":rustc_lib\",\n            binary_ext = \"${binary-ext}\",\n            staticlib_ext = \"${staticlib-ext}\",\n            dylib_ext = \"${dylib-ext}\",\n            exec_triple = \"${build-triple}\",\n            target_triple = \"${target-triple}\",\n            default_edition = \"2021\",\n            stdlib_linkflags = [\"-lpthread\", \"-ldl\"],\n            visibility = [\"//visibility:public\"],\n        )\n\n        rustfmt_toolchain(\n            name = \"rustfmt_nix_impl\",\n            rustfmt = \":rustfmt\",\n            visibility = [\"//visibility:public\"],\n        )\n\n        rust_analyzer_toolchain(\n            name = \"rust_analyzer_nix_impl\",\n            proc_macro_srv = \":rust-analyzer-proc-macro-srv\",\n            rustc = \":rustc\",\n            rustc_srcs = \":rustc_srcs\",\n            visibility = [\"//visibility:public\"],\n        )\n        EOF\n    '';\n}\n",
+              "nix_license_path": "",
               "repository": "@@rules_nixpkgs_core~~nix_repo~nixpkgs//:nixpkgs",
               "repositories": {},
               "build_file_content": "",
@@ -1304,7 +1306,7 @@
     },
     "@@rules_nixpkgs_core~//extensions:package.bzl%nix_pkg": {
       "general": {
-        "bzlTransitiveDigest": "S1tYLrFmNSL5A6pkvegXuiN9q1qjJRi6ivZjCg0rqqE=",
+        "bzlTransitiveDigest": "ruEmraFb7u4q0MTYOiSKkWNsxEaoi/jSCDyXENcFc7I=",
         "usagesDigest": "V7qkr/VdrmuEA9wJpAkVh+qZDEHaXaz5SFkSY8bj4NI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1321,6 +1323,7 @@
                 "@@//:nixpkgs.json": "'@@//:nixpkgs.json'"
               },
               "nix_file_content": "",
+              "nix_license_path": "",
               "repository": "@@rules_nixpkgs_core~~nix_repo~nixpkgs//:nixpkgs",
               "repositories": {},
               "build_file_content": "",
@@ -1349,7 +1352,7 @@
     },
     "@@rules_nixpkgs_core~//extensions:repository.bzl%nix_repo": {
       "general": {
-        "bzlTransitiveDigest": "PItKe/CU0Y9haqOJVsLAaDpyYGTm1UsDJ8mWLUFXp+0=",
+        "bzlTransitiveDigest": "xMSWKvZIEQqlHQX+SsttaWQzaCbbrmu32wouJ4ZLlPw=",
         "usagesDigest": "20R2mBfZonU34IHxYLHJDienBnCMHXjIQvFyoZlXVZM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
