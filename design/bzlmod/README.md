@@ -546,6 +546,26 @@ nix_pkg.attr(attr = "jq", repo = "@nixpkgs-unstable")
 use_repo(nix_pkg, "jq")
 ```
 
+### Nix Flake Package
+
+Bazel modules can depend on Nix Flake packages by specifying a pair of
+`flake.nix` and `flake.lock`, and optionally specifying a specific package
+inside of the Flake.
+
+```python
+rules_nixpkgs = use_extension("@rules_nixpkgs_core//extensions:rules_nixpkgs.bzl", "rules_nixpkgs")
+
+rules_nixpkgs.flake_package(
+  name = "utils",
+  nix_flake_file = "//nix:flake.nix",
+  nix_flake_lock_file = "//nix:flake.lock",
+  package = "bazel.utils",
+  build_file_content = """exports_files(glob(["bin/*"]))""",
+)
+
+use_repo(rules_nixpkgs, "utils")
+```
+
 ## Interface
 
 ### Nix Repositories
@@ -662,6 +682,32 @@ case of an isolated extension. If `name` is not set, it defaults to `attr`.
 
 The extension is defined in its own Starlark module under
 `@rules_nixpkgs_core//extensions:package.bzl`.
+
+The extension returns `extension_metadata` (see [Automatic `use_repo`
+fixups][auto-use-repo]) to declare which packages are dependencies or
+dev-dependencies of the root module, such that Bazel can check the imports and
+generated buildozer commands to update the `use_repo` stanzas if needed.
+
+### Nix Flakes
+
+The `rules_nixpkgs_core` module exposes the module extension `nix_flake` which
+offers tags to define Nix Flake packages:
+
+* `package(name, nix_flake_file, nix_flake_lock_file, nix_flake_file_deps, package, build_file, build_file_content, nixopts, quiet, fail_not_supported)`\
+  * `name`: `String`; A unique name for this repository.
+  * `nix_flake_file`; `Label`; Label to `flake.nix` that will be evaluated.
+  * `nix_flake_lock_file`; `Label`; Label to `flake.lock` that corresponds to `nix_flake_file`.
+  * `nix_flake_file_deps`; optional, List of `Label`; Additional dependencies of `nix_flake_file` if any.
+  * `package`; optional, `String`; Nix Flake package to make available.  The default package will be used if not specified.
+  * `build_file`; optional, `Label`; The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.
+  * `build_file_content`; optional, `String`; Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package-build_file_content) for more information.
+  * `nixopts`; optional, List of `String`; Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package-nixopts) for more information.
+  * `quiet`; optional, `Bool`; Whether to hide the output of the Nix command.
+  * `fail_not_supported`; optional, `Bool`; If set to `True` (default) this rule will fail on platforms which do not support Nix (e.g. Windows). If set to `False` calling this rule will succeed but no output will be generated.
+    Default: True
+
+The extension is defined in its own Starlark module under
+`@rules_nixpkgs_core//extensions:flake.bzl`.
 
 The extension returns `extension_metadata` (see [Automatic `use_repo`
 fixups][auto-use-repo]) to declare which packages are dependencies or

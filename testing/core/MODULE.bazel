@@ -178,7 +178,20 @@ use_repo(nix_pkg, "flakehub-test")
 
 non_module_deps = use_extension("//:non_module_deps.bzl", "non_module_deps")
 use_repo(non_module_deps, "nixpkgs_location_expansion_test")
-use_repo(non_module_deps, "flake-hello")
-use_repo(non_module_deps, "flake-hello-with-build-file")
+
+rules_nixpkgs = use_extension("@rules_nixpkgs_core//extensions:rules_nixpkgs.bzl", "rules_nixpkgs")
+rules_nixpkgs.flake_package(
+    name = "flake-hello",
+    nix_flake_file = "//:flake.nix",
+    nix_flake_lock_file = "//:flake.lock",
+    package = "hello",
+)
+rules_nixpkgs.flake_package(
+    name = "flake-hello-with-build-file",
+    nix_flake_file = "//:flake.nix",
+    nix_flake_lock_file = "//:flake.lock",
+    package = "hello-with-build-file",
+)
+use_repo(rules_nixpkgs, "flake-hello", "flake-hello-with-build-file")
 
 bazel_dep(name = "rules_license", version = "1.0.0")
