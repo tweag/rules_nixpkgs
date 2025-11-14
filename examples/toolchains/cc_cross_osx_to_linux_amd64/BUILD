@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//toolchains:runfiles.bzl", "runfiles")
 
@@ -33,8 +33,14 @@ oci_image(
     entrypoint = ["/app/hello"],
 )
 
-oci_tarball(
-    name = "hello_image_tarball",
+oci_load(
+    name = "hello_image_tar",
     image = ":hello_image",
     repo_tags = ["cross_example:latest"],
+)
+
+filegroup(
+    name = "hello_image_tarball",
+    srcs = [":hello_image_tar"],
+    output_group = "tarball",
 )
