@@ -2,7 +2,7 @@
   description = "C++ environment using Nix flakes";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
