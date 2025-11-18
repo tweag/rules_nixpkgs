@@ -1,0 +1,153 @@
+module(
+    name = "hello_world_cross_osx_to_linux_amd64",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../../core",
+)
+
+
+bazel_dep(name = "rules_nixpkgs_cc", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_cc",
+    path = "../../../toolchains/cc",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.1.4")
+bazel_dep(name = "rules_oci", version = "2.2.5")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "aspect_bazel_lib", version = "2.21.2")
+
+#
+# Nixpkgs
+#
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.json",
+    ],
+)
+use_repo(nix_repo, "nixpkgs")
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+
+# We would probably want a select or something to make this work with OSX as well, for a more
+# production set up.
+nix_pkg.expr(
+    name = "boost",
+    attr = "boost",
+    expr = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.expr(
+    name = "boost.dev",
+    attr = "boost.dev",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h", "include/**/*.hpp"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "boost",
+    srcs = ["@boost//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+    expr = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.expr(
+    name = "zlib",
+    attr = "zlib",
+    expr = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.expr(
+    name = "zlib.dev",
+    attr = "zlib.dev",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "zlib",
+    srcs = ["@zlib//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+    expr = """import <nixpkgs> { config = {}; overlays = []; system = "x86_64-linux"; }""",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.file(
+    name = "nixdeps",
+    attr = "",
+    build_file_content = """\
+exports_files(["closure.tar"])
+""",
+    file = "//toolchains:tarenv.nix",
+    repo = "@nixpkgs",
+)
+
+inject_repo(nix_pkg, "rules_cc")
+use_repo(nix_pkg, "nixdeps", "boost", "boost.dev", "zlib", "zlib.dev")
+
+#
+# Toolchains
+#
+
+cc_configure = use_extension("//:extension.bzl", "cc_configure")
+use_repo(cc_configure, "nixpkgs_config_cc")
+use_repo(cc_configure, "nixpkgs_config_cc_toolchains")
+use_repo(cc_configure, "nixpkgs_config_cc_info")
+
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
+
+use_repo(cc_configure, "nixpkgs_cross_cc")
+use_repo(cc_configure, "nixpkgs_cross_cc_toolchains")
+use_repo(cc_configure, "nixpkgs_cross_cc_info")
+
+register_toolchains("@nixpkgs_cross_cc_toolchains//:all")
+
+#
+# OCI
+#
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+oci.pull(
+    name = "distroless_base",
+    digest = "sha256:e9d0321de8927f69ce20e39bfc061343cce395996dfc1f0db6540e5145bc63a5",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
+oci.pull(
+    name = "alpine",
+    digest = "sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3a4a54ba44a",
+    image = "https://index.docker.io/library/alpine",
+    platforms = [
+        "linux/amd64",
+    ],
+)
+use_repo(oci, "alpine", "alpine_linux_amd64", "distroless_base", "distroless_base_linux_amd64", "distroless_base_linux_arm64")
