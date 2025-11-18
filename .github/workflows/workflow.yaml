@@ -22,7 +22,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-13
+          - macos-15-intel
         bzlmodEnabled:
           - true
           - false
@@ -31,7 +31,7 @@ jobs:
           - false
         exclude:
           # skip nix remote jobs on MacOS
-          - os: macos-13
+          - os: macos-15-intel
             withNixRemote: true
     runs-on: ${{ matrix.os }}
     steps:
@@ -76,7 +76,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-13
+          - macos-15-intel
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -136,7 +136,7 @@ jobs:
           popd
 
       - name: Build bazel-nix-python-container with Nix
-        uses: tweag/run-nix-shell@v0
+        uses: tweag/run-nix-shell@5e625366b32a70a8f21c48caf4c8b3f390226c81 # main
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
@@ -144,7 +144,7 @@ jobs:
           run: bazel build :hello_image
 
       - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@v0
+        uses: tweag/run-nix-shell@5e625366b32a70a8f21c48caf4c8b3f390226c81 # main
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
