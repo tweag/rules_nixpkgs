@@ -44,10 +44,11 @@ use_repo(nix_repo, "nixpkgs")
 toolchain_configure = use_extension("//:extension.bzl", "toolchain_configure")
 use_repo(toolchain_configure, "nixpkgs_java_runtime")
 use_repo(toolchain_configure, "nixpkgs_java_runtime_toolchain")
+
+register_toolchains("@nixpkgs_java_runtime_toolchain//:all")
+
 use_repo(toolchain_configure, "nixpkgs_config_cc")
 use_repo(toolchain_configure, "nixpkgs_config_cc_toolchains")
 use_repo(toolchain_configure, "nixpkgs_config_cc_info")
-
-register_toolchains("@nixpkgs_java_runtime_toolchain//:all")
 
 register_toolchains("@nixpkgs_config_cc_toolchains//:all")
