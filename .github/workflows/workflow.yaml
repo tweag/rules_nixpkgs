@@ -144,12 +144,10 @@ jobs:
           run: bazel build :hello_image
 
       - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@5e625366b32a70a8f21c48caf4c8b3f390226c81 # main
         if: ${{ runner.os == 'Linux' }}
-        with:
-          pure: false
-          working-directory: examples/flakes
-          run: bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello
+        run: |
+          cd examples/flakes
+          nix-shell --run "bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello"
 
   all_ci_tests:
     runs-on: ubuntu-latest
