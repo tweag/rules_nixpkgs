@@ -1,4 +1,4 @@
 import %workspace%/../../../.bazelrc.remote-cache
 
-build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build:nix --host_platform=@rules_nixpkgs_core//platforms:host --incompatible_enable_cc_toolchain_resolution
 build:nix --crosstool_top=@nixpkgs_config_cc//:toolchain
