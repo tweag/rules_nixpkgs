@@ -1,7 +1,9 @@
 import %workspace%/../../../.bazelrc.remote-cache
 
-build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
-build:nix --java_runtime_version=nixpkgs_java_11
-build:nix --tool_java_runtime_version=nixpkgs_java_11
-build:nix --java_language_version=11
-build:nix --tool_java_language_version=11
+
+build:nix --host_platform=@rules_nixpkgs_core//platforms:host
+build:nix --java_runtime_version=nixpkgs_java_24
+build:nix --tool_java_runtime_version=nixpkgs_java_24
+build:nix --java_language_version=24
+build:nix --tool_java_language_version=24
+build:nix --incompatible_enable_cc_toolchain_resolution
