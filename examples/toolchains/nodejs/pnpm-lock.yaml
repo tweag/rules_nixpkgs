@@ -1,0 +1,93 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      ololog:
+        specifier: ^1.1.175
+        version: 1.1.175
+
+packages:
+
+  ansicolor@1.1.100:
+    resolution: {integrity: sha512-Jl0pxRfa9WaQVUX57AB8/V2my6FJxrOR1Pp2qqFbig20QB4HzUoQ48THTKAgHlUCJeQm/s2WoOPcoIDhyCL/kw==}
+
+  as-table@1.0.55:
+    resolution: {integrity: sha512-xvsWESUJn0JN421Xb9MQw6AsMHRCUknCe0Wjlxvjud80mU4E6hQf1A6NzQKcYNmYw62MfzEtXc+badstZP3JpQ==}
+
+  data-uri-to-buffer@2.0.2:
+    resolution: {integrity: sha512-ND9qDTLc6diwj+Xe5cdAgVTbLVdXbtxTJRXRhli8Mowuaan+0EJOtdqJ0QCHNSSPyoXGx9HX2/VMnKeC34AChA==}
+
+  get-source@2.0.12:
+    resolution: {integrity: sha512-X5+4+iD+HoSeEED+uwrQ07BOQr0kEDFMVqqpBuI+RaZBpBpHCuXxo70bjar6f0b0u/DQJsJ7ssurpP0V60Az+w==}
+
+  ololog@1.1.175:
+    resolution: {integrity: sha512-DSPbsvZzLshFiPI1ul7iJDn6wI75goOLyrn8uRB92sPon5LS8J2KlAIkSoHXtRztb2idPjuzq3R1J58hN2qOEA==}
+
+  pipez@1.1.12:
+    resolution: {integrity: sha512-VuJ+c44f3s/4cirqtBI3wa0LscCo1IG9sQH2DnClJWEMkGylE52mDjLLHR5QyLjij1EiGocMEIAJsmpyXczXJQ==}
+
+  printable-characters@1.0.42:
+    resolution: {integrity: sha512-dKp+C4iXWK4vVYZmYSd0KBH5F/h1HoZRsbJ82AVKRO3PEo8L4lBS/vLwhVtpwwuYcoIsVY+1JYKR268yn480uQ==}
+
+  source-map@0.6.1:
+    resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
+    engines: {node: '>=0.10.0'}
+
+  stacktracey@2.1.8:
+    resolution: {integrity: sha512-Kpij9riA+UNg7TnphqjH7/CzctQ/owJGNbFkfEeve4Z4uxT5+JapVLFXcsurIfN34gnTWZNJ/f7NMG0E8JDzTw==}
+
+  string.bullet@1.0.12:
+    resolution: {integrity: sha512-6+tQyad/ux52N+7wUcjmxeK5TfdeykBBLHQPk8MxUVrk9JwHzJnuxsJzjjpWAuz0x3EmnVGCg0ibMHqez1l/qQ==}
+
+  string.ify@1.0.64:
+    resolution: {integrity: sha512-4Aa5yndnuOhE1GV2W3ht4rQ08XHq46JLXmSOv0jeUWEzqliBvm8lAXvt+66np+J9DkoCZikFzTzjXVLRR0F/Xw==}
+
+snapshots:
+
+  ansicolor@1.1.100: {}
+
+  as-table@1.0.55:
+    dependencies:
+      printable-characters: 1.0.42
+
+  data-uri-to-buffer@2.0.2: {}
+
+  get-source@2.0.12:
+    dependencies:
+      data-uri-to-buffer: 2.0.2
+      source-map: 0.6.1
+
+  ololog@1.1.175:
+    dependencies:
+      ansicolor: 1.1.100
+      pipez: 1.1.12
+      printable-characters: 1.0.42
+      stacktracey: 2.1.8
+      string.bullet: 1.0.12
+      string.ify: 1.0.64
+
+  pipez@1.1.12: {}
+
+  printable-characters@1.0.42: {}
+
+  source-map@0.6.1: {}
+
+  stacktracey@2.1.8:
+    dependencies:
+      as-table: 1.0.55
+      get-source: 2.0.12
+
+  string.bullet@1.0.12:
+    dependencies:
+      printable-characters: 1.0.42
+
+  string.ify@1.0.64:
+    dependencies:
+      printable-characters: 1.0.42
+      string.bullet: 1.0.12

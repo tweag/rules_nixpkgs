@@ -4,9 +4,17 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
-    srcs = glob(["**"]) + [
+    srcs = [
         "//extensions:srcs",
         "//private:srcs",
+        "BUILD.bazel",
+        "MODULE.bazel",
+        "README.md",
+        "WORKSPACE",
+        "nodejs.bzl",
+        ".bazelignore",
+        ".bazeliskrc",
+        ".bazelrc",
     ],
     visibility = ["//visibility:public"],
 )
@@ -16,7 +24,6 @@ bzl_library(
     srcs = ["//:nodejs.bzl"],
     deps = [
         "@rules_nixpkgs_core//:nixpkgs",
-        "@rules_nodejs//nodejs:bzl",
         "//private:common",
     ],
 )
