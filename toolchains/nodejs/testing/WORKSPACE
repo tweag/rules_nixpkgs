@@ -23,15 +23,19 @@ local_repository(
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "build_bazel_rules_nodejs",
-    sha256 = "83d2bb029c2a9a06a474c8748d1221a92a7ca02222dcf49a0b567825c4e3f1ce",
-    strip_prefix = "rules_nodejs-6.3.0",
-    urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.3.0/rules_nodejs-v6.3.0.tar.gz"],
+    name = "aspect_rules_js",
+    sha256 = "20fc40c64bf36054e9564333015bc2e212e975d6c0a50e1319de516c469e3538",
+    strip_prefix = "rules_js-2.8.2",
+    url = "https://github.com/aspect-build/rules_js/releases/download/v2.8.2/rules_js-v2.8.2.tar.gz",
 )
 
-load("@build_bazel_rules_nodejs//:repositories.bzl", "build_bazel_rules_nodejs_dependencies")
+load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
 
-build_bazel_rules_nodejs_dependencies()
+rules_js_dependencies()
+
+load("@aspect_bazel_lib//lib:repositories.bzl", "register_coreutils_toolchains")
+
+register_coreutils_toolchains()
 
 http_archive(
     name = "bazel_skylib",

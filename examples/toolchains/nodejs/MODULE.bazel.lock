@@ -86,7 +86,7 @@
   "moduleExtensions": {
     "//:extension.bzl%nodejs_configure": {
       "general": {
-        "bzlTransitiveDigest": "LmzRMZyDpTSN84nPFwxKW/7w2E+0PIq/FmlCoaU0Xxo=",
+        "bzlTransitiveDigest": "I03KgClKcNo1Yie+P5p3Q6lHHCasfy3gf29UBIbylDk=",
         "usagesDigest": "J2+HSvaCodANQfVjflYyTyUbmAgfCINVgZqk2NCbwes=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -134,11 +134,6 @@
             "rules_nixpkgs_nodejs~",
             "rules_nixpkgs_core",
             "rules_nixpkgs_core~"
-          ],
-          [
-            "rules_nixpkgs_nodejs~",
-            "rules_nodejs",
-            "rules_nodejs~"
           ]
         ]
       }
@@ -365,7 +360,7 @@
     },
     "@@rules_nixpkgs_nodejs~//extensions:toolchain.bzl%nix_nodejs": {
       "general": {
-        "bzlTransitiveDigest": "d3rCHTdsy+/IkmHByVgrbGjJr840sZQUdkyjx0x0ibE=",
+        "bzlTransitiveDigest": "KCW+vtVDbSW/okk9HZuEJ/TSj05pEvtJwkaJjtVkwFs=",
         "usagesDigest": "Bk/YukmswZlp1Z+p4Mnzr/dmihFfdd2ujRT+AANXa1k=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -505,11 +500,6 @@
             "rules_nixpkgs_nodejs~",
             "rules_nixpkgs_core",
             "rules_nixpkgs_core~"
-          ],
-          [
-            "rules_nixpkgs_nodejs~",
-            "rules_nodejs",
-            "rules_nodejs~"
           ]
         ]
       }

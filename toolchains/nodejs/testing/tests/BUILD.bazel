@@ -1,9 +1,9 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_test")
+load("@aspect_rules_js//js:defs.bzl", "js_test")
 load(":nodejs-test.bzl", "nodejs_test_suite")
 
 package(default_testonly = 1)
 
-nodejs_test(
+js_test(
     name = "nodejs-test",
     entry_point = ":nodejs-test.js",
 )
