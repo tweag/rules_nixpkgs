@@ -26,7 +26,7 @@ local_path_override(
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
-bazel_dep(name = "rules_nodejs", version = "6.3.0")
+bazel_dep(name = "rules_nodejs", version = "6.6.2")
 
 nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
 nix_repo.default(name = "nixpkgs")
