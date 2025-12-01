@@ -1,0 +1,105 @@
+module(
+    name = "hello_world_with_deps",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../../core",
+)
+
+bazel_dep(name = "rules_nixpkgs_cc", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_cc",
+    path = "../../../toolchains/cc",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.1.4")
+
+#
+# Nixpkgs
+#
+
+cc_configure = use_extension("//:extension.bzl", "cc_configure")
+use_repo(cc_configure, "nixpkgs_config_cc")
+use_repo(cc_configure, "nixpkgs_config_cc_toolchains")
+use_repo(cc_configure, "nixpkgs_config_cc_info")
+
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.json",
+    ],
+)
+use_repo(nix_repo, "nixpkgs")
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+nix_pkg.attr(
+    name = "boost",
+    attr = "boost",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.attr(
+    name = "boost.dev",
+    attr = "boost.dev",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h", "include/**/*.hpp"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "boost",
+    srcs = ["@boost//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.attr(
+    name = "zlib",
+    attr = "zlib",
+    repo = "@nixpkgs",
+)
+
+nix_pkg.attr(
+    name = "zlib.dev",
+    attr = "zlib.dev",
+    build_file_content = """\
+load("@rules_cc//cc:defs.bzl", "cc_library")
+filegroup(
+    name = "include",
+    srcs = glob(["include/**/*.h"]),
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "zlib",
+    srcs = ["@zlib//:lib"],
+    hdrs = [":include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+""",
+    repo = "@nixpkgs",
+)
+inject_repo(nix_pkg, "rules_cc")
+
+use_repo(
+    nix_pkg,
+    "zlib",
+    "zlib.dev",
+    "boost",
+    "boost.dev",
+)
+
