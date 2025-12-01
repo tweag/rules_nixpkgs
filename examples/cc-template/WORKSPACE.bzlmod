@@ -1,7 +1,0 @@
-load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
-
-# TODO Use module extension once available.
-nixpkgs_cc_configure(
-    name = "nixpkgs_config_cc",
-    repository = "@nixpkgs",
-)

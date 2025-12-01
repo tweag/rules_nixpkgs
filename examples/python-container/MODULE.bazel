@@ -1,0 +1,65 @@
+module(name = "rules_nixpkgs_python_container_example")
+
+bazel_dep(name = "rules_nixpkgs_core")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
+
+bazel_dep(name = "rules_nixpkgs_cc")
+local_path_override(
+    module_name = "rules_nixpkgs_cc",
+    path = "../../toolchains/cc",
+)
+
+bazel_dep(name = "rules_nixpkgs_python")
+local_path_override(
+    module_name = "rules_nixpkgs_python",
+    path = "../../toolchains/python",
+)
+
+bazel_dep(name = "aspect_rules_py", version = "1.6.6")
+bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_oci", version = "2.2.6")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.14")
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.json",
+    ],
+)
+use_repo(nix_repo, "nixpkgs")
+
+nix_pkg = use_extension("@rules_nixpkgs_core//extensions:package.bzl", "nix_pkg")
+nix_pkg.file(
+    name = "raw_python312_base_image",
+    attr = "",
+    build_file_content = """
+package(default_visibility = [ "//visibility:public" ])
+filegroup(
+  name = "image",
+  srcs = ["image.tar"]
+)
+    """,
+    file = "//:python312_base_image.nix",
+    repo = "@nixpkgs",
+)
+use_repo(nix_pkg, "raw_python312_base_image")
+
+#
+# Toolchains
+#
+
+extension_configure = use_extension("//:extension.bzl", "extension_configure")
+use_repo(extension_configure, "nixpkgs_config_cc")
+use_repo(extension_configure, "nixpkgs_config_cc_toolchains")
+use_repo(extension_configure, "nixpkgs_config_cc_info")
+use_repo(extension_configure, "nixpkgs_python_toolchain")
+use_repo(extension_configure, "nixpkgs_python_toolchain_python3")
+
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
+register_toolchains("@nixpkgs_python_toolchain//:all")
