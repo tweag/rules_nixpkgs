@@ -419,9 +419,14 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         extra_msg = "See: https://nixos.org/nix/",
     )
 
-    nix_host = repository_ctx.os.environ.get("BAZEL_NIX_REMOTE", "")
+    nix_host = repository_ctx.getenv("BAZEL_NIX_REMOTE")
     if nix_host:
-        nix_store = "ssh-ng://{host}?max-connections=1".format(host = nix_host)
+        nix_store_user = repository_ctx.getenv('BAZEL_NIX_REMOTE_USER')
+        nix_store_key = repository_ctx.getenv('BAZEL_NIX_REMOTE_KEY')
+        nix_store = "ssh-ng://{user}{host}?max-connections=1{key}".format(
+                user = "{}@".format(nix_store_user) if nix_store_user else "",
+                host = nix_host,
+                key = "&ssh-key={}".format(nix_store_key) if nix_store_key else "")
         repository_ctx.report_progress("Remote-building Nix derivation")
         exec_result = execute_or_fail(
             repository_ctx,
@@ -435,10 +440,19 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         output_path = exec_result.stdout.splitlines()[-1]
 
         ssh_path = repository_ctx.which("ssh")
+        ssh_host = "{user}{host}".format(
+                user = "{}@".format(nix_store_user) if nix_store_user else "",
+                host = nix_host,
+        )
+        ssh_command = "nix-store --add-root ~/rules_nixpkgs_gcroots/{root} -r {path}".format(
+            root = output_path.split("/")[-1],
+            path = output_path,
+        )
+        ssh_id = ["-i", nix_store_key] if nix_store_key else []
         repository_ctx.report_progress("Creating remote store root")
         exec_result = execute_or_fail(
             repository_ctx,
-            [ssh_path] + [nix_host, "nix-store --add-root ~/rules_nixpkgs_gcroots/{root} -r {path}".format(root = output_path.split("/")[-1], path = output_path)],
+            [ssh_path] + ssh_id + [ssh_host, ssh_command],
             failure_message = "Cannot create remote store root for Nix attribute '{}'.".format(
                 repository_ctx.attr.name,
             ),
