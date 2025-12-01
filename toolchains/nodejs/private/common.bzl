@@ -1,5 +1,57 @@
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
-load("@rules_nodejs//nodejs/private:toolchains_repo.bzl", "PLATFORMS")
+# load("@rules_nodejs//nodejs/private:nodejs_toolchains_repo.bzl", "PLATFORMS")
+
+PLATFORMS = {
+    "linux_amd64": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
+    "linux_arm64": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:arm64",
+        ],
+    ),
+    "linux_s390x": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:s390x",
+        ],
+    ),
+    "linux_ppc64le": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:ppc",
+        ],
+    ),
+    "darwin_amd64": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
+    "darwin_arm64": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:arm64",
+        ],
+    ),
+    "windows_amd64": struct(
+        compatible_with = [
+            "@platforms//os:windows",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
+    "windows_arm64": struct(
+        compatible_with = [
+            "@platforms//os:windows",
+            "@platforms//cpu:aarch64",
+        ],
+    ),
+}
+
 
 
 def _mk_mapping(rules_nodejs_platform_name):
@@ -41,10 +93,10 @@ pkgs.buildEnv {{
         visibility = ["//visibility:public"],
     )
 
-    load("@rules_nodejs//nodejs:toolchain.bzl", "node_toolchain")
-    node_toolchain(
+    load("@rules_nodejs//nodejs:toolchain.bzl", "nodejs_toolchain")
+    nodejs_toolchain(
         name = "nodejs_nix_impl",
-        target_tool = ":nodejs",
+        node = ":nodejs",
         visibility = ["//visibility:public"],
     )
 
