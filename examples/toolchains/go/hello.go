@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+)
 
 func main() {
-    fmt.Println("Hello world!")
+	fmt.Printf("Go version: %s\n", runtime.Version())
 }

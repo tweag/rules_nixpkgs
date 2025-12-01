@@ -1,0 +1,40 @@
+module(
+    name = "hello_world",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_nixpkgs_core", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../../core",
+)
+
+
+bazel_dep(name = "rules_nixpkgs_go", version = "0.0.0")
+local_path_override(
+    module_name = "rules_nixpkgs_go",
+    path = "../../../toolchains/go",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.1.4")
+bazel_dep(name = "rules_go", version = "0.50.1")
+
+nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
+nix_repo.file(
+    name = "nixpkgs",
+    file = "//:nixpkgs.nix",
+    file_deps = [
+        "//:nixpkgs.json",
+    ],
+)
+use_repo(nix_repo, "nixpkgs")
+
+go_configure = use_extension("//:extension.bzl", "go_configure")
+use_repo(go_configure, "nix_config_go")
+use_repo(go_configure, "nix_config_go_toolchains")
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.20.14")
+
+register_toolchains("@nix_config_go_toolchains//:all")
