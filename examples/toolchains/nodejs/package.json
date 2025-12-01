@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "ololog": "^1.1.175"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": "true"
   }
 }
