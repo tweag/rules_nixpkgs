@@ -4,7 +4,7 @@
 let
   pkgs = import <nixpkgs> {};
 in let
-  clang = pkgs.clang_11;
+  clang = pkgs.clang_16;
   darwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
@@ -13,10 +13,10 @@ in let
       extraBuildCommands = with pkgs.darwin.apple_sdk.frameworks; ''
         echo "-Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags
         echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
-        echo "-isystem ${pkgs.llvmPackages_11.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
-        echo "-isystem ${pkgs.llvmPackages_11.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.llvmPackages_11.libcxx}/lib" >> $out/nix-support/cc-cflags
-        echo "-L${pkgs.llvmPackages_11.libcxxabi}/lib" >> $out/nix-support/cc-cflags
+        echo "-isystem ${pkgs.llvmPackages_16.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
+        echo "-isystem ${pkgs.llvmPackages_16.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.llvmPackages_16.libcxx}/lib" >> $out/nix-support/cc-cflags
+        echo "-L${pkgs.llvmPackages_16.libcxxabi}/lib" >> $out/nix-support/cc-cflags
         echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
       '';
     };
@@ -25,7 +25,7 @@ in let
     bintools = pkgs.stdenv.cc.bintools;
     extraPackages = [pkgs.glibc.static];
     extraBuildCommands = ''
-      echo "-isystem ${pkgs.llvmPackages_11.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
+      echo "-isystem ${pkgs.llvmPackages_16.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
       echo "-L ${pkgs.glibc.static}/lib" >> $out/nix-support/cc-ldflags
       echo "-resource-dir=${cc}/resource-root" >> $out/nix-support/cc-cflags
     '';
