@@ -2,7 +2,7 @@
   description = "C++ environment using Nix flakes";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
@@ -19,7 +19,7 @@
       {
         devShells.default = with pkgs; mkShell {
           name = "flake-example-shell";
-          packages = [ gcc gnumake bazel_6 ];
+          packages = [ gcc nix bazel_7 ];
         };
       });
 }

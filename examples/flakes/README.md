@@ -9,8 +9,6 @@ The nix package manager should be installed with flakes support enabled.
 
 ## Running the example
 
-The local nixpkgs repository can be used by explicitly specifying the generated toolchain.
-
 ``bash
-nix-shell --run "bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello"
+nix-shell --run "bazel run :hello"
 ```

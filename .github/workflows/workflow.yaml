@@ -104,12 +104,6 @@ jobs:
 
           pushd examples/cc-template
           echo
-          echo "::group::Running $(head -n1 README.md) with Nix, WORKSPACE"
-          nix develop --command bazel run --noenable_bzlmod //src:hello-world
-          popd
-
-          pushd examples/cc-template
-          echo
           echo "::group::Running $(head -n1 README.md) with Nix, bzlmod"
           nix develop --command bazel run --enable_bzlmod //src:hello-world
           popd
@@ -144,20 +138,16 @@ jobs:
           popd
 
       - name: Build bazel-nix-python-container with Nix
-        uses: tweag/run-nix-shell@v0
         if: ${{ runner.os == 'Linux' }}
-        with:
-          pure: false
-          working-directory: examples/python-container
-          run: bazel build :hello_image
+        working-directory: examples/python-container
+        run: |
+          nix-shell --pure --run "bazel build :hello_image"
 
       - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@v0
         if: ${{ runner.os == 'Linux' }}
-        with:
-          pure: false
-          working-directory: examples/flakes
-          run: bazel run --crosstool_top=@nixpkgs_config_cc//:toolchain :hello
+        working-directory: examples/flakes
+        run: |
+          nix-shell --pure --run "bazel run :hello"
 
   all_ci_tests:
     runs-on: ubuntu-latest
