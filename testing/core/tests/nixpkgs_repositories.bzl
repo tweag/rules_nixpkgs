@@ -14,6 +14,8 @@ def nixpkgs_repositories(*, bzlmod):
     file_nixpkgs = "@file_nixpkgs"
     nixpkgs_content = "@nixpkgs_content"
     flakehub_nixpkgs = "@flakehub_nixpkgs"
+
+    # WORKSPACE only
     if not bzlmod:
         nixpkgs_local_repository(
             name = "nixpkgs",
@@ -161,6 +163,21 @@ filegroup(
             repository = nixpkgs,
         )
 
+        nixpkgs_flake_package(
+            name = "flake-hello",
+            nix_flake_file = "//:flake.nix",
+            nix_flake_lock_file = "//:flake.lock",
+            package = "hello",
+        )
+
+        nixpkgs_flake_package(
+            name = "flake-hello-with-build-file",
+            nix_flake_file = "//:flake.nix",
+            nix_flake_lock_file = "//:flake.lock",
+            package = "hello-with-build-file",
+        )
+
+    # Both WORKSPACE and bzlmod
     nixpkgs_package(
         name = "nixpkgs_location_expansion_test",
         build_file_content = "exports_files(glob(['out/**']))",
@@ -203,20 +220,6 @@ filegroup(
             "//tests:relative_imports/nixpkgs.nix",
         ],
         repository = nixpkgs,
-    )
-
-    nixpkgs_flake_package(
-        name = "flake-hello",
-        nix_flake_file = "//:flake.nix",
-        nix_flake_lock_file = "//:flake.lock",
-        package = "hello",
-    )
-
-    nixpkgs_flake_package(
-        name = "flake-hello-with-build-file",
-        nix_flake_file = "//:flake.nix",
-        nix_flake_lock_file = "//:flake.lock",
-        package = "hello-with-build-file",
     )
 
     # Test FlakeHub tarball support
