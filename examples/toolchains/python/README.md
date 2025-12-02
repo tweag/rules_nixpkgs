@@ -12,4 +12,4 @@ To run the example with Nix, issue the following command:
 nix-shell --command 'bazel run --config=nix :hello'
 ```
 
-To specify Python version or modules, change the `python3_attribute_path` parameter in the `nixpkgs_python_configure` call in the `WORKSPACE` file.
+To specify Python version or modules, change the `python3_attribute_path` parameter in the `nixpkgs_python_configure` call in the `extension.bzl` file.
