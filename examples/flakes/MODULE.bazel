@@ -1,4 +1,4 @@
-module(name = "rules_nixpkgs_guide")
+module(name = "rules_nixpkgs_flakes_example")
 
 bazel_dep(name = "rules_nixpkgs_core")
 local_path_override(
@@ -16,9 +16,9 @@ bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.14")
 
 nix_repo = use_extension("@rules_nixpkgs_core//extensions:repository.bzl", "nix_repo")
-nix_repo.file(
+nix_repo.flake(
     name = "nixpkgs",
-    file = "//:nixpkgs.nix",
+    lock_file = "//:flake.lock",
     file_deps = ["//:flake.lock"],
 )
 use_repo(nix_repo, "nixpkgs")

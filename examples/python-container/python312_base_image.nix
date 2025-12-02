@@ -10,7 +10,7 @@ let
   '';
 
   pythonBase = dockerTools.buildLayeredImage {
-    name = "python39-base-image-unwrapped";
+    name = "python312-base-image-unwrapped";
     created = "now";
     maxLayers = 2;
     contents = [
@@ -18,7 +18,7 @@ let
       coreutils
 
       # Specify your Python version and packages here:
-      (python39.withPackages( p: [p.flask] ))
+      (python312.withPackages( p: [p.flask] ))
 
       stdenv.cc.cc.lib
       iana-etc
@@ -40,8 +40,8 @@ EOF
   };
   # rules_nixpkgs require the nix output to be a directory,
   # so we create one in which we put the image we've just created
-in runCommand "python39-base-image" { } ''
+in runCommand "python312-base-image" { } ''
   mkdir -p $out
-  gunzip -c ${pythonBase} > $out/image
+  gunzip -c ${pythonBase} > $out/image.tar
 ''
 
