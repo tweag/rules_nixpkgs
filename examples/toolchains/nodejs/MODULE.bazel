@@ -16,7 +16,7 @@ local_path_override(
 
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_nodejs", version = "6.3.0")
-bazel_dep(name = "aspect_rules_js", version = "2.8.0")
+bazel_dep(name = "aspect_rules_js", version = "2.8.3")
 
 #
 # Nixpkgs
