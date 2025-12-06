@@ -123,6 +123,31 @@ def _parse_cc_toolchain_info(content, filename):
         conly_flags = info["CONLY_FLAGS"],
     )
 
+def _parse_extra_toolchain_flags(content):
+    expected_keys = sets.make([
+        "compile_flags",
+        "cxx_flags",
+        "link_flags",
+        "link_libs",
+        "opt_compile_flags",
+        "opt_link_flags",
+        "dbg_compile_flags",
+        "conly_flags",
+    ])
+    actual_keys = sets.make(content.keys())
+    missing_keys = sets.difference(expected_keys, actual_keys)
+    unexpected_keys = sets.difference(actual_keys, expected_keys)
+
+    if sets.length(unexpected_keys) > 0:
+        fail(
+            "Malformed 'extra_toolchain_flags': Unexpected entries '{}'.".format(
+                "', '".join(sets.to_list(unexpected_keys)),
+            )
+        )
+
+    extra_flags = content | {key: [] for key in sets.to_list(missing_keys)}
+    return struct(**extra_flags)
+
 def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
     host_cpu = get_cpu_value(repository_ctx)
     cpu_value = repository_ctx.attr.cross_cpu or host_cpu
@@ -135,6 +160,8 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         repository_ctx.read(cc_toolchain_info_file),
         cc_toolchain_info_file,
     )
+
+    extra = _parse_extra_toolchain_flags(repository_ctx.attr.extra_toolchain_flags)
 
     # Generate the cc_toolchain workspace following the example from
     # `@bazel_tools//tools/cpp:unix_cc_configure.bzl`.
@@ -217,19 +244,19 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
                 ['"%s": "%s"' % (k, v) for (k, v) in info.tool_paths.items()],
             ),
             "%{cxx_builtin_include_directories}": get_starlark_list(info.cxx_builtin_include_directories),
-            "%{compile_flags}": get_starlark_list(info.compile_flags),
-            "%{cxx_flags}": get_starlark_list(info.cxx_flags),
-            "%{link_flags}": get_starlark_list(info.link_flags),
-            "%{link_libs}": get_starlark_list(info.link_libs),
-            "%{opt_compile_flags}": get_starlark_list(info.opt_compile_flags),
-            "%{opt_link_flags}": get_starlark_list(info.opt_link_flags),
+            "%{compile_flags}": get_starlark_list(info.compile_flags + extra.compile_flags),
+            "%{cxx_flags}": get_starlark_list(info.cxx_flags + extra.cxx_flags),
+            "%{link_flags}": get_starlark_list(info.link_flags + extra.link_flags),
+            "%{link_libs}": get_starlark_list(info.link_libs + extra.link_libs),
+            "%{opt_compile_flags}": get_starlark_list(info.opt_compile_flags + extra.opt_compile_flags),
+            "%{opt_link_flags}": get_starlark_list(info.opt_link_flags + extra.opt_link_flags),
             "%{unfiltered_compile_flags}": get_starlark_list(info.unfiltered_compile_flags),
-            "%{dbg_compile_flags}": get_starlark_list(info.dbg_compile_flags),
+            "%{dbg_compile_flags}": get_starlark_list(info.dbg_compile_flags + extra.dbg_compile_flags),
             "%{coverage_compile_flags}": get_starlark_list(info.coverage_compile_flags),
             "%{coverage_link_flags}": get_starlark_list(info.coverage_link_flags),
             "%{supports_start_end_lib}": repr(info.supports_start_end_lib),
             "%{extra_flags_per_feature}": "{}",
-            "%{conly_flags}": get_starlark_list(info.conly_flags),
+            "%{conly_flags}": get_starlark_list(info.conly_flags + extra.conly_flags),
         },
     )
 
@@ -239,6 +266,7 @@ _nixpkgs_cc_toolchain_config = repository_rule(
         "cc_toolchain_info": attr.label(),
         "fail_not_supported": attr.bool(),
         "cross_cpu": attr.string(),
+        "extra_toolchain_flags": attr.string_list_dict(),
         "_unix_cc_toolchain_config": attr.label(
             default = Label("@rules_nixpkgs_core//private/cc_toolchain:unix_cc_toolchain_config.bzl"),
         ),
@@ -303,6 +331,7 @@ _nixpkgs_cc_toolchain = repository_rule(
         "exec_constraints": attr.string_list(),
         "target_constraints": attr.string_list(),
         "cross_cpu": attr.string(),
+        "require_support_nix": attr.bool(),
     },
 )
 
@@ -322,8 +351,12 @@ def nixpkgs_cc_configure(
         register = True,
         cc_lang = "c++",
         cc_std = "c++0x",
+        cc_libstd = None,
         cross_cpu = "",
-        apple_sdk_path = ""):
+        apple_sdk_path = "",
+        require_support_nix = True,
+        toolchain_workspace = None,
+        extra_toolchain_flags = {}):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -395,8 +428,12 @@ def nixpkgs_cc_configure(
       register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
       cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
       cc_std: string, `"c++0x"` by default. Used to populate `CXX_FLAG` so the compiler uses the given language standard. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
+      cc_libstd: string, `"None"` by default. Used to specify the C++ standard library to link against.
       cross_cpu: string, `""` by default. Used if you want to add a cross compilation C/C++ toolchain. Set this to the CPU architecture for the target CPU. For example x86_64, would be k8.
       apple_sdk_path: string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain form the Nix expression under this attribute path.  Uses default repository if no `nix_file` or `nix_file_content` is provided.
+      require_support_nix: bool, `True` by default. Specify if the `support_nix` constraint is always appended to the toolchain's exec constraints.
+      toolchain_workspace: optional, string, Specify the name of the toolchain workspace repo.
+      extra_toolchain_flags: optional, dict, Specify additional flags to append to the toolchain configuration.
     """
     nixopts = list(nixopts)
     nix_file_deps = list(nix_file_deps)
@@ -424,12 +461,6 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccAttrSet",
             nix_expr,
-            "--argstr",
-            "ccLang",
-            cc_lang,
-            "--argstr",
-            "ccStd",
-            cc_std,
         ])
     elif nix_expr:
         nixopts.extend([
@@ -439,26 +470,25 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccExpr",
             nix_expr,
-            "--argstr",
-            "ccLang",
-            cc_lang,
-            "--argstr",
-            "ccStd",
-            cc_std,
         ])
     else:
         nixopts.extend([
             "--argstr",
             "ccType",
             "ccTypeDefault",
-            "--argstr",
-            "ccLang",
-            cc_lang,
-            "--argstr",
-            "ccStd",
-            cc_std,
         ])
-    
+    nixopts.extend([
+        "--argstr",
+        "ccLang",
+        cc_lang,
+        "--argstr",
+        "ccStd",
+        cc_std,
+        "--argstr",
+        "ccLibStd",
+        cc_libstd,
+    ])
+
     if apple_sdk_path:
         nixopts.extend(["--argstr", "appleSDKPath", apple_sdk_path])
 
@@ -481,17 +511,19 @@ def nixpkgs_cc_configure(
         cc_toolchain_info = "@{}_info//:CC_TOOLCHAIN_INFO".format(name),
         fail_not_supported = fail_not_supported,
         cross_cpu = cross_cpu,
+        extra_toolchain_flags = extra_toolchain_flags,
     )
 
     # Generate the `cc_toolchain` workspace.
     if (exec_constraints == None) != (target_constraints == None):
         fail("Both exec_constraints and target_constraints need to be provided or none of them.")
     _nixpkgs_cc_toolchain(
-        name = "{}_toolchains".format(name),
+        name = toolchain_workspace or "{}_toolchains".format(name),
         cc_toolchain_config = name,
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
         cross_cpu = cross_cpu,
+        require_support_nix = require_support_nix,
     )
 
     if register:
