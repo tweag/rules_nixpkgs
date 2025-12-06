@@ -322,6 +322,7 @@ def nixpkgs_cc_configure(
         register = True,
         cc_lang = "c++",
         cc_std = "c++0x",
+        cc_libstd = None,
         cross_cpu = "",
         apple_sdk_path = ""):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
@@ -395,6 +396,7 @@ def nixpkgs_cc_configure(
       register: bool, enabled by default, Whether to register (with `register_toolchains`) the generated toolchain and install it as the default cc_toolchain.
       cc_lang: string, `"c++"` by default. Used to populate `CXX_FLAG` so the compiler is called in C++ mode. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
       cc_std: string, `"c++0x"` by default. Used to populate `CXX_FLAG` so the compiler uses the given language standard. Can be set to `"none"` together with appropriate `copts` in the `cc_library` call: see above.
+      cc_libstd: string, `"None"` by default. Used to specify the C++ standard library to link against.
       cross_cpu: string, `""` by default. Used if you want to add a cross compilation C/C++ toolchain. Set this to the CPU architecture for the target CPU. For example x86_64, would be k8.
       apple_sdk_path: string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain form the Nix expression under this attribute path.  Uses default repository if no `nix_file` or `nix_file_content` is provided.
     """
@@ -424,12 +426,6 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccAttrSet",
             nix_expr,
-            "--argstr",
-            "ccLang",
-            cc_lang,
-            "--argstr",
-            "ccStd",
-            cc_std,
         ])
     elif nix_expr:
         nixopts.extend([
@@ -439,26 +435,25 @@ def nixpkgs_cc_configure(
             "--arg",
             "ccExpr",
             nix_expr,
-            "--argstr",
-            "ccLang",
-            cc_lang,
-            "--argstr",
-            "ccStd",
-            cc_std,
         ])
     else:
         nixopts.extend([
             "--argstr",
             "ccType",
             "ccTypeDefault",
-            "--argstr",
-            "ccLang",
-            cc_lang,
-            "--argstr",
-            "ccStd",
-            cc_std,
         ])
-    
+    nixopts.extend([
+        "--argstr",
+        "ccLang",
+        cc_lang,
+        "--argstr",
+        "ccStd",
+        cc_std,
+        "--argstr",
+        "ccLibStd",
+        cc_libstd,
+    ])
+
     if apple_sdk_path:
         nixopts.extend(["--argstr", "appleSDKPath", apple_sdk_path])
 
