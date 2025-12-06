@@ -326,7 +326,8 @@ def nixpkgs_cc_configure(
         cc_libstd = None,
         cross_cpu = "",
         apple_sdk_path = "",
-        require_support_nix = True):
+        require_support_nix = True,
+        toolchain_workspace = None):
     """Use a CC toolchain from Nixpkgs. No-op if not a nix-based platform.
 
     By default, Bazel auto-configures a CC toolchain from commands (e.g.
@@ -402,6 +403,7 @@ def nixpkgs_cc_configure(
       cross_cpu: string, `""` by default. Used if you want to add a cross compilation C/C++ toolchain. Set this to the CPU architecture for the target CPU. For example x86_64, would be k8.
       apple_sdk_path: string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain form the Nix expression under this attribute path.  Uses default repository if no `nix_file` or `nix_file_content` is provided.
       require_support_nix: bool, `True` by default. Specify if the `support_nix` constraint is always appended to the toolchain's exec constraints.
+      toolchain_workspace: optional, string, Specify the name of the toolchain workspace repo.
     """
     nixopts = list(nixopts)
     nix_file_deps = list(nix_file_deps)
@@ -485,7 +487,7 @@ def nixpkgs_cc_configure(
     if (exec_constraints == None) != (target_constraints == None):
         fail("Both exec_constraints and target_constraints need to be provided or none of them.")
     _nixpkgs_cc_toolchain(
-        name = "{}_toolchains".format(name),
+        name = toolchain_workspace or "{}_toolchains".format(name),
         cc_toolchain_config = name,
         exec_constraints = exec_constraints,
         target_constraints = target_constraints,
