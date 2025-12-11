@@ -886,28 +886,28 @@ def nixpkgs_flake_package(
     _nixpkgs_flake_package(**kwargs)
 
 def _run_nix_shell_impl(ctx, **kwargs):
-    out_file = ctx.actions.declare_file("%s" % ctx.attr.output)
 
     nix_env = ctx.file.stdenv
+    outputs = ctx.outputs.outputs
 
     ctx.actions.run_shell(
       inputs = [nix_env],
-      outputs = [out_file],
+      outputs = outputs,
       progress_message = "Running nix shell...",
-      arguments = [out_file.path],
+      arguments = [output.path for output in outputs],
       command = """
         source {}
         {}
-        """.format(nix_env.path, ctx.attr.cmd, out_file.path)
+        """.format(nix_env.path, ctx.attr.cmd)
     )
-    return [DefaultInfo(files = depset([out_file]))]
+    return [DefaultInfo(files = depset(outputs))]
 
 run_nix_shell = rule(
     implementation = _run_nix_shell_impl,
     attrs = {
-        "output": attr.string(
+        "outputs": attr.output_list(
             mandatory = True,
-            doc = "The output generated after running the command",
+            doc = "The outputs generated after running the command",
         ),
         "cmd": attr.string(
             mandatory = True,
@@ -919,14 +919,14 @@ run_nix_shell = rule(
 Executes a shell command in a Nix-provided environment.
 
 Args:
-  output: Name of the output file to generate.
+  outputs: Names of the outputs file to generate.
   cmd: Shell command to execute. The command is run after sourcing the provided stdenv.
   stdenv: Label pointing to a shell environment file.
 
 Example:
   run_nix_shell(
       name = "hello",
-      output = "hello.txt",
+      outputs = ["hello.txt"],
       cmd = "echo Hello, world! > $1",
       stdenv = "//:stdenv",
   )
