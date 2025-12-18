@@ -33,4 +33,4 @@ local_path_override(
 # TODO remove transitive rules_nixpkgs_cc dependencies.
 #   Once there is a module extension for the cc toolchain.
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_cc", version = "0.2.16")
