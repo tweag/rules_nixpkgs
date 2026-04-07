@@ -166,6 +166,6 @@ jobs:
       - test-examples
     if: ${{ always() }}
     steps:
-      - uses: cgrindel/gha_join_jobs@8a9736c29a7e5ebd9f3af2870f59cb6d563b6659 # v1
+      - uses: cgrindel/gha_join_jobs@605424defceef3181c9fde3df903ea8ec35e267a # v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
