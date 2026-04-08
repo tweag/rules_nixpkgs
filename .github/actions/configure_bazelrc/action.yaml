@@ -20,7 +20,7 @@ runs:
         bazelrc_tmp="${BAZELRC}.tmp"
         cp "${BAZELRC}" "${bazelrc_tmp}"
         echo "bazelrc_tmp=${bazelrc_tmp}" >> "$GITHUB_OUTPUT"
-    - uses: tweag/configure-bazel-remote-cache-auth@v0
+    - uses: tweag/configure-bazel-remote-cache-auth@144b0b915f13a418f5eafe2f68d19564ec136c62 # v0
       with:
         buildbuddy_api_key: ${{ inputs.buildbuddy_api_key }}
         bazelrc_path: ${{ steps.create_bazelrc_tmp.outputs.bazelrc_tmp }}

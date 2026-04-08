@@ -29,7 +29,7 @@ jobs:
           ref: master           # only create releases from main branch
       - name: Read section from CHANGELOG.md
         id: extract-changelog
-        uses: sean0x42/markdown-extract@v2
+        uses: sean0x42/markdown-extract@4178293dd16a52514b6cb2c01f4d309d264b2736 # v2
         with:
          file: CHANGELOG.md
          pattern: ${{ inputs.version }}
