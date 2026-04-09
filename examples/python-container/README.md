@@ -30,7 +30,7 @@ app.run(host='0.0.0.0', port=5000)
 
 Run it in a nix-shell:
 ```
-nix-shell --pure -p 'python39.withPackages (p: [ p.flask ])' --command 'python3 hello.py'
+nix-shell --pure -p 'python310.withPackages (p: [ p.flask ])' --command 'python3 hello.py'
 ```
 
 Expect something like this as output:
@@ -109,7 +109,7 @@ nixpkgs_git_repository(
 # Configure python
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_python_configure")
 nixpkgs_python_configure(
-    python3_attribute_path = "python39.withPackages(ps: [ ps.flask ])",
+    python3_attribute_path = "python310.withPackages(ps: [ ps.flask ])",
     repository = "@nixpkgs",
 )
 
@@ -179,7 +179,7 @@ INFO: Build completed successfully, 4 total actions
 ### Create Docker image with Nix
 
 We are generating an image with python3 including the flask module.
-Create a file with the name `python39_base_image.nix` and the following content:
+Create a file with the name `python310_base_image.nix` and the following content:
 ```
 with import <nixpkgs> {};
 
@@ -193,7 +193,7 @@ let
   '';
 
   pythonBase = dockerTools.buildLayeredImage {
-    name = "python39-base-image-unwrapped";
+    name = "python310-base-image-unwrapped";
     created = "now";
     maxLayers = 2;
     contents = [
@@ -201,7 +201,7 @@ let
       coreutils
 
       # Specify your Python version and packages here:
-      (python39.withPackages( p: [p.flask] ))
+      (python310.withPackages( p: [p.flask] ))
 
       stdenv.cc.cc.lib
       iana-etc
@@ -223,7 +223,7 @@ EOF
   };
   # rules_nixpkgs require the nix output to be a directory,
   # so we create one in which we put the image we've just created
-in runCommand "python39-base-image" { } ''
+in runCommand "python310-base-image" { } ''
   mkdir -p $out
   gunzip -c ${pythonBase} > $out/image
 ''
@@ -231,7 +231,7 @@ in runCommand "python39-base-image" { } ''
 
 Independent of Bazel we can now build a Docker container with nix:
 ```
-nix-build python39_base_image.nix
+nix-build python310_base_image.nix
 ```
 
 If everything went well, the last line of the `nix-build` output should give you the location of the image
@@ -246,12 +246,12 @@ docker load -i /nix/store/gnd2dl80mwrbnzk77h43fl07cb694vcx-python38-base-image/i
 
 The `docker load` command gives us the name of the image as output:
 ```
-Loaded image: python39-base-image-unwrapped:ypv5lns0sbbf0jgkkjsyxgxxlphnaaaa
+Loaded image: python310-base-image-unwrapped:ypv5lns0sbbf0jgkkjsyxgxxlphnaaaa
 ```
 
 Let's run `hello.py` in it:
 ```
-docker run -v $PWD/hello.py:/hello.py:ro --rm -it python39-base-image-unwrapped:ypv5lns0sbbf0jgkkjsyxgxxlphnaaaa python /hello.py
+docker run -v $PWD/hello.py:/hello.py:ro --rm -it python310-base-image-unwrapped:ypv5lns0sbbf0jgkkjsyxgxxlphnaaaa python /hello.py
 ```
 Which should show us the familiar
 ```
@@ -294,20 +294,20 @@ py3_image_repos()
 Let's append the follwowing to the `WORKSPACE` file in order to have Bazel build our Docker image with Nix:
 ```
 nixpkgs_package(
-    name = "raw_python39_base_image",
+    name = "raw_python310_base_image",
     build_file_content = """
 package(default_visibility = [ "//visibility:public" ])
 exports_files(["image"])
     """,
-    nix_file = "//:python39_base_image.nix",
+    nix_file = "//:python310_base_image.nix",
     repository = "@nixpkgs//:default.nix",
 )
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_load" )
-container_load(name = "python39_base_image", file = "@raw_python39_base_image//:image")
+container_load(name = "python310_base_image", file = "@raw_python310_base_image//:image")
 ```
 
-Now in our `BUILD` append the following to tell Bazel to create another Docker image, based on the `python39_base_image`:
+Now in our `BUILD` append the following to tell Bazel to create another Docker image, based on the `python310_base_image`:
 ```
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 
@@ -316,7 +316,7 @@ package(default_visibility = ["//visibility:public"])
 py3_image(
     name = "hello_image",
     srcs = [ "hello.py" ],
-    base = "@python39_base_image//image",
+    base = "@python310_base_image//image",
     main = "hello.py",
 
     # Currently needs to be built on Linux.
