@@ -35,7 +35,7 @@ jobs:
             withNixRemote: true
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install nix
         uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       - uses: ./.github/actions/configure_bazelrc
@@ -78,7 +78,7 @@ jobs:
           - macos-15-intel
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install nix
         uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       - uses: ./.github/actions/configure_bazelrc
@@ -144,7 +144,7 @@ jobs:
           popd
 
       - name: Build bazel-nix-python-container with Nix
-        uses: tweag/run-nix-shell@v0
+        uses: tweag/run-nix-shell@5d825ec7e0038b6c613f14d523203a2ea49abddb # v0.3.0
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
@@ -152,7 +152,7 @@ jobs:
           run: bazel build :hello_image
 
       - name: Run bazel-nix-flakes-example with Nix
-        uses: tweag/run-nix-shell@v0
+        uses: tweag/run-nix-shell@5d825ec7e0038b6c613f14d523203a2ea49abddb # v0.3.0
         if: ${{ runner.os == 'Linux' }}
         with:
           pure: false
@@ -166,6 +166,6 @@ jobs:
       - test-examples
     if: ${{ always() }}
     steps:
-      - uses: cgrindel/gha_join_jobs@605424defceef3181c9fde3df903ea8ec35e267a # v1
+      - uses: cgrindel/gha_join_jobs@605424defceef3181c9fde3df903ea8ec35e267a # v1.5.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
