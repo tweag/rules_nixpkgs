@@ -31,9 +31,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_nodejs",
-    sha256 = "83d2bb029c2a9a06a474c8748d1221a92a7ca02222dcf49a0b567825c4e3f1ce",
-    strip_prefix = "rules_nodejs-6.3.0",
-    urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.3.0/rules_nodejs-v6.3.0.tar.gz"],
+    sha256 = "dadafd3a3b15e0df47db7e71a32af53952b7dbb41e81367d88a2ec2d899a4995",
+    strip_prefix = "rules_nodejs-6.7.4",
+    urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.7.4/rules_nodejs-v6.7.4.tar.gz"],
 )
 
 load("//:nodejs.bzl", "nixpkgs_nodejs_configure")
