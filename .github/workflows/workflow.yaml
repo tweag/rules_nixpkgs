@@ -22,6 +22,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - macos-15
           - macos-15-intel
         bzlmodEnabled:
           - true
@@ -31,6 +32,8 @@ jobs:
           - false
         exclude:
           # skip nix remote jobs on MacOS
+          - os: macos-15
+            withNixRemote: true
           - os: macos-15-intel
             withNixRemote: true
     runs-on: ${{ matrix.os }}
@@ -75,6 +78,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - macos-15
           - macos-15-intel
     runs-on: ${{ matrix.os }}
     steps:
