@@ -903,3 +903,92 @@ def nixpkgs_flake_package(
     )
 
     _nixpkgs_flake_package(**kwargs)
+
+def _run_nix_shell_impl(ctx, **kwargs):
+
+    nix_env = ctx.file.stdenv
+    outputs = ctx.outputs.outputs
+
+    ctx.actions.run_shell(
+      inputs = [nix_env],
+      outputs = outputs,
+      progress_message = "Running nix shell...",
+      arguments = [output.path for output in outputs],
+      command = """
+        source {}
+        {}
+        """.format(nix_env.path, ctx.attr.cmd)
+    )
+    return [DefaultInfo(files = depset(outputs))]
+
+run_nix_shell = rule(
+    implementation = _run_nix_shell_impl,
+    attrs = {
+        "outputs": attr.output_list(
+            mandatory = True,
+            doc = "The outputs generated after running the command",
+        ),
+        "cmd": attr.string(
+            mandatory = True,
+            doc = "The command to execute",
+        ),
+        "stdenv": attr.label(allow_single_file = True),
+    },
+    doc = """
+Executes a shell command in a Nix-provided environment.
+
+Args:
+  outputs: Names of the outputs file to generate.
+  cmd: Shell command to execute. The command is run after sourcing the provided stdenv.
+  stdenv: Label pointing to a shell environment file.
+
+Example:
+  run_nix_shell(
+      name = "hello",
+      outputs = ["hello.txt"],
+      cmd = "echo Hello, world! > $1",
+      stdenv = "//:stdenv",
+  )
+""",
+)
+
+def nixpkgs_env(name,
+                pkgs,
+                repository = None,
+                repositories = {},
+                nix_file_deps = None,
+                nixopts = [],
+                fail_not_supported = True,
+                quiet = False):
+  """
+  Creates a minimal Nix shell environment.
+  It generates a `stdenv` file that sets up the PATH to include the specified Nix packages.
+  The resulting repository can be used as the `stdenv` input for `run_nix_shell`.
+
+  Args:
+    name: Name of the Bazel repository to create.
+    pkgs: List of Nix package names to include in the environment.
+    repository: A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`
+    repositories: A dictionary mapping `NIX_PATH` entries to repository labels.
+    nix_file_deps: Optional list of dependencies for the generated nix file.
+    nixopts: Extra flags to pass to Nix.
+    fail_not_supported: If True, fail on unsupported platforms (default: True).
+    quiet: If True, suppress Nix output.
+  """
+  _nix_file_content = """
+  with import <nixpkgs> {{}};
+  writeTextDir "stdenv" ''
+       export PATH='${{ lib.makeBinPath [{}] }}:'"''${{PATH}}"
+     ''
+  """.format(' '.join(pkgs))
+
+  nixpkgs_package(
+        name = name,
+        nix_file_content = _nix_file_content,
+        repository = repository,
+        repositories = repositories,
+        nix_file_deps = nix_file_deps,
+        nixopts = nixopts,
+        fail_not_supported = fail_not_supported,
+        build_file_content = 'exports_files(["stdenv"])',
+        quiet = quiet)

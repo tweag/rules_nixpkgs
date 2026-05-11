@@ -1,0 +1,28 @@
+# Replace with http_archive: https://github.com/tweag/rules_nixpkgs/#setup
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = "../../",
+)
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
+
+rules_nixpkgs_dependencies()
+
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
+
+nixpkgs_git_repository(
+    name = "nixpkgs",
+    revision = "22.05",
+    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+)
+
+
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_env")
+
+nixpkgs_env(
+   name = "my_env",
+   pkgs= ["cowsay"],
+   repository = "@nixpkgs",
+)
