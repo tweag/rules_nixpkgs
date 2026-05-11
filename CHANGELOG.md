@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Changed
+- Require `rules_go` >= 0.57.0 and build `pack` from the Go SDK sources, so the Nix Go toolchain also works with Go 1.25, where prebuilt `pack` binaries are no longer shipped.
+
 ## [0.14.1] - 2026-09-30
 
 ### Highlights
