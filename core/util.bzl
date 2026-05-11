@@ -159,17 +159,21 @@ def default_constraints(repository_ctx):
     }.get(cpu_value, "@platforms//os:linux")
     return [cpu, os]
 
-def ensure_constraints_pure(default_constraints, target_constraints = [], exec_constraints = []):
+def ensure_constraints_pure(
+    default_constraints,
+    target_constraints = [],
+    exec_constraints = [],
+    require_support_nix = True):
     """Build exec and target constraints for repository rules.
 
     If these are user-provided, then they are passed through.
     Otherwise, use the provided default constraints.
-    In either case, exec_constraints always contain the support_nix constraint, so the toolchain can be rejected on non-Nix environments.
 
     Args:
       target_constraints: optional, User provided target_constraints.
       exec_constraints: optional, User provided exec_constraints.
       default_constraints: Fall-back constraints.
+      require_support_nix: optional, Specify if the 'support_nix' constraint is always required. Requiring this constraint allows the toolchain to be rejected on non-Nix environments. Removing this constraint allows the Nix toolchains to be used along with other toolchains with the same platforms.
 
     Returns:
       exec_constraints, The generated list of exec constraints
@@ -181,7 +185,8 @@ def ensure_constraints_pure(default_constraints, target_constraints = [], exec_c
     else:
         target_constraints = list(target_constraints)
         exec_constraints = list(exec_constraints)
-    exec_constraints.append("@rules_nixpkgs_core//constraints:support_nix")
+    if require_support_nix:
+        exec_constraints.append("@rules_nixpkgs_core//constraints:support_nix")
     return exec_constraints, target_constraints
 
 def ensure_constraints(repository_ctx):
@@ -198,10 +203,16 @@ def ensure_constraints(repository_ctx):
       exec_constraints, The generated list of exec constraints
       target_constraints, The generated list of target constraints
     """
+
     return ensure_constraints_pure(
         default_constraints = default_constraints(repository_ctx),
         target_constraints = repository_ctx.attr.target_constraints,
         exec_constraints = repository_ctx.attr.exec_constraints,
+        require_support_nix = getattr(
+            repository_ctx.attr,
+            "require_support_nix",
+            True,
+        )
     )
 
 def parse_expand_location(string):

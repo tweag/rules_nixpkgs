@@ -9,6 +9,7 @@
   },
   ccLang ? "c++",
   ccStd ? "c++0x",
+  ccLibStd ? "None",
   appleSDKPath ? "apple-sdk",
 }:
 
@@ -257,11 +258,14 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     )
     LINK_LIBS=(
       ${
-        # Use stdenv.isDarwin as a marker instead of cc.isClang because
-        # we might have usecases with stdenv with clang and libstdc++.
-        # On Darwin libstdc++ is not available, so it's safe to assume that
-        # everybody use libc++ from LLVM.
-        if stdenv.isDarwin then "-lc++" else "-lstdc++"
+        if ccLibStd != "None" then
+          "-l${ccLibStd}"
+        else
+          # Use stdenv.isDarwin as a marker instead of cc.isClang because
+          # we might have usecases with stdenv with clang and libstdc++.
+          # On Darwin libstdc++ is not available, so it's safe to assume that
+          # everybody use libc++ from LLVM.
+          if stdenv.isDarwin then "-lc++" else "-lstdc++"
       }
       -lm
     )
@@ -311,10 +315,10 @@ pkgs.runCommand "bazel-${cc.orignalName or cc.name}-toolchain"
     )
     DBG_COMPILE_FLAGS=(-g)
     COVERAGE_COMPILE_FLAGS=(
-      ${if stdenv.isDarwin then "-fprofile-instr-generate -fcoverage-mapping" else "--coverage"}
+      ${if cc.isClang then "-fprofile-instr-generate -fcoverage-mapping" else "--coverage"}
     )
     COVERAGE_LINK_FLAGS=(
-      ${if stdenv.isDarwin then "-fprofile-instr-generate" else "--coverage"}
+      ${if cc.isClang then "-fprofile-instr-generate" else "--coverage"}
     )
     SUPPORTS_START_END_LIB=(
       $(
