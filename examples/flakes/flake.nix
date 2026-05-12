@@ -19,7 +19,7 @@
       {
         devShells.default = with pkgs; mkShell {
           name = "flake-example-shell";
-          packages = [ gcc gnumake bazel_6 ];
+          packages = [ gcc gnumake bazel_7 ];
         };
       });
 }

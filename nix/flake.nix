@@ -30,7 +30,7 @@
             name = "rules_nixpkgs_shell";
             buildInputs = lib.optional pkgs.stdenv.isDarwin darwin.cctools;
             packages = [
-              bazel_6
+              bazel_7
               bazel-buildtools
               cacert
               gcc
