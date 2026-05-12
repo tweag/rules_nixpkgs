@@ -8,5 +8,6 @@ build --java_runtime_version=nixpkgs_java_11
 build --java_language_version=11
 build --tool_java_runtime_version=nixpkgs_java_11
 build --tool_java_language_version=11
+build --repo_env=JAVA_HOME
 
 # vim: ft=conf
