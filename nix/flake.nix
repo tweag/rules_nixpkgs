@@ -27,10 +27,13 @@
             # for nixpkgs cc wrappers, select C++ explicitly (see https://github.com/NixOS/nixpkgs/issues/150655)
             BAZEL_CXXOPTS = "-x:c++";
 
+            # rules_java needs JAVA_HOME to determine the location of the local SDK
+            JAVA_HOME = "${openjdk_headless}";
+
             name = "rules_nixpkgs_shell";
             buildInputs = lib.optional pkgs.stdenv.isDarwin darwin.cctools;
             packages = [
-              bazel_6
+              bazel_7
               bazel-buildtools
               cacert
               gcc

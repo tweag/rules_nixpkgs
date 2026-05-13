@@ -240,7 +240,7 @@ API](https://github.com/bazelbuild/rules_python#using-the-package-installation-r
 `nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
 As such, it also provides a `requirement` function.
 
-:warning: Using the `requirement` fucntion inherits the same advantages and
+:warning: Using the `requirement` function inherits the same advantages and
 limitations as the one in rules_python. All the function does is create a
 label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
 While depending on such a label directly will work, the layout may change

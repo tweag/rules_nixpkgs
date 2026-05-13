@@ -1,5 +1,8 @@
 build --host_platform=@rules_nixpkgs_core//platforms:host
 
+# do not enable bzlmod by default
+common --noenable_bzlmod
+
 common:bzlmod --enable_bzlmod
 common:bzlmod --registry=https://bcr.bazel.build
 common:bzlmod --experimental_isolated_extension_usages
