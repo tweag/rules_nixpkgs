@@ -1,5 +1,10 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = ".",
+)
+
 # For documentation
 
 local_repository(
