@@ -1,5 +1,10 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = ".",
+)
+
 load("//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 
 # fetch external repositories from runfiles directory. this does not work
