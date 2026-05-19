@@ -1,5 +1,5 @@
 {
-  "checksum": "9b309cdf8fdc46841d7d672d59e3e0761ef074fc20fd66417c11d92bc64a4bdd",
+  "checksum": "ac2aab1eb352740cc75cf730ffbb6b9ffc41e2c75a82be6b319fe8747e6761ab",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -354,9 +354,6 @@
         "compile_data_glob": [
           "**"
         ],
-        "compile_data_glob_excludes": [
-          "**/*.rs"
-        ],
         "data_glob": [
           "**"
         ]
@@ -513,9 +510,6 @@
         "compile_data_glob": [
           "**"
         ],
-        "compile_data_glob_excludes": [
-          "**/*.rs"
-        ],
         "data_glob": [
           "**"
         ],
@@ -664,9 +658,6 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
-        ],
-        "compile_data_glob_excludes": [
-          "**/*.rs"
         ],
         "data": {
           "common": [
@@ -825,9 +816,6 @@
         "compile_data_glob": [
           "**"
         ],
-        "compile_data_glob_excludes": [
-          "**/*.rs"
-        ],
         "data_glob": [
           "**"
         ]
@@ -906,9 +894,6 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
-        ],
-        "compile_data_glob_excludes": [
-          "**/*.rs"
         ],
         "data_glob": [
           "**"
@@ -1002,9 +987,6 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
-        ],
-        "compile_data_glob_excludes": [
-          "**/*.rs"
         ],
         "data_glob": [
           "**"
