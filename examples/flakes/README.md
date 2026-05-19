@@ -1,7 +1,7 @@
 # bazel-nix-flakes-example
 
 The example is generating a local nixpkgs repository using the `flakes.lock` file already present on
-[flakes](https://nixos.wiki/wiki/Flakes) projects.
+[flakes](https://wiki.nixos.org/wiki/Flakes) projects.
 
 ## Requirements
 
