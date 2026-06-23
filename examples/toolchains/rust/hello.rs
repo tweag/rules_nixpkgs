@@ -1,6 +1,7 @@
 fn main() {
-  println!(
-    "Hello world from {:?}",
-    openssl::version::version()
-  );
+    println!(
+        "Hello world from {:?}",
+        String::from("wasm??"),
+        // openssl::version::version()
+    );
 }

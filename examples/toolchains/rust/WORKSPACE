@@ -43,11 +43,19 @@ nixpkgs_cc_configure(
     ],
 )
 
-load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/rust.bzl", "nixpkgs_rust_configure")
+load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/rust.bzl", "nixpkgs_rust_configure", "nixpkgs_rust_wasm_configure")
 
 nixpkgs_rust_configure(
     repository = "@nixpkgs",
     name = "nix_rust",
+    nix_file_deps = [
+        "//:nixpkgs.json"
+    ],
+)
+
+nixpkgs_rust_wasm_configure(
+    repository = "@nixpkgs",
+    name = "nix_wasm_rust",
     nix_file_deps = [
         "//:nixpkgs.json"
     ],
@@ -65,6 +73,13 @@ nixpkgs_package(
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies")
 
 rules_rust_dependencies()
+
+load("@rules_rust//wasm_bindgen:repositories.bzl", "rust_wasm_bindgen_dependencies", "rust_wasm_bindgen_register_toolchains")
+
+rust_wasm_bindgen_dependencies()
+
+rust_wasm_bindgen_register_toolchains()
+
 
 # crate_universe as a way of governing deps
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
