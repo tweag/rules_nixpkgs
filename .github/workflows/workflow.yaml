@@ -41,6 +41,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install nix
         uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        with:
+          # Install upstream Nix rather than Determinate Nix. Determinate Nix
+          # sets `ssl-cert-file = /no-cert-file.crt`, which leaks into the
+          # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
+          # HTTPS tarball fetches (SSL CA cert error 77).
+          determinate: false
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
@@ -85,6 +91,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install nix
         uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        with:
+          # Install upstream Nix rather than Determinate Nix. Determinate Nix
+          # sets `ssl-cert-file = /no-cert-file.crt`, which leaks into the
+          # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
+          # HTTPS tarball fetches (SSL CA cert error 77).
+          determinate: false
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
