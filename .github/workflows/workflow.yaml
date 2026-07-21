@@ -48,11 +48,7 @@ jobs:
           # HTTPS tarball fetches (SSL CA cert error 77).
           determinate: false
       - uses: ./.github/actions/fix-nix-ssl
-      - name: Install Bash 5 (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install bash
-          echo "NIX_BUILD_SHELL=$(brew --prefix)/bin/bash" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/install-bash5
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
@@ -104,11 +100,7 @@ jobs:
           # HTTPS tarball fetches (SSL CA cert error 77).
           determinate: false
       - uses: ./.github/actions/fix-nix-ssl
-      - name: Install Bash 5 (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install bash
-          echo "NIX_BUILD_SHELL=$(brew --prefix)/bin/bash" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/install-bash5
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}

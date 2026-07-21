@@ -1,0 +1,13 @@
+name: Install Bash 5 (macOS)
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        # macOS ships with Bash 3.2 (/bin/bash), but nixpkgs 25.05 requires
+        # Bash 5+. Install Bash 5 via Homebrew and set NIX_BUILD_SHELL so
+        # nix-shell uses it for environment setup instead of /bin/bash.
+        brew install bash
+        echo "NIX_BUILD_SHELL=$(brew --prefix)/bin/bash" >> "$GITHUB_ENV"
