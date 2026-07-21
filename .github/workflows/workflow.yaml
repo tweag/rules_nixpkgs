@@ -47,6 +47,19 @@ jobs:
           # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
           # HTTPS tarball fetches (SSL CA cert error 77).
           determinate: false
+      - name: Fix Nix ssl-cert-file configuration
+        run: |
+          # Even with determinate: false, the Nix installer may write
+          # ssl-cert-file = /no-cert-file.crt, which breaks HTTPS tarball
+          # fetches (fetchTarball) inside nix-build calls made by Bazel with
+          # SSL CA cert error 77. Remove the invalid setting so Nix uses the
+          # system CA bundle for all HTTPS fetches.
+          if sudo grep -rq 'ssl-cert-file' /etc/nix/ 2>/dev/null; then
+            sudo find /etc/nix -name '*.conf' -exec sed -i.bak '/ssl-cert-file/d' {} +
+            sudo find /etc/nix -name '*.conf.bak' -delete 2>/dev/null || true
+            sudo systemctl restart nix-daemon 2>/dev/null || \
+              sudo launchctl kickstart -k system/org.nixos.nix-daemon 2>/dev/null || true
+          fi
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
@@ -97,6 +110,19 @@ jobs:
           # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
           # HTTPS tarball fetches (SSL CA cert error 77).
           determinate: false
+      - name: Fix Nix ssl-cert-file configuration
+        run: |
+          # Even with determinate: false, the Nix installer may write
+          # ssl-cert-file = /no-cert-file.crt, which breaks HTTPS tarball
+          # fetches (fetchTarball) inside nix-build calls made by Bazel with
+          # SSL CA cert error 77. Remove the invalid setting so Nix uses the
+          # system CA bundle for all HTTPS fetches.
+          if sudo grep -rq 'ssl-cert-file' /etc/nix/ 2>/dev/null; then
+            sudo find /etc/nix -name '*.conf' -exec sed -i.bak '/ssl-cert-file/d' {} +
+            sudo find /etc/nix -name '*.conf.bak' -delete 2>/dev/null || true
+            sudo systemctl restart nix-daemon 2>/dev/null || \
+              sudo launchctl kickstart -k system/org.nixos.nix-daemon 2>/dev/null || true
+          fi
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
