@@ -10,6 +10,11 @@ SCRIPT_DIR="${SCRIPT_DIR%/*}"
 
 cd "$( dirname "$SCRIPT_DIR" )"
 
+# Ensure Bazelisk uses the repository-pinned Bazel version even when running in
+# nested test workspaces that define their own WORKSPACE files.
+source .bazeliskrc
+export USE_BAZEL_VERSION
+
 declare -a FAILURES=( )
 
 function on_exit() {
