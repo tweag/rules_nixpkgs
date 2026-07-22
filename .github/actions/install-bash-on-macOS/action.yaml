@@ -1,0 +1,13 @@
+name: Install new bash on macOS
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        # macOS ships with an older bash, but nixpkgs 25.05 requires
+        # Bash 5+. Install new bash via Homebrew and set NIX_BUILD_SHELL so
+        # nix-shell uses it for environment setup.
+        brew install bash
+        echo "NIX_BUILD_SHELL=$(brew --prefix)/bin/bash" >> "$GITHUB_ENV"
