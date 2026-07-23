@@ -10,6 +10,10 @@ SCRIPT_DIR="${SCRIPT_DIR%/*}"
 
 cd "$( dirname "$SCRIPT_DIR" )"
 
+# Ensure the version of Bazel used is the one declared in the repo root.
+source .bazeliskrc
+export USE_BAZEL_VERSION
+
 declare -a FAILURES=( )
 
 function on_exit() {
