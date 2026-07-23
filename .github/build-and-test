@@ -10,6 +10,10 @@ SCRIPT_DIR="${SCRIPT_DIR%/*}"
 
 cd "$( dirname "$SCRIPT_DIR" )"
 
+# Work around differences between platforms w.r.t. how the 
+# Bazel binary from nixpkgs is expected to be named.
+export BAZEL="$(command -v bazel)"
+
 declare -a FAILURES=( )
 
 function on_exit() {

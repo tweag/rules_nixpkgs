@@ -47,6 +47,8 @@ jobs:
           # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
           # HTTPS tarball fetches (SSL CA cert error 77).
           determinate: false
+      - uses: ./.github/actions/prevent-CA-cert-error-77
+      - uses: ./.github/actions/install-bash-on-macOS
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
@@ -97,6 +99,8 @@ jobs:
           # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
           # HTTPS tarball fetches (SSL CA cert error 77).
           determinate: false
+      - uses: ./.github/actions/prevent-CA-cert-error-77
+      - uses: ./.github/actions/install-bash-on-macOS
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
