@@ -69,6 +69,22 @@ jobs:
 
           echo "Setting BAZEL_NIX_REMOTE env variable"
           echo BAZEL_NIX_REMOTE=nix-server >> "$GITHUB_ENV"
+      - name: Debug bazel resolution
+        run: |
+          cat > /tmp/debug-bazel.sh <<'EOF'
+          echo "which bazel:"
+          command -v bazel || echo none
+          type -a bazel || true
+          bazel --version || echo "bazel --version failed"
+          echo "PATH:"
+          echo "$PATH" | tr ':' '\n'
+          EOF
+          echo "::group::Outside nix-shell"
+          bash /tmp/debug-bazel.sh
+          echo "::endgroup::"
+          echo "::group::Inside nix-shell --pure"
+          nix-shell --pure --run 'bash /tmp/debug-bazel.sh'
+          echo "::endgroup::"
       - name: Build & test
         env:
           BZLMOD_ENABLED: ${{ matrix.bzlmodEnabled }}
