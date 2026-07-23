@@ -1,0 +1,17 @@
+name: Remove Homebrew Bazel on macOS
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        # GitHub's macOS runner images ship Bazel pre-installed via Homebrew,
+        # and Homebrew's `bazel` is actually bazelisk. `/opt/homebrew/bin` is
+        # not stripped by `nix-shell --pure` on macOS and ends up ahead of the
+        # Nix store on PATH, so `bazel` resolves to the Homebrew bazelisk
+        # instead of the Nix-provided bazel_7. Bazelisk then downloads whatever
+        # version it resolves (e.g. the latest stable) rather than using the
+        # Bazel 7 we pin via Nix. Remove it so only the Nix bazel remains.
+        brew uninstall --ignore-dependencies bazelisk bazel 2>/dev/null || true
+        rm -f "$(brew --prefix)/bin/bazel" "$(brew --prefix)/bin/bazelisk"
