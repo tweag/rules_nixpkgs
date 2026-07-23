@@ -547,7 +547,7 @@ default is <code>None</code>
 
 <p>
 
-The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.
+The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package) for more information.
 
 </p>
 </td>
@@ -561,7 +561,7 @@ default is <code>""</code>
 
 <p>
 
-Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package-build_file_content) for more information.
+Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package) for more information.
 
 </p>
 </td>
@@ -575,7 +575,7 @@ default is <code>[]</code>
 
 <p>
 
-Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package-nixopts) for more information.
+Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package) for more information.
 
 </p>
 </td>
@@ -1220,7 +1220,7 @@ default is <code>None</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-repository).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -1234,7 +1234,7 @@ default is <code>{}</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-repositories).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -1276,7 +1276,7 @@ default is <code>None</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -1290,7 +1290,7 @@ default is <code>[]</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-nixopts).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -1304,7 +1304,7 @@ default is <code>True</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -1318,7 +1318,7 @@ default is <code>False</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-quiet).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2190,7 +2190,7 @@ default is <code>None</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-repository).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2204,7 +2204,7 @@ default is <code>{}</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-repositories).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2218,7 +2218,7 @@ default is <code>None</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2232,7 +2232,7 @@ default is <code>[]</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-nixopts).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2246,7 +2246,7 @@ default is <code>True</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-fail_not_supported).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2260,7 +2260,7 @@ default is <code>False</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-quiet).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2386,7 +2386,7 @@ default is <code>None</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-repository).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2400,7 +2400,7 @@ default is <code>{}</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-repositories).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2414,7 +2414,7 @@ default is <code>None</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-nix_file).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2428,7 +2428,7 @@ default is <code>[]</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-nix_file_deps).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
@@ -2442,7 +2442,7 @@ default is <code>False</code>
 
 <p>
 
-See [`nixpkgs_package`](#nixpkgs_package-quiet).
+See [`nixpkgs_package`](#nixpkgs_package).
 
 </p>
 </td>
