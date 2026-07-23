@@ -10,6 +10,12 @@ SCRIPT_DIR="${SCRIPT_DIR%/*}"
 
 cd "$( dirname "$SCRIPT_DIR" )"
 
+# Ensure nested Bazel workspaces resolve to the same Bazel binary provided by
+# nix-shell. `7.x` does not work with nixpkgs' bazel launcher naming.
+declare BAZEL_VERSION
+BAZEL_VERSION="$(bazel --version | awk '{ print $2 }')"
+export USE_BAZEL_VERSION="$BAZEL_VERSION"
+
 declare -a FAILURES=( )
 
 function on_exit() {
