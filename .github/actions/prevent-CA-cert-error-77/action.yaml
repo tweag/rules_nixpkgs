@@ -15,7 +15,7 @@ runs:
           /etc/nix \
           /nix/var/nix/profiles \
           "${HOME}/.config/nix" \
-          2>/dev/null)
+          2>/dev/null) || true
 
         if [[ -n "$bad_files" ]]; then
           # Remove the offending line in-place from every matched file.
