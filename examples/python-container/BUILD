@@ -19,7 +19,7 @@ platform(
 py3_image(
     name = "hello_image",
     srcs = [ "hello.py" ],
-    base = "@python310_base_image//image",
+    base = "@python3_base_image//image",
     main = "hello.py",
 
     # Currently needs to be built on Linux.

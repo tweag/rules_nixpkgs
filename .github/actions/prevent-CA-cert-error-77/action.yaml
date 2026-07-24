@@ -1,0 +1,44 @@
+name: Fix Nix SSL cert-file configuration
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        # Even with determinate: false, the Nix installer may write
+        # ssl-cert-file = /no-cert-file.crt, which breaks fetchTarball
+        # inside nix-build calls made by Bazel with SSL CA cert error 77. 
+        # Remove that specific invalid setting so Nix uses the system CA 
+        # bundle for all HTTPS fetches.
+
+        bad_files=$(sudo grep -rl '/no-cert-file\.crt' \
+          /etc/nix \
+          /nix/var/nix/profiles \
+          "${HOME}/.config/nix" \
+          2>/dev/null) || true
+
+        if [[ -n "$bad_files" ]]; then
+          # Remove the offending line in-place from every matched file.
+          echo "$bad_files" | xargs -I{} sudo perl -i -ne \
+            'print unless /^\s*ssl-cert-file\s*=\s*\/no-cert-file\.crt/'
+
+          # Restart the daemon so it re-reads the cleaned config before
+          # any nix-build calls are made by Bazel.
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            sudo systemctl restart nix-daemon
+          elif [[ "${RUNNER_OS}" == "macOS" ]]; then
+            sudo launchctl kickstart -k system/org.nixos.nix-daemon
+          fi
+        fi
+
+        # Store the SSL cert environment variables to restore them after daemon reboot.
+        tmp_ssl_cert_file=${SSL_CERT_FILE}
+        tmp_nix_ssl_cert_file=${NIX_SSL_CERT_FILE}
+
+        # Confirm the setting is gone, useful for diagnosing future failures.
+        echo "Nix ssl/cert config after cleanup:"
+        sudo nix show-config 2>/dev/null | grep -E 'ssl|cert' || true
+
+        # Restore the SSL cert environment variables after daemon reboot.
+        export SSL_CERT_FILE=${tmp_ssl_cert_file}
+        export NIX_SSL_CERT_FILE=${tmp_nix_ssl_cert_file}

@@ -1,1 +1,4 @@
 import %workspace%/../../.bazelrc.remote-cache
+
+# TODO(cb) migrate to bzlmod
+common --noenable_bzlmod

@@ -1,5 +1,10 @@
 # bazel-nix-python-container
 
+_Note_: this example uses rules_docker, which is not actively maintained anymore. It is
+        depending on old versions of other rulesets and does not support bzlmod.
+
+<!-- TODO(cb): modernize this example and use rules_img or rules_oci. -->
+
 An example for a minimal Python flask app running in a Nix-based, Bazel-built, Docker container.
 Based on https://github.com/jvolkman/bazel-nix-example. This step-by-step guide below and the
 dependency on flask have been added.
