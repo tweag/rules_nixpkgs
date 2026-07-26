@@ -3,6 +3,7 @@
 pkgs.mkShellNoCC {
     nativeBuildInputs = [
        pkgs.bazel_7
+       pkgs.cacert
     ];
 }
 
