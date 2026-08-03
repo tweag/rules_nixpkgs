@@ -70,6 +70,24 @@ nixpkgs_package(
     ],
 )
 
+# Allow libiconv to be pullable into the sandbox, 
+# by making it referenceable as a target.
+nixpkgs_package(
+    name = "libiconv-nixpkgs",
+    attribute_path = "libiconv",
+    repository = "@nixpkgs",
+    nix_file_deps = [
+        "//:nixpkgs.json"
+    ],
+    build_file_content = """
+filegroup(
+    name = "lib",
+    srcs = glob(["lib/**"]),
+    visibility = ["//visibility:public"],
+)
+""",
+)
+
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies")
 
 rules_rust_dependencies()
@@ -95,9 +113,16 @@ OPENSSL_CRATE_ANNOTATION = crate.annotation(
             "@openssl-static//:include",
             "@openssl-static//:lib",
         ],
-        data = ["@openssl-static//:lib"],
+        data = [
+            "@openssl-static//:lib",
+            # Make libiconv present in the sandbox.
+            "@libiconv-nixpkgs//:lib",
+        ],
         rustc_flags = [
             "-Lexternal/openssl-static/lib",
+            # Allow the linker to find libiconv.
+            "-Lexternal/libiconv-nixpkgs/lib",
+            "-C", "link-lib=iconv",
         ],
 )
 

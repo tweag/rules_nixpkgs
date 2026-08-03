@@ -1,5 +1,5 @@
 {
-  "checksum": "ac2aab1eb352740cc75cf730ffbb6b9ffc41e2c75a82be6b319fe8747e6761ab",
+  "checksum": "de47fac5c09cb787ca9d4d62d9b50a1a870812ce70f2832c5f7b7b4bad4de2ab",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -629,6 +629,7 @@
         ],
         "data": {
           "common": [
+            "@libiconv-nixpkgs//:lib",
             "@openssl-static//:lib"
           ],
           "selects": {}
@@ -649,7 +650,10 @@
         "edition": "2015",
         "rustc_flags": {
           "common": [
-            "-Lexternal/openssl-static/lib"
+            "-Lexternal/openssl-static/lib",
+            "-Lexternal/libiconv-nixpkgs/lib",
+            "-C",
+            "link-lib=iconv"
           ],
           "selects": {}
         },
