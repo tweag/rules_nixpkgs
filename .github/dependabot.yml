@@ -2,7 +2,11 @@ version: 2
 updates:
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      # Composite actions are not covered by "/", they need their own entry so
+      # that the SHA pins inside them keep getting updated.
+      - "/.github/actions/configure_bazelrc"
     schedule:
       # Check for updates to GitHub Actions every weekday
       interval: "daily"
