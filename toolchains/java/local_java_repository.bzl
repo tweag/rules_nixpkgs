@@ -95,14 +95,6 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
         toolchain = runtime_name,
     )
 
-    native.toolchain(
-        name = "bootstrap_runtime_toolchain_definition",
-        target_settings = [":%s_settings_alias" % name],
-        toolchain_type = "@bazel_tools//tools/jdk:bootstrap_runtime_toolchain_type",
-        toolchain = runtime_name,
-    )
-
-
     if type(version) == type("") and version.isdigit() and int(version) > 8:
         for version in range(8, int(version) + 1):
             default_java_toolchain(
@@ -233,4 +225,3 @@ def local_java_repository(name, java_home, version = "", build_file = None):
     """
     _local_java_repository_rule(name = name, java_home = java_home, version = version, build_file = build_file)
     native.register_toolchains("@" + name + "//:runtime_toolchain_definition")
-    native.register_toolchains("@" + name + "//:bootstrap_runtime_toolchain_definition")
