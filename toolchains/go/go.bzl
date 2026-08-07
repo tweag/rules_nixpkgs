@@ -143,6 +143,7 @@ def declare_toolchains(host_goos, host_goarch):
             goarch = p.goarch,
             sdk = "@{sdk_repo}//:go_sdk",
             builder = "@{sdk_repo}//:builder",
+            pack = "@{sdk_repo}//:pack_exe",
             link_flags = link_flags,
             cgo_link_flags = cgo_link_flags,
             visibility = ["//visibility:public"],
@@ -249,6 +250,31 @@ go_tool_binary(
     srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
     ldflags = "-X main.rulesGoStdlibPrefix=@{rules_go}//stdlib:" if TOOL_BINARY_NEEDS_STDLIB_PREFIX else None,
     sdk = ":go_sdk",
+    out_pack = "_pack",
+)
+
+[
+    config_setting(
+        name = "is_{{os}}_{{arch}}".format(os = os, arch = arch),
+        constraint_values = [
+            "@platforms//os:{{os}}".format(os = os),
+            "@platforms//cpu:{{arch}}".format(arch = arch),
+        ],
+    )
+    for os, arch in [("linux", "aarch64"), ("linux", "x86_64"), ("macos", "x86_64"), ("macos", "aarch64")]
+]
+
+filegroup(
+    name = "pack_exe",
+    srcs = select(
+      {{
+        ":is_linux_aarch64": ["pkg/tool/linux_arm64/pack"],
+        ":is_linux_x86_64": ["pkg/tool/linux_amd64/pack"],
+        ":is_macos_aarch64": ["pkg/tool/darwin_arm64/pack"],
+        ":is_macos_x86_64": ["pkg/tool/darwin_amd64/pack"],
+      }},
+      no_match_error = "unsupported OS/arch for pack_exe",
+    ),
 )
 
 package_list(
