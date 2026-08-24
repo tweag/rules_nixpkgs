@@ -25,6 +25,8 @@ jobs:
         os:
           - ubuntu-latest
           - macos-15
+          # nixpkgs 26.11 removes support for x86_64-darwin
+          # https://github.com/orgs/nix-community/discussions/2195
           - macos-15-intel
         bzlmodEnabled:
           - true
@@ -42,13 +44,16 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install nix
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        uses: cachix/install-nix-action@v31
         with:
-          # Install upstream Nix rather than Determinate Nix. Determinate Nix
-          # sets `ssl-cert-file = /no-cert-file.crt`, which leaks into the
-          # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
-          # HTTPS tarball fetches (SSL CA cert error 77).
-          determinate: false
+          nix_path: nixpkgs=channel:nixos-26.05
+      - name: Fix Nix SSL cert
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then 
+            cert="/etc/ssl/certs/ca-certificates.crt"
+            echo "ssl-cert-file = $cert" | sudo tee -a /etc/nix/nix.conf
+            sudo systemctl restart nix-daemon
+          fi
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
@@ -92,13 +97,16 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install nix
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        uses: cachix/install-nix-action@v31
         with:
-          # Install upstream Nix rather than Determinate Nix. Determinate Nix
-          # sets `ssl-cert-file = /no-cert-file.crt`, which leaks into the
-          # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
-          # HTTPS tarball fetches (SSL CA cert error 77).
-          determinate: false
+          nix_path: nixpkgs=channel:nixos-26.05
+      - name: Fix Nix SSL cert
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then 
+            cert="/etc/ssl/certs/ca-certificates.crt"
+            echo "ssl-cert-file = $cert" | sudo tee -a /etc/nix/nix.conf
+            sudo systemctl restart nix-daemon
+          fi
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
