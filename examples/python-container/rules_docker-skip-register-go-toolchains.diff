@@ -1,0 +1,13 @@
+diff --git a/repositories/go_repositories.bzl b/repositories/go_repositories.bzl
+index e6998c3..23a0f4b 100644
+--- a/repositories/go_repositories.bzl
++++ b/repositories/go_repositories.bzl
+@@ -37,7 +37,7 @@ def go_deps(go_repository_default_config = "@//:WORKSPACE"):
+         go_repository_default_config (str, optional): A file used to determine the root of the workspace.
+     """
+     go_rules_dependencies()
+-    go_register_toolchains()
++    #go_register_toolchains()
+     gazelle_dependencies(go_repository_default_config = go_repository_default_config)
+     excludes = native.existing_rules().keys()
+     if "com_github_google_go_containerregistry" not in excludes:

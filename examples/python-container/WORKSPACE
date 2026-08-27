@@ -11,6 +11,34 @@ local_repository(
     path = "../../",
 )
 
+http_archive(
+    name = "rules_cc",
+    urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.7/rules_cc-0.0.7.tar.gz"],
+    sha256 = "eb389b5b74862a3d310ee9d6c63348388223b384ae4423ff0fd286fcd123942d",
+    strip_prefix = "rules_cc-0.0.7",
+)
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "f4a9314518ca6acfa16cc4ab43b0b8ce1e4ea64b81c38d8a3772883f153346b8",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.50.1/rules_go-v0.50.1.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.50.1/rules_go-v0.50.1.zip",
+    ],
+)
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+http_archive(
+    name = "bazel_gazelle",
+    integrity = "sha256-tzh/cu+1n4duTarkLx05EtDUVWPqx8sj0d4LCUq1iM8=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazel-contrib/bazel-gazelle/releases/download/v0.34.0/bazel-gazelle-v0.34.0.tar.gz",
+        "https://github.com/bazel-contrib/bazel-gazelle/releases/download/v0.34.0/bazel-gazelle-v0.34.0.tar.gz",
+    ],
+)
+
 load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
 rules_nixpkgs_dependencies()
 
@@ -18,8 +46,9 @@ rules_nixpkgs_dependencies()
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
 nixpkgs_git_repository(
     name = "nixpkgs",
-    revision = "22.05",
-    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    # branch nixos-25.05
+    revision = "ac62194c3917d5f474c1a844b6fd6da2db95077d",
+    sha256 = "bf13a5324bc541eeda82fb97a80ba6326acc4fa91d6bac8f78fb309ce4a31e37",
 )
 
 # Configure the C++ toolchain
@@ -40,7 +69,13 @@ nixpkgs_cc_configure(
 # Configure python
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_python_configure")
 nixpkgs_python_configure(
-    python3_attribute_path = "python310.withPackages(ps: [ ps.flask ])",
+    python3_attribute_path = "python3.withPackages(ps: [ ps.flask ])",
+    repository = "@nixpkgs",
+)
+
+# Configure the Go toolchain
+load("@io_tweag_rules_nixpkgs//nixpkgs:toolchains/go.bzl", "nixpkgs_go_configure")
+nixpkgs_go_configure(
     repository = "@nixpkgs",
 )
 
@@ -54,6 +89,10 @@ http_archive(
         "https://mirror.bazel.build/github.com/bazelbuild/rules_docker/releases/download/v0.26.0/rules_docker-v0.26.0.tar.gz",
         "https://github.com/bazelbuild/rules_docker/releases/download/v0.26.0/rules_docker-v0.26.0.tar.gz",
     ],
+    patches = [
+        "//:rules_docker-skip-register-go-toolchains.diff",
+    ],
+    patch_args = ["-p1"],
 )
 
 load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories",)
@@ -70,17 +109,17 @@ py3_image_repos()
 
 load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_package")
 nixpkgs_package(
-    name = "raw_python310_base_image",
+    name = "raw_python3_base_image",
     build_file_content = """
 package(default_visibility = [ "//visibility:public" ])
 exports_files(["image"])
     """,
-    nix_file = "//:python310_base_image.nix",
+    nix_file = "//:python3_base_image.nix",
     repository = "@nixpkgs//:default.nix",
 )
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_load" )
-container_load(name = "python310_base_image", file = "@raw_python310_base_image//:image")
+container_load(name = "python3_base_image", file = "@raw_python3_base_image//:image")
 
 register_execution_platforms(
     "@io_tweag_rules_nixpkgs//nixpkgs/platforms:host",

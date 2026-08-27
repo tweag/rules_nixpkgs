@@ -2,7 +2,7 @@
 
 pkgs.mkShellNoCC {
     nativeBuildInputs = [
-       pkgs.bazel_6
+       pkgs.bazel_7
     ];
 }
 

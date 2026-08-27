@@ -144,6 +144,10 @@ jobs:
           with_nix=( $(ls) )
           without_nix=( cc go java )
 
+          extra_bazel_flags=()
+          if [[ "$(uname)" == "Darwin" ]]; then
+              extra_bazel_flags+=("--macos_sdk_version=$(xcrun --show-sdk-version)")
+          fi
           for dir in "${with_nix[@]}"; do
               pushd "$dir"
               echo
@@ -154,7 +158,9 @@ jobs:
                   continue
               else
                   echo "::group::Running $example_name"
-                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
+                  bazel_cmd="bazel run --config=nix ${extra_bazel_flags[@]} :hello"
+                  echo "Running: $bazel_cmd"
+                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command "$bazel_cmd"
                   # TODO: all toolchains should run without Nixpkgs
               fi
               popd
@@ -163,7 +169,9 @@ jobs:
               pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) without Nix"
-              bazel run :hello
+              bazel_cmd="bazel run ${extra_bazel_flags[@]} :hello"
+              echo "Running: $bazel_cmd"
+              eval "$bazel_cmd"
               popd
           done
 
