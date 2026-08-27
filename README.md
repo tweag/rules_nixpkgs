@@ -1013,7 +1013,7 @@ build --tool_java_runtime_version=nixpkgs_java
 
 ##### Bazel 6
 
-#### with with [Bzlmod](https://bazel.build/versions/6.5.0/external/overview#bzlmod)
+#### with [Bzlmod](https://bazel.build/versions/6.5.0/external/overview#bzlmod)
 
 Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
 ```bzl
