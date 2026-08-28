@@ -1,8 +1,7 @@
-load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_local_repository")
 load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_local_repository", "nixpkgs_package")
 load("@rules_nixpkgs_java//:java.bzl", "nixpkgs_java_configure")
 load("@rules_nixpkgs_python//:python.bzl", "nixpkgs_python_configure", "nixpkgs_python_repository")
-load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 
 def nixpkgs_repositories(*, bzlmod):
     nixpkgs_local_repository(
@@ -12,8 +11,20 @@ def nixpkgs_repositories(*, bzlmod):
     )
 
     nixpkgs_local_repository(
-        name = "poetry2nix",
-        nix_file = "//:poetry2nix.nix",
+        name = "pyproject-nix",
+        nix_file = "//:pyproject_nix.nix",
+        nix_file_deps = ["//:flake.lock"],
+    )
+
+    nixpkgs_local_repository(
+        name = "uv2nix",
+        nix_file = "//:uv2nix.nix",
+        nix_file_deps = ["//:flake.lock"],
+    )
+
+    nixpkgs_local_repository(
+        name = "build-system-pkgs",
+        nix_file = "//:build_system_pkgs.nix",
         nix_file_deps = ["//:flake.lock"],
     )
 
@@ -48,15 +59,17 @@ def nixpkgs_repositories(*, bzlmod):
     )
 
     nixpkgs_python_repository(
-        name = "poetry_packages",
+        name = "uv_packages",
         repositories = {
             "nixpkgs": "@nixpkgs",
-            "poetry2nix": "@poetry2nix",
+            "pyproject-nix": "@pyproject-nix",
+            "uv2nix": "@uv2nix",
+            "build-system-pkgs": "@build-system-pkgs",
         },
-        nix_file = "//:poetry.nix",
+        nix_file = "//:uv.nix",
         nix_file_deps = [
             "//:pyproject.toml",
-            "//:poetry.lock",
+            "//:uv.lock",
         ],
     )
 
