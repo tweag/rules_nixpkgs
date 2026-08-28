@@ -7,7 +7,6 @@ matrix:
   #- macos_arm64
   bazel:
   - 7.x
-  - 6.x
 tasks:
   # XXX use testing module once all dependencies are available from the BCR
   verify_targets:

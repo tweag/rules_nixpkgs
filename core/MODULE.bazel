@@ -1,6 +1,6 @@
 module(
     name = "rules_nixpkgs_core",
-    version = "0.13.0",
+    version = "0.14.0",
 )
 
 bazel_dep(name = "platforms", version = "0.0.9")
@@ -11,7 +11,7 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 nix_repo = use_extension("//extensions:repository.bzl", "nix_repo")
 nix_repo.github(
     name = "nixpkgs",
-    tag = "24.05",
-    sha256 = "911314b81780f26fdaf87e17174210bdbd40c86bac1795212f257cdc236a1e78",
+    tag = "25.05",
+    sha256 = "130b4257b3d53bfbfea6d61fb76d4751a3989a4a09a28615ff77516a82b3924d",
 )
 use_repo(nix_repo, "nixpkgs")

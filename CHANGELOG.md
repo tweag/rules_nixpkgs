@@ -4,9 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [0.14.0] - 2026-09-02
 
-[Unreleased]: https://github.com/tweag/rules_nixpkgs/compare/v0.13.0...HEAD
+[0.14.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.13.0...v0.14.0
+
+### Highlights
+- Full support for Bazel 7, which is now the version tested against.
+
+### Added
+- `rules_nixpkgs` module extension with `flake_package` tag, for depending on a Nix flakes package. See [#666].
+- Tested support for macOS ARM architecture. See [#711].
+- Gcov is now included in the default cc toolchain. See [#668].
+- `rust_analyzer_toolchain` from `rules_rust` is now supported. See [#656].
+- `nix_license_path` attribute for the `nixpkgs_package` and `nixpkgs_flake_package` rules, which effectively allows the export/propagation of a package's license. See [#655].
+- Support for using FlakeHub-backed Nix packages, by allowing tarball sources in addition to GitHub repository sources. See [#652].
+
+### Changed
+- Dropped declared support for Bazel versions prior to Bazel 7; testing is against Bazel 7. See [#742].
+- Updated to `nixpkgs` 25.05. See [#713].
+
+### Fixed
+- `pkgs.coreUtils` is once again available on macOS. See [#712] for the fix, and [#424] for the original issue.
+- In `nixpkgs_git_repository`, actually use the `remote` argument, which was previously unused.
 
 ## [0.13.0] - 2025-01-29
 
