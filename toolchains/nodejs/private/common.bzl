@@ -52,8 +52,6 @@ PLATFORMS = {
     ),
 }
 
-
-
 def _mk_mapping(rules_nodejs_platform_name):
     constraints = PLATFORMS[rules_nodejs_platform_name].compatible_with
     return struct(
@@ -62,17 +60,15 @@ def _mk_mapping(rules_nodejs_platform_name):
         target_constraints = constraints,
     )
 
-
 # obtained (and matched) from:
 # nixpkgs search: https://search.nixos.org/packages?channel=22.11&show=nodejs&from=0&size=50&sort=relevance&type=packages&query=nodejs
 # rules_nodejs: https://github.com/bazelbuild/rules_nodejs/blob/a5755eb458c2dd8e0e2cf9b92d8304d9e77ea117/nodejs/private/toolchains_repo.bzl#L20
 DEFAULT_PLATFORMS_MAPPING = {
-  "aarch64-darwin": _mk_mapping("darwin_arm64"),
-  "x86_64-linux": _mk_mapping("linux_amd64"),
-  "x86_64-darwin": _mk_mapping("darwin_amd64"),
-  "aarch64-linux": _mk_mapping("linux_arm64"),
+    "aarch64-darwin": _mk_mapping("darwin_arm64"),
+    "x86_64-linux": _mk_mapping("linux_amd64"),
+    "x86_64-darwin": _mk_mapping("darwin_amd64"),
+    "aarch64-linux": _mk_mapping("linux_arm64"),
 }
-
 
 NODEJS_NIX_FILE_CONTENT = """\
 let
@@ -93,10 +89,17 @@ pkgs.buildEnv {{
         visibility = ["//visibility:public"],
     )
 
+    filegroup(
+        name = "npm",
+        srcs = ["bin/npm"],
+        visibility = ["//visibility:public"],
+    )
+
     load("@rules_nodejs//nodejs:toolchain.bzl", "nodejs_toolchain")
     nodejs_toolchain(
         name = "nodejs_nix_impl",
         node = ":nodejs",
+        npm = ":npm",
         visibility = ["//visibility:public"],
     )
 
@@ -104,7 +107,6 @@ pkgs.buildEnv {{
   '';
 }}
 """
-
 
 NODEJS_TOOLCHAIN_SNIPPET = """\
 toolchain(
@@ -116,7 +118,6 @@ toolchain(
 )
 """
 
-
 def nodejs_nix_file_content(*, attribute_path, nix_platform = None):
     if nix_platform == None:
         nix_platform = "builtins.currentSystem"
@@ -127,7 +128,6 @@ def nodejs_nix_file_content(*, attribute_path, nix_platform = None):
         attribute_path = attribute_path,
         nix_platform = nix_platform,
     )
-
 
 def nixpkgs_nodejs(
         *,
