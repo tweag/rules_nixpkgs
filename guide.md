@@ -467,15 +467,19 @@ of the repository:
 
 ```
 build --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
-build --crosstool_top=@nixpkgs_config_cc//:toolchain
+```
+
+In bzlmod, you also need to register the toolchain in your `MODULE.bazel`:
+
+```python
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
 ```
 
 At a high level, the first directive tells Bazel that we are running on a Nix
 machine, for which special configuration is needed that rules_nixpkgs defines
 (in a similar way to how Bazel makes adjustments when running on macOS vs
-Linux). The second directive tells Bazel to use the toolchain
-`@nixpkgs_config_cc//:toolchain` (which requires Nix support) by default for all
-C++ compilation.
+Linux). The `register_toolchains` call tells Bazel to use the Nix-provided CC
+toolchain by default for all C++ compilation.
 
 Now `bazel build` and `bazel run` should use this toolchain by default for C/C++
 compilation. This can be verified using Bazel's `--toolchain_resolution_debug`
@@ -517,7 +521,12 @@ so, we use `bazelrc` configs to only enable Nix-specific configuration when a
 
 ```
 build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
-build:nix --crosstool_top=@nixpkgs_config_cc//:toolchain
+```
+
+In bzlmod, you also need to register the toolchain in your `MODULE.bazel`:
+
+```python
+register_toolchains("@nixpkgs_config_cc_toolchains//:all")
 ```
 
 None of these options will apply to `bazel build` or `bazel run` unless an extra
