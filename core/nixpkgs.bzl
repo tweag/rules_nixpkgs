@@ -962,6 +962,7 @@ def nixpkgs_env(name,
                 quiet = False):
   """
   Creates a minimal Nix shell environment.
+
   It generates a `stdenv` file that sets up the PATH to include the specified Nix packages.
   The resulting repository can be used as the `stdenv` input for `run_nix_shell`.
 

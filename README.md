@@ -116,6 +116,90 @@ nixpkgs_package(
 
 # Reference documentation
 
+<a id="#run_nix_shell"></a>
+
+### run_nix_shell
+
+<pre>
+run_nix_shell(<a href="#run_nix_shell-name">name</a>, <a href="#run_nix_shell-cmd">cmd</a>, <a href="#run_nix_shell-outputs">outputs</a>, <a href="#run_nix_shell-stdenv">stdenv</a>)
+</pre>
+
+
+Executes a shell command in a Nix-provided environment.
+
+Args:
+  outputs: Names of the outputs file to generate.
+  cmd: Shell command to execute. The command is run after sourcing the provided stdenv.
+  stdenv: Label pointing to a shell environment file.
+
+Example:
+  run_nix_shell(
+      name = "hello",
+      outputs = ["hello.txt"],
+      cmd = "echo Hello, world! > $1",
+      stdenv = "//:stdenv",
+  )
+
+
+#### Attributes
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="run_nix_shell-name">
+<td><code>name</code></td>
+<td>
+
+<a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
+
+<p>
+
+A unique name for this target.
+
+</p>
+</td>
+</tr>
+<tr id="run_nix_shell-cmd">
+<td><code>cmd</code></td>
+<td>
+
+String; required
+
+<p>
+
+The command to execute
+
+</p>
+</td>
+</tr>
+<tr id="run_nix_shell-outputs">
+<td><code>outputs</code></td>
+<td>
+
+List of labels; required
+
+<p>
+
+The outputs generated after running the command
+
+</p>
+</td>
+</tr>
+<tr id="run_nix_shell-stdenv">
+<td><code>stdenv</code></td>
+<td>
+
+<a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
 <a id="#nixpkgs_cc_configure"></a>
 
 ### nixpkgs_cc_configure
@@ -420,6 +504,142 @@ default is <code>""</code>
 <p>
 
 string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain form the Nix expression under this attribute path.  Uses default repository if no `nix_file` or `nix_file_content` is provided.
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+<a id="#nixpkgs_env"></a>
+
+### nixpkgs_env
+
+<pre>
+nixpkgs_env(<a href="#nixpkgs_env-name">name</a>, <a href="#nixpkgs_env-pkgs">pkgs</a>, <a href="#nixpkgs_env-repository">repository</a>, <a href="#nixpkgs_env-repositories">repositories</a>, <a href="#nixpkgs_env-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_env-nixopts">nixopts</a>, <a href="#nixpkgs_env-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_env-quiet">quiet</a>)
+</pre>
+
+  Creates a minimal Nix shell environment.
+
+It generates a `stdenv` file that sets up the PATH to include the specified Nix packages.
+The resulting repository can be used as the `stdenv` input for `run_nix_shell`.
+
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_env-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+Name of the Bazel repository to create.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-pkgs">
+<td><code>pkgs</code></td>
+<td>
+
+required.
+
+<p>
+
+List of Nix package names to include in the environment.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-repository">
+<td><code>repository</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-repositories">
+<td><code>repositories</code></td>
+<td>
+
+optional.
+default is <code>{}</code>
+
+<p>
+
+A dictionary mapping `NIX_PATH` entries to repository labels.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-nix_file_deps">
+<td><code>nix_file_deps</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Optional list of dependencies for the generated nix file.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-nixopts">
+<td><code>nixopts</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+<p>
+
+Extra flags to pass to Nix.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-fail_not_supported">
+<td><code>fail_not_supported</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+If True, fail on unsupported platforms (default: True).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-quiet">
+<td><code>quiet</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+If True, suppress Nix output.
 
 </p>
 </td>
