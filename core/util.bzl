@@ -41,6 +41,8 @@ def _is_executable(repository_ctx, path):
 
     arguments = [stat_exe] + stat_args
     exec_result = repository_ctx.execute(arguments)
+    if exec_result.return_code != 0:
+        return False
     stdout = exec_result.stdout.strip()
     mode = int(stdout, 8)
     return mode & 0o100 != 0
