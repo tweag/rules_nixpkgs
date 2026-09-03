@@ -5,4 +5,8 @@ module(
 
 bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
-bazel_dep(name = "rules_cc", version = "0.0.1")
+
+# 0.0.17 is the first release providing //cc/common:cc_common.bzl and
+# //cc/toolchains:cc_toolchain_config_info.bzl, which the generated cc
+# toolchain repository loads.
+bazel_dep(name = "rules_cc", version = "0.0.17")
