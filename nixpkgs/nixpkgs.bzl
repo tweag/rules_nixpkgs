@@ -118,11 +118,13 @@ load(
 )
 load(
     "@rules_nixpkgs_core//:nixpkgs.bzl",
+    _nixpkgs_env = "nixpkgs_env",
     _nixpkgs_flake_package = "nixpkgs_flake_package",
     _nixpkgs_git_repository = "nixpkgs_git_repository",
     _nixpkgs_http_repository = "nixpkgs_http_repository",
     _nixpkgs_local_repository = "nixpkgs_local_repository",
     _nixpkgs_package = "nixpkgs_package",
+    _run_nix_shell = "run_nix_shell",
 )
 load(
     "@rules_nixpkgs_core//:util.bzl",
@@ -154,6 +156,7 @@ load(
 )
 
 # aliases for backwards compatibility prior to `bzlmod`
+nixpkgs_env = _nixpkgs_env
 nixpkgs_git_repository = _nixpkgs_git_repository
 nixpkgs_http_repository = _nixpkgs_http_repository
 nixpkgs_local_repository = _nixpkgs_local_repository
@@ -167,3 +170,4 @@ nixpkgs_rust_configure = _nixpkgs_rust_configure
 nixpkgs_sh_posix_configure = _nixpkgs_sh_posix_configure
 nixpkgs_nodejs_configure = _nixpkgs_nodejs_configure
 nixpkgs_nodejs_configure_platforms = _nixpkgs_nodejs_configure_platforms
+run_nix_shell = _run_nix_shell
