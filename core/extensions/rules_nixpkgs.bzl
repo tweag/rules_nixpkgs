@@ -1,4 +1,4 @@
-"""Defines the nix_flake module extension."""
+"""Defines the rules_nixpkgs module extension."""
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("@bazel_skylib//lib:sets.bzl", "sets")

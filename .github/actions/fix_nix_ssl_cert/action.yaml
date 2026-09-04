@@ -1,0 +1,11 @@
+name: "Fix Nix SSL Cert"
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: runner.os == 'Linux'
+      run: |
+          cert="/etc/ssl/certs/ca-certificates.crt"
+          echo "ssl-cert-file = $cert" | sudo tee -a /etc/nix/nix.conf
+          sudo systemctl restart nix-daemon
