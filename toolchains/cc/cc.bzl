@@ -377,8 +377,7 @@ def nixpkgs_cc_configure(
     This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
     **Note:**
-    You need to configure `--crosstool_top=@<name>//:toolchain` to activate
-    this toolchain.
+    In bzlmod, use `register_toolchains("@<name>_toolchains//:all")` in your `MODULE.bazel` to activate this toolchain.
 
     Args:
       attribute_path: optional, string, Obtain the toolchain from the Nix expression under this attribute path. Uses default repository if no `nix_file` or `nix_file_content` is provided.
