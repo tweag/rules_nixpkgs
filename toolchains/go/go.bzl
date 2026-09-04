@@ -7,16 +7,18 @@ Rules for importing a Go toolchain from Nixpkgs.
 * [nixpkgs_go_configure](#nixpkgs_go_configure)
 """
 
-load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load("@io_bazel_rules_go//go/private:platforms.bzl", "PLATFORMS")
+load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 
 def _is_bzlmod_enabled():
     """Determine whether bzlmod mode is enabled."""
+
     # If bzlmod is enabled, then `str(Label(...))` returns a canonical label,
     # these start with `@@`.
     return str(Label("@rules_nixpkgs_go//:go.bzl")).startswith("@@")
 
-RULES_GO = "rules_go" if _is_bzlmod_enabled() else "io_bazel_rules_go"
+IS_BZLMOD = _is_bzlmod_enabled()
+RULES_GO = "rules_go" if IS_BZLMOD else "io_bazel_rules_go"
 
 def _detect_host_platform(ctx):
     """Copied from `rules_go`, since we have no other way to determine the proper `goarch` value.
@@ -82,7 +84,9 @@ def go_sdk_for_arch(go_version):
     )
 
     experiments = []
-    if go_version.split('.')[0] == '1' and int(go_version.split('.')[1]) >= 20:
+    go_minor = int(go_version.split('.')[1]) if go_version.split('.')[0] == '1' else 0
+    if go_minor >= 20 and go_minor <= 21:
+        # coverageredesign was an experiment in Go 1.20-1.21 that was removed in 1.22
         experiments = ["nocoverageredesign"]
 
     go_sdk(
@@ -101,6 +105,36 @@ def go_sdk_for_arch(go_version):
     )
 """
 
+go_builder_with_pack = """
+load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
+load("@{rules_go}//go/private/rules:transition.bzl", "non_go_reset_target")
+
+def declare_builder(ldflags):
+    go_tool_binary(
+        name = "builder",
+        srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
+        ldflags = ldflags,
+        out_pack = "pack.exe",
+        sdk = ":go_sdk",
+    )
+    non_go_reset_target(
+        name = "pack_reset",
+        dep = ":pack.exe",
+    )
+"""
+
+go_builder_without_pack = """
+load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
+
+def declare_builder(ldflags):
+    go_tool_binary(
+        name = "builder",
+        srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
+        ldflags = ldflags,
+        sdk = ":go_sdk",
+    )
+"""
+
 def _nixpkgs_go_helpers_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", executable = False, content = "")
     goos, goarch = _detect_host_platform(repository_ctx)
@@ -112,6 +146,12 @@ def _nixpkgs_go_helpers_impl(repository_ctx):
     )
     repository_ctx.file("go_sdk.bzl", executable = False, content = content)
 
+    builder_template = go_builder_with_pack if IS_BZLMOD else go_builder_without_pack
+    builder_content = builder_template.format(
+        rules_go = repository_ctx.attr.rules_go_repo_name,
+    )
+    repository_ctx.file("go_builder.bzl", executable = False, content = builder_content)
+
 nixpkgs_go_helpers = repository_rule(
     implementation = _nixpkgs_go_helpers_impl,
     attrs = {
@@ -122,10 +162,51 @@ nixpkgs_go_helpers = repository_rule(
     },
 )
 
-go_toolchain_func = """
+go_toolchain_func_with_pack = """
 load("@{rules_go}//go:def.bzl", "go_toolchain")
 
 PLATFORMS = {PLATFORMS}
+
+def declare_toolchains(host_goos, host_goarch):
+    for p in PLATFORMS:
+        link_flags = []
+        cgo_link_flags = []
+        if host_goos == "darwin":
+            cgo_link_flags.extend(["-shared", "-Wl,-all_load"])
+        if host_goos == "linux":
+            cgo_link_flags.append("-Wl,-whole-archive")
+        toolchain_name = "toolchain_go_" + p.name
+        impl_name = toolchain_name + "-impl"
+        constraints = p.constraints
+        go_toolchain(
+            name = impl_name,
+            goos = p.goos,
+            goarch = p.goarch,
+            sdk = "@{sdk_repo}//:go_sdk",
+            builder = "@{sdk_repo}//:builder",
+            pack = "@{sdk_repo}//:pack_reset",
+            link_flags = link_flags,
+            cgo_link_flags = cgo_link_flags,
+            visibility = ["//visibility:public"],
+        )
+        native.toolchain(
+            name = toolchain_name,
+            toolchain_type = "@{rules_go}//go:toolchain",
+            exec_compatible_with = [
+                "@{rules_go}//go/toolchain:" + host_goos,
+                "@{rules_go}//go/toolchain:" + host_goarch,
+                "@rules_nixpkgs_core//constraints:support_nix",
+            ],
+            target_compatible_with = constraints,
+            toolchain = ":" + impl_name,
+        )
+"""
+
+go_toolchain_func_without_pack = """
+load("@{rules_go}//go:def.bzl", "go_toolchain")
+
+PLATFORMS = {PLATFORMS}
+
 def declare_toolchains(host_goos, host_goarch):
     for p in PLATFORMS:
         link_flags = []
@@ -185,7 +266,8 @@ def _nixpkgs_go_toolchain_impl(repository_ctx):
         for p in PLATFORMS
         if not p.cgo
     ]
-    content = go_toolchain_func.format(
+    toolchain_template = go_toolchain_func_with_pack if IS_BZLMOD else go_toolchain_func_without_pack
+    content = toolchain_template.format(
         rules_go = repository_ctx.attr.rules_go_repo_name,
         sdk_repo = repository_ctx.attr.sdk_repo,
         PLATFORMS = CANONICALIZED_PLATFORMS,
@@ -214,10 +296,10 @@ nixpkgs_go_toolchain = repository_rule(
 )
 
 go_sdk_build = """
-load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
 load("@{rules_go}//go/private/rules:sdk.bzl", "package_list")
 load("@{rules_go}//go:def.bzl", "go_sdk", "RULES_GO_VERSION")
 load("@{helpers}//:go_sdk.bzl", "go_sdk_for_arch")
+load("@{helpers}//:go_builder.bzl", "declare_builder")
 load(":go_version.bzl", "go_version")
 
 package(default_visibility = ["//visibility:public"])
@@ -228,6 +310,8 @@ go_sdk_for_arch(go_version)
 TOOL_BINARY_NEEDS_STDLIB_PREFIX = (int(RULES_GO_VERSION.split(".")[0]) > 0) or (int(RULES_GO_VERSION.split(".")[1]) >= 42)
 None if TOOL_BINARY_NEEDS_STDLIB_PREFIX else \
     print("WARNING: rules_go %s is deprecated and support will soon be removed. Upgrade to rules_go >= 0.42.0. See https://github.com/tweag/rules_nixpkgs/issues/421 for more information." % (RULES_GO_VERSION))
+
+declare_builder("-X main.rulesGoStdlibPrefix=@{rules_go}//stdlib:" if TOOL_BINARY_NEEDS_STDLIB_PREFIX else None)
 
 filegroup(
     name = "headers",
@@ -242,13 +326,6 @@ filegroup(
 filegroup(
     name = "tools",
     srcs = glob(["pkg/tool/**", "bin/gofmt*"])
-)
-
-go_tool_binary(
-    name = "builder",
-    srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
-    ldflags = "-X main.rulesGoStdlibPrefix=@{rules_go}//stdlib:" if TOOL_BINARY_NEEDS_STDLIB_PREFIX else None,
-    sdk = ":go_sdk",
 )
 
 package_list(
