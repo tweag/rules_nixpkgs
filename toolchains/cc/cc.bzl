@@ -22,19 +22,18 @@ using `nixpkgs_cc_configure(..., cc_lang = "cuda")` or similar.
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load(
-    "@rules_nixpkgs_core//private/cc_toolchain:lib_cc_configure.bzl",
-    "get_cpu_value",
-    "get_starlark_list",
-    "write_builtin_include_directory_paths",
-)
-
 load("@rules_nixpkgs_core//:nixpkgs.bzl", "nixpkgs_package")
 load(
     "@rules_nixpkgs_core//:util.bzl",
     "ensure_constraints",
     "execute_or_fail",
     "is_bazel_version_at_least",
+)
+load(
+    "@rules_nixpkgs_core//private/cc_toolchain:lib_cc_configure.bzl",
+    "get_cpu_value",
+    "get_starlark_list",
+    "write_builtin_include_directory_paths",
 )
 
 def _parse_cc_toolchain_info(content, filename):
@@ -459,7 +458,7 @@ def nixpkgs_cc_configure(
             "ccStd",
             cc_std,
         ])
-    
+
     if apple_sdk_path:
         nixopts.extend(["--argstr", "appleSDKPath", apple_sdk_path])
 

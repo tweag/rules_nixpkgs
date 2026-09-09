@@ -54,12 +54,13 @@ use_repo(nix_pkg, "raw_python312_base_image")
 # Toolchains
 #
 
-extension_configure = use_extension("//:extension.bzl", "extension_configure")
-use_repo(extension_configure, "nixpkgs_config_cc")
-use_repo(extension_configure, "nixpkgs_config_cc_toolchains")
-use_repo(extension_configure, "nixpkgs_config_cc_info")
-use_repo(extension_configure, "nixpkgs_python_toolchain")
-use_repo(extension_configure, "nixpkgs_python_toolchain_python3")
-
+cc_configure = use_extension("@rules_nixpkgs_cc//extensions:cc.bzl", "cc_configure")
+cc_configure.nixpkgs(nixpkgs = "@nixpkgs")
+use_repo(cc_configure, "nixpkgs_config_cc")
+use_repo(cc_configure, "nixpkgs_config_cc_toolchains")
 register_toolchains("@nixpkgs_config_cc_toolchains//:all")
+
+python_configure = use_extension("//:extension.bzl", "python_configure")
+use_repo(python_configure, "nixpkgs_python_toolchain")
+use_repo(python_configure, "nixpkgs_python_toolchain_python3")
 register_toolchains("@nixpkgs_python_toolchain//:all")
