@@ -18,7 +18,7 @@ on:
 
 jobs:
   publish:
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.0
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@ca23149e55cd4db07a6bcce69c02dea314c5a357 # v1.5.0
     with:
       tag_name: ${{ inputs.tag_name || github.ref_name }}
       registry_fork: tweag/bazel-central-registry
