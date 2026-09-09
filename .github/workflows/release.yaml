@@ -49,3 +49,15 @@ jobs:
             --title v${{ inputs.version }} \
             v${{ inputs.version }} \
             rules_nixpkgs-${{ inputs.version }}.tar.gz
+  publish:
+    name: Publish to BCR
+    needs: release
+    uses: ./.github/workflows/publish.yaml
+    with:
+      tag_name: v${{ inputs.version }}
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    secrets:
+      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
