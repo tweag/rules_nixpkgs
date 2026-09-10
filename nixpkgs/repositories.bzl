@@ -40,9 +40,9 @@ def rules_nixpkgs_dependencies(rules_nixpkgs_name = "io_tweag_rules_nixpkgs", to
     maybe(
         http_archive,
         "rules_nodejs",
-        sha256 = "83d2bb029c2a9a06a474c8748d1221a92a7ca02222dcf49a0b567825c4e3f1ce",
-        strip_prefix = "rules_nodejs-6.3.0",
-        urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.3.0/rules_nodejs-v6.3.0.tar.gz"],
+        sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        strip_prefix = "rules_nodejs-6.6.3",
+        urls = ["https://github.com/bazel-contrib/rules_nodejs/releases/download/v6.6.3/rules_nodejs-v6.6.3.tar.gz"],
     )
     maybe(
         http_archive,
