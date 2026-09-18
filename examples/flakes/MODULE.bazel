@@ -27,9 +27,8 @@ use_repo(nix_repo, "nixpkgs")
 # Toolchains
 #
 
-cc_configure = use_extension("//:extension.bzl", "cc_configure")
+cc_configure = use_extension("@rules_nixpkgs_cc//extensions:cc.bzl", "cc_configure")
+cc_configure.nixpkgs(nixpkgs = "@nixpkgs")
 use_repo(cc_configure, "nixpkgs_config_cc")
 use_repo(cc_configure, "nixpkgs_config_cc_toolchains")
-use_repo(cc_configure, "nixpkgs_config_cc_info")
-
 register_toolchains("@nixpkgs_config_cc_toolchains//:all")
