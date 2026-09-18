@@ -3,7 +3,7 @@
 Provides a default CC toolchain from Nixpkgs. Usage:
 
     cc_configure = use_extension("@rules_nixpkgs_cc//extensions:cc.bzl", "cc_configure")
-    cc_configure.nixpkgs(name = "nixpkgs")
+    cc_configure.nixpkgs(nixpkgs = "@nixpkgs")
     use_repo(cc_configure, "nixpkgs_config_cc")
     use_repo(cc_configure, "nixpkgs_config_cc_toolchains")
     register_toolchains("@nixpkgs_config_cc_toolchains//:all")
@@ -14,12 +14,12 @@ load("@rules_nixpkgs_cc//:cc.bzl", "nixpkgs_cc_configure")
 def _cc_configure_impl(module_ctx):
     for mod in module_ctx.modules:
         for tag in mod.tags.nixpkgs:
-            # Pass the nixpkgs repo as a label via the repositories dict.
-            # Using repository= directly doesn't work in module extensions
-            # because the label isn't visible to this extension.
+            # nixpkgs_package expects a dict keyed by NIX_PATH entry,
+            # mapping to the repository label. It inverts the dict before
+            # calling the underlying rule (see core/nixpkgs.bzl).
             nixpkgs_cc_configure(
                 name = "nixpkgs_config_cc",
-                repositories = {str(tag.nixpkgs): "nixpkgs"},
+                repositories = {"nixpkgs": tag.nixpkgs},
                 register = False,
             )
     return module_ctx.extension_metadata(

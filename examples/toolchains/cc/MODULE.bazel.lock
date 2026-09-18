@@ -112,7 +112,7 @@
     },
     "@@rules_nixpkgs_cc~//extensions:cc.bzl%cc_configure": {
       "general": {
-        "bzlTransitiveDigest": "xkdSTqtZY4gnHUCzIq5Jj3ppvfI9R4HbjMEkFBV4g4o=",
+        "bzlTransitiveDigest": "xYBJsos36uDeqkvO5zNrcH1IgbQ+4LQEmn88C7rmz4M=",
         "usagesDigest": "PxGY+900FvSjVqLvoOJKTesWAej1fkZ1eoJggkyHl7I=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -129,7 +129,7 @@
               "nix_file_content": "",
               "nix_license_path": "",
               "repositories": {
-                "@@rules_nixpkgs_cc~//extensions:nixpkgs": "'@@rules_nixpkgs_core~~nix_repo~nixpkgs//:nixpkgs'"
+                "@@rules_nixpkgs_core~~nix_repo~nixpkgs//:nixpkgs": "nixpkgs"
               },
               "build_file_content": "exports_files(['CC_TOOLCHAIN_INFO'])",
               "nixopts": [
@@ -212,8 +212,8 @@
     },
     "@@rules_nixpkgs_core~//extensions:repository.bzl%nix_repo": {
       "general": {
-        "bzlTransitiveDigest": "PItKe/CU0Y9haqOJVsLAaDpyYGTm1UsDJ8mWLUFXp+0=",
-        "usagesDigest": "20R2mBfZonU34IHxYLHJDienBnCMHXjIQvFyoZlXVZM=",
+        "bzlTransitiveDigest": "b8aBhrmRe3WiFZX+KAHyYDNt0l41nDsBWf/fs0VDhv0=",
+        "usagesDigest": "0LDhcTSWGNvXY6GvpU0Ut4PLnttv37HnVk/JZwwJuTo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
