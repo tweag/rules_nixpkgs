@@ -27,6 +27,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `pkgs.coreUtils` is once again available on macOS. See [#712] for the fix, and [#424] for the original issue.
 - In `nixpkgs_git_repository`, actually use the `remote` argument, which was previously unused.
 
+[#666]: https://github.com/tweag/rules_nixpkgs/pull/666
+[#711]: https://github.com/tweag/rules_nixpkgs/pull/711
+[#668]: https://github.com/tweag/rules_nixpkgs/pull/668
+[#656]: https://github.com/tweag/rules_nixpkgs/pull/656
+[#655]: https://github.com/tweag/rules_nixpkgs/pull/655
+[#652]: https://github.com/tweag/rules_nixpkgs/pull/652
+[#742]: https://github.com/tweag/rules_nixpkgs/pull/742
+[#712]: https://github.com/tweag/rules_nixpkgs/pull/712
+[#424]: https://github.com/tweag/rules_nixpkgs/issues/424
+
 ## [0.13.0] - 2025-01-29
 
 [0.13.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.12.0...v0.13.0
