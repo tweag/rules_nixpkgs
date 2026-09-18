@@ -1,5 +1,3 @@
 import %workspace%/../../../.bazelrc.remote-cache
 
-common --noenable_bzlmod
-
-build:nix --host_platform=@io_tweag_rules_nixpkgs//nixpkgs/platforms:host
+build:nix --host_platform=@rules_nixpkgs_core//platforms:host --incompatible_enable_cc_toolchain_resolution
