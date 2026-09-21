@@ -87,8 +87,7 @@ nixpkgs_cc_configure(
 This rule depends on [`rules_cc`](https://github.com/bazelbuild/rules_cc).
 
 **Note:**
-You need to configure `--crosstool_top=@<name>//:toolchain` to activate
-this toolchain.
+In bzlmod, use `register_toolchains("@<name>_toolchains//:all")` in your `MODULE.bazel` to activate this toolchain.
 
 
 #### Parameters
