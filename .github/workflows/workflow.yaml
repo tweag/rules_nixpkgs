@@ -100,7 +100,7 @@ jobs:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
       - name: Free disk space
         if: runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # main
         with:
           android: true
           dotnet: true
