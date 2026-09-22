@@ -14,6 +14,8 @@
 
 """Bazel rules for creating Java toolchains."""
 
+load("@rules_java//java:defs.bzl", "java_toolchain")
+
 # JVM options, without patching java.compiler and jdk.compiler modules.
 BASE_JDK9_JVM_OPTS = [
     # Allow JavaBuilder to access internal javac APIs.
@@ -145,7 +147,7 @@ def default_java_toolchain(name, configuration = DEFAULT_TOOLCHAIN_CONFIGURATION
     toolchain_args = dict(_BASE_TOOLCHAIN_CONFIGURATION)
     toolchain_args.update(configuration)
     toolchain_args.update(kwargs)
-    native.java_toolchain(
+    java_toolchain(
         name = name,
         **toolchain_args
     )
