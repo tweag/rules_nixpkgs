@@ -135,7 +135,7 @@ register_toolchains("@nixpkgs_cross_cc_toolchains//:all")
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 oci.pull(
     name = "distroless_base",
-    digest = "sha256:c83f022002fc917a92501a8c30c605efdad3010157ba2c8998a2cbf213299201",
+    digest = "sha256:0ebad3510af52aefe45045cc01b07564570be4feecf8d9f93d3a05d1b5f2f93b",
     image = "gcr.io/distroless/base",
     platforms = [
         "linux/amd64",
