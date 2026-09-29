@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [v0.14.1] - 2026-09-30
+
+### Highlights
+- Update of `rules_go` to 0.56.1, for compatibility with Go version >= 1.25.
+
+### Changed
+- `rules_go` updated to 0.56.1, for compatibility with version 1.25+ of Go, where it's no longer possible to opt out of the coverage redesign (with `nocoverageredesign`). See [#773].
+
+[#773]: https://github.com/tweag/rules_nixpkgs/pull/773
+
 ## [0.14.0] - 2026-09-04
 
 [0.14.0]: https://github.com/tweag/rules_nixpkgs/compare/v0.13.0...v0.14.0
