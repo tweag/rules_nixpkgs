@@ -14,6 +14,7 @@
 
 """A Starlark cc_toolchain configuration rule"""
 
+load("@rules_cc//cc:defs.bzl", "CcToolchainConfigInfo", "cc_common")
 load(
     "@rules_cc//cc:action_names.bzl",
     _ASSEMBLE_ACTION_NAME = "ASSEMBLE_ACTION_NAME",
