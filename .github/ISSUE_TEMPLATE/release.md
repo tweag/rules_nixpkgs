@@ -19,11 +19,8 @@ about: Steps to work through in order to publish a new release
   - Look through:
     * [merged PRs](https://github.com/tweag/rules_nixpkgs/pulls?q=is:pr+base:master+merged:>2023-10-18+-author:app/github-actions+-author:app/dependabot) or
     * `git log master ^v0.x.x --oneline --merges --grep='pull request' --grep='#' | grep -v 'tweag/dependabot/github_actions/' | grep -v 'tweag/update_flake_lock_action'`
-- [ ] Bump version numbers in `MODULE.bazel` and the registry, rename files
-    ```
-        grep '0.10.0 -r --exclude-dir=.git lists occurences of 0.10.0 in files
-        find -path ./.git -prune -o -name '*0.10.0*' -print lists occurences of 0.10.0 in names
-    ```
+- [ ] Update `bazel_dep` declarations in `MODULE.bazel` to reference the to-be-released version
+  (run `git grep 'bazel_dep.*rules_nixpkgs.*version' '**/MODULE.bazel'`)
 - [ ] Push the `release-<major>.<minor>.<patch>` branch and open a PR,
       go through review and merge upon success.
 - [ ] Trigger the `Prepare Release` workflow
@@ -33,7 +30,8 @@ about: Steps to work through in order to publish a new release
   - Do the code snippets look valid?
   - Is there a release artifact attached to it?
   - If you're happy, publish the release... :rocket:
-- [ ] Announce the new version on Twitter by asking someone with access.
+- [ ] Ensure PR in the BCR is merged.
+- [ ] Announce the new version on X / Mastodon by asking someone with access.
 
 
 [changelog]: /CHANGELOG.md
