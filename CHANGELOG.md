@@ -11,7 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 - `rules_go` updated to 0.56.1, for compatibility with version 1.25+ of Go, where it's no longer possible to opt out of the coverage redesign (with `nocoverageredesign`). See [#773].
+- Improved compatiblity with Bazel 9. See [#772].
 
+[#772]: https://github.com/tweag/rules_nixpkgs/pull/772
 [#773]: https://github.com/tweag/rules_nixpkgs/pull/773
 
 ## [0.14.0] - 2026-09-04
