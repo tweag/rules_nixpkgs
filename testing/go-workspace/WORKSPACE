@@ -24,10 +24,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "89d2050410602142c9acafd01c95baf48b65f8dd16f4771d37c89f82f5e147f2",
+    sha256 = "4306d89e9541b5ce31108c2bd34c319dbfd6589a272dcbdc04dccdd89ff009d9",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.56.1/rules_go-v0.56.1.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.56.1/rules_go-v0.56.1.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.64.1/rules_go-v0.64.1.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.64.1/rules_go-v0.64.1.zip",
     ],
 )
 
