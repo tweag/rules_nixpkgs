@@ -2,7 +2,7 @@
 name = "import-packages-test"
 version = "0.1.0"
 description = "Test of python packages imports in Bazel"
-requires-python = ">=3.9"
+requires-python = ">=3.13"
 dependencies = [
     "flask>=3.0.0",
 ]
@@ -13,4 +13,3 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 package = false
-constraint-dependencies = ["markupsafe<3.0.3"]
