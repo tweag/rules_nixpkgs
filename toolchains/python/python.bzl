@@ -245,7 +245,7 @@ def nixpkgs_python_repository(
     provided by nixpkgs.
 
     This rule is instead intended to expose an ad-hoc set of packages for your
-    project, as can be built by poetry2nix, mach-nix, dream2nix or by manually
+    project, as can be built by uv2nix, mach-nix, dream2nix or by manually
     picking the python packages you need from nixpkgs.
 
     The format is generic to support the many ways to generate such packages
