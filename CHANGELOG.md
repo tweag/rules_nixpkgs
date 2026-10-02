@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [v0.14.1] - 2026-09-30
+## [0.14.1] - 2026-09-30
 
 ### Highlights
 - Update of `rules_go` to 0.56.1, for compatibility with Go version >= 1.25.
