@@ -1,13 +1,15 @@
-[tool.poetry]
-name = "import_packages_test"
+[project]
+name = "import-packages-test"
 version = "0.1.0"
 description = "Test of python packages imports in Bazel"
-authors = ["Your Name <you@example.com>"]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-flask = "^3.0.0"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.0.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false

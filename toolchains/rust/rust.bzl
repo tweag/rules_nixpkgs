@@ -109,6 +109,7 @@ pkgs.buildEnv {{
             srcs = glob(
                 [
                     "lib/rustlib/*/lib/*.rlib",
+                    "lib/rustlib/*/lib/*.rmeta",
                     "lib/rustlib/*/lib/*.so",
                     "lib/rustlib/*/lib/*.dylib",
                     "lib/rustlib/*/lib/*.a",
