@@ -668,6 +668,11 @@ As a consequence, you may want to isolate your flake from the rest of the
 repository to minimize the amount of unnecessary data that gets copied into
 the Nix Store whenever the flake is rebuilt.
 
+For multi-output derivations (e.g. `curl`, with outputs `bin`, `dev`,
+`man`, ...), the repository contains the derivation's default output.
+To use another output, expose it as its own flake package, e.g.
+`packages.curl-dev = pkgs.curl.dev;`, and set `package = "curl-dev"`.
+
 
 #### Parameters
 
@@ -753,7 +758,7 @@ default is <code>None</code>
 
 <p>
 
-Nix Flake package to make available.  The default package will be used if not specified.
+Nix Flake package to make available. The default package will be used if not specified. For multi-output derivations, the default output is used; see above.
 
 </p>
 </td>

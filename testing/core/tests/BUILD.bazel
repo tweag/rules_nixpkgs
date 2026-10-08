@@ -76,6 +76,30 @@ expand_location_unit_test_suite()
         "flake-hello",
         "flake-hello-with-build-file",
     ]
+] + [
+    # `curl` is a multi-output derivation; the repository must point at its
+    # default output (`bin`), not at the last output printed by `nix build`.
+    sh_test(
+        name = "run-flake-curl",
+        timeout = "short",
+        srcs = ["test_bin.sh"],
+        args = [
+            "$(location @flake-curl//:bin/curl)",
+            "--version",
+        ],
+        data = ["@flake-curl//:bin/curl"],
+    ),
+    # `curl.dev` is a non-default output; `curl-config` must be exposed.
+    sh_test(
+        name = "run-flake-curl-dev",
+        timeout = "short",
+        srcs = ["test_bin.sh"],
+        args = [
+            "$(location @flake-curl-dev//:bin/curl-config)",
+            "--version",
+        ],
+        data = ["@flake-curl-dev//:bin/curl-config"],
+    ),
 ]
 
 test_suite(

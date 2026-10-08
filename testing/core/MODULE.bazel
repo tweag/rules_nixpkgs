@@ -192,6 +192,18 @@ rules_nixpkgs.flake_package(
     nix_flake_lock_file = "//:flake.lock",
     package = "hello-with-build-file",
 )
-use_repo(rules_nixpkgs, "flake-hello", "flake-hello-with-build-file")
+rules_nixpkgs.flake_package(
+    name = "flake-curl",
+    nix_flake_file = "//:flake.nix",
+    nix_flake_lock_file = "//:flake.lock",
+    package = "curl",
+)
+rules_nixpkgs.flake_package(
+    name = "flake-curl-dev",
+    nix_flake_file = "//:flake.nix",
+    nix_flake_lock_file = "//:flake.lock",
+    package = "curl-dev",
+)
+use_repo(rules_nixpkgs, "flake-curl", "flake-curl-dev", "flake-hello", "flake-hello-with-build-file")
 
 bazel_dep(name = "rules_license", version = "1.0.0")
