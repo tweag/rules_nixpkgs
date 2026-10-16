@@ -177,6 +177,29 @@ filegroup(
             package = "hello-with-build-file",
         )
 
+        nixpkgs_flake_package(
+            name = "flake-curl",
+            nix_flake_file = "//:flake.nix",
+            nix_flake_lock_file = "//:flake.lock",
+            package = "curl",
+            output = "bin",
+        )
+
+        nixpkgs_flake_package(
+            name = "flake-curl-default",
+            nix_flake_file = "//:flake.nix",
+            nix_flake_lock_file = "//:flake.lock",
+            package = "curl",
+        )
+
+        nixpkgs_flake_package(
+            name = "flake-curl-dev",
+            nix_flake_file = "//:flake.nix",
+            nix_flake_lock_file = "//:flake.lock",
+            package = "curl",
+            output = "dev",
+        )
+
     # Both WORKSPACE and bzlmod
     nixpkgs_package(
         name = "nixpkgs_location_expansion_test",
