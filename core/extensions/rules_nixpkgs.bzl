@@ -23,6 +23,7 @@ def _rules_nixpkgs_impl(module_ctx):
                 nix_flake_lock_file = flake_package.nix_flake_lock_file,
                 nix_flake_file_deps = flake_package.nix_flake_file_deps,
                 package = flake_package.package,
+                output = flake_package.output,
                 build_file = flake_package.build_file,
                 build_file_content = flake_package.build_file_content,
                 nixopts = flake_package.nixopts,
@@ -67,6 +68,9 @@ _flake_package_tag = tag_class(
         ),
         "package": attr.string(
             doc = "Nix Flake package to make available.  The default package will be used if not specified.",
+        ),
+        "output": attr.string(
+            doc = "Nix derivation output to build (for example: `out`, `bin`, `dev`, `man`).",
         ),
         "build_file": attr.label(
             doc = "The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.",

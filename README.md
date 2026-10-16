@@ -654,8 +654,8 @@ If True, suppress Nix output.
 
 <pre>
 nixpkgs_flake_package(<a href="#nixpkgs_flake_package-name">name</a>, <a href="#nixpkgs_flake_package-nix_flake_file">nix_flake_file</a>, <a href="#nixpkgs_flake_package-nix_flake_lock_file">nix_flake_lock_file</a>, <a href="#nixpkgs_flake_package-nix_flake_file_deps">nix_flake_file_deps</a>,
-                      <a href="#nixpkgs_flake_package-nix_license_path">nix_license_path</a>, <a href="#nixpkgs_flake_package-package">package</a>, <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>,
-                      <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
+                      <a href="#nixpkgs_flake_package-nix_license_path">nix_license_path</a>, <a href="#nixpkgs_flake_package-package">package</a>, <a href="#nixpkgs_flake_package-output">output</a>, <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>,
+                      <a href="#nixpkgs_flake_package-quiet">quiet</a>, <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
 </pre>
 
 Make the content of a local Nix Flake package available in the Bazel workspace.
@@ -670,8 +670,8 @@ the Nix Store whenever the flake is rebuilt.
 
 For multi-output derivations (e.g. `curl`, with outputs `bin`, `dev`,
 `man`, ...), the repository contains the derivation's default output.
-To use another output, expose it as its own flake package, e.g.
-`packages.curl-dev = pkgs.curl.dev;`, and set `package = "curl-dev"`.
+To use another output directly, set `output` (for example,
+`package = "curl", output = "dev"`).
 
 
 #### Parameters
@@ -758,7 +758,21 @@ default is <code>None</code>
 
 <p>
 
-Nix Flake package to make available. The default package will be used if not specified. For multi-output derivations, the default output is used; see above.
+Nix Flake package to make available. The default package will be used if not specified.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-output">
+<td><code>output</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Nix derivation output to build (for example: `out`, `bin`, `dev`, `man`). When omitted, the default output is used.
 
 </p>
 </td>

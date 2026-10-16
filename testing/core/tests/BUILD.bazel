@@ -89,6 +89,18 @@ expand_location_unit_test_suite()
         ],
         data = ["@flake-curl//:bin/curl"],
     ),
+    # Without selecting an explicit output, a multi-output derivation should
+    # still resolve to its default output (`bin` for curl).
+    sh_test(
+        name = "run-flake-curl-default",
+        timeout = "short",
+        srcs = ["test_bin.sh"],
+        args = [
+            "$(location @flake-curl-default//:bin/curl)",
+            "--version",
+        ],
+        data = ["@flake-curl-default//:bin/curl"],
+    ),
     # `curl.dev` is a non-default output; `curl-config` must be exposed.
     sh_test(
         name = "run-flake-curl-dev",
