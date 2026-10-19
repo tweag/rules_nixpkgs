@@ -405,7 +405,7 @@ def _nixpkgs_build_file_content(repository_ctx):
     else:
         return None
 
-def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_file_content):
+def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_file_content, default_output_cmd = None, built_output_path = None):
     # Large enough integer that Bazel can still parse. We don't have
     # access to MAX_INT and 0 is not a valid timeout so this is as good
     # as we can do. The value shouldn't be too large to avoid errors on
@@ -432,7 +432,10 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
             quiet = repository_ctx.attr.quiet,
             timeout = timeout,
         )
-        output_path = exec_result.stdout.splitlines()[-1]
+        remote_output_paths = [line for line in exec_result.stdout.splitlines() if line.strip()]
+        if not remote_output_paths:
+            fail("Cannot determine remote Nix output path for package '@{}'. Ensure nix build prints output paths in remote mode.".format(repository_ctx.name))
+        output_path = remote_output_paths[-1]
 
         ssh_path = repository_ctx.which("ssh")
         repository_ctx.report_progress("Creating remote store root")
@@ -460,7 +463,26 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
         quiet = repository_ctx.attr.quiet,
         timeout = timeout,
     )
-    output_path = exec_result.stdout.splitlines()[-1]
+
+    if built_output_path:
+        output_path = built_output_path
+    else:
+        output_paths = [line for line in exec_result.stdout.splitlines() if line.strip()]
+        output_path = output_paths[0]
+
+        # Multi-output derivations (e.g. curl: bin, man, ...) make `nix build`
+        # print one store path per built output. Select the derivation's default
+        # output (its `outPath`), matching the behaviour of `nix-build`.
+        if len(output_paths) > 1 and default_output_cmd:
+            eval_result = execute_or_fail(
+                repository_ctx,
+                default_output_cmd,
+                failure_message = "Cannot determine default output of Nix derivation for package '@{}'.".format(repository_ctx.name),
+                quiet = repository_ctx.attr.quiet,
+                timeout = timeout,
+            )
+            default_output = eval_result.stdout.strip()
+            output_path = default_output if default_output in output_paths else output_paths[0]
 
     repository_ctx.report_progress("Creating local folders")
 
@@ -780,13 +802,19 @@ def _nixpkgs_flake_package_impl(repository_ctx):
 
     nix_build_target = "path:" if not repository_ctx.attr.legacy_path_syntax else ""
     nix_build_target += str(repository_ctx.path(repository_ctx.attr.nix_flake_file).dirname)
-    if repository_ctx.attr.package:
-        nix_build_target += "#" + repository_ctx.attr.package
+
+    package = repository_ctx.attr.package or ("default" if repository_ctx.attr.output else None)
+    if package:
+        nix_build_target += "#" + package
+    if repository_ctx.attr.output:
+        nix_build_target += "^" + repository_ctx.attr.output
 
     expr_args = [nix_build_target]
 
     # `nix build` doesn't print the output path by default.
     expr_args.extend(["--print-out-paths"])
+
+    out_link = "bazel-support/nix-out-link"
 
     expr_args.extend([
         # Creating an out link prevents nix from garbage collecting the store path.
@@ -796,10 +824,10 @@ def _nixpkgs_flake_package_impl(repository_ctx):
         # A `bazel clean` deletes the symlink and thus nix is free to garbage collect
         # the store path.
         "--out-link",
-        "bazel-support/nix-out-link",
+        out_link,
     ])
 
-    expr_args.extend([
+    nixopts = [
         expand_location(
             repository_ctx = repository_ctx,
             string = opt,
@@ -807,7 +835,8 @@ def _nixpkgs_flake_package_impl(repository_ctx):
             attr = "nixopts",
         )
         for opt in repository_ctx.attr.nixopts
-    ])
+    ]
+    expr_args.extend(nixopts)
 
     nix_path = executable_path(
         repository_ctx,
@@ -815,7 +844,20 @@ def _nixpkgs_flake_package_impl(repository_ctx):
         extra_msg = "See: https://nixos.org/nix/",
     )
 
-    _nixpkgs_build_and_symlink(repository_ctx, [nix_path, "--extra-experimental-features", "nix-command flakes", "build"], expr_args, build_file_content)
+    nix_cmd = [nix_path, "--extra-experimental-features", "nix-command flakes"]
+
+    default_output_cmd = None
+    if not repository_ctx.attr.output:
+        default_output_cmd = nix_cmd + ["eval", "--raw", nix_build_target, "--apply", "p: p.outPath"] + nixopts
+
+    _nixpkgs_build_and_symlink(
+        repository_ctx,
+        nix_cmd + ["build"],
+        expr_args,
+        build_file_content,
+        default_output_cmd = default_output_cmd,
+        built_output_path = out_link + "-" + repository_ctx.attr.output if repository_ctx.attr.output else None,
+    )
 
 _nixpkgs_flake_package = repository_rule(
     implementation = _nixpkgs_flake_package_impl,
@@ -832,6 +874,7 @@ _nixpkgs_flake_package = repository_rule(
         "nix_license_path": attr.string(doc = "nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'"),
         "nixopts": attr.string_list(),
         "package": attr.string(doc = "Defaults to `default`"),
+        "output": attr.string(doc = "Nix derivation output to build (for example: `out`, `bin`, `dev`, `man`)."),
         "quiet": attr.bool(),
     },
 )
@@ -843,6 +886,7 @@ def nixpkgs_flake_package(
         nix_flake_file_deps = [],
         nix_license_path = "",
         package = None,
+        output = None,
         build_file = None,
         build_file_content = "",
         nixopts = [],
@@ -860,13 +904,19 @@ def nixpkgs_flake_package(
     repository to minimize the amount of unnecessary data that gets copied into
     the Nix Store whenever the flake is rebuilt.
 
+    For multi-output derivations (e.g. `curl`, with outputs `bin`, `dev`,
+    `man`, ...), the repository contains the derivation's default output.
+    To use another output directly, set `output` (for example,
+    `package = "curl", output = "dev"`).
+
     Args:
       name: A unique name for this repository.
       nix_flake_file: Label to `flake.nix` that will be evaluated.
       nix_flake_lock_file: Label to `flake.lock` that corresponds to `nix_flake_file`.
       nix_flake_file_deps: Additional dependencies of `nix_flake_file` if any.
       nix_license_path: nix expression that evaluates to the spdx identifier of the license of this package. e.g: 'pkgs.zlib.meta.license.spdxId'
-      package: Nix Flake package to make available.  The default package will be used if not specified.
+      package: Nix Flake package to make available. The default package will be used if not specified.
+      output: Nix derivation output to build (for example: `out`, `bin`, `dev`, `man`). When omitted, the default output is used.
       build_file: The file to use as the BUILD file for this repository. See [`nixpkgs_package`](#nixpkgs_package-build_file) for more information.
       build_file_content: Like `build_file`, but a string of the contents instead of a file name. See [`nixpkgs_package`](#nixpkgs_package-build_file_content) for more information.
       nixopts: Extra flags to pass when calling Nix. See [`nixpkgs_package`](#nixpkgs_package-nixopts) for more information.
@@ -894,6 +944,7 @@ def nixpkgs_flake_package(
         nix_flake_file_deps = nix_flake_file_deps,
         nix_license_path = nix_license_path,
         package = package,
+        output = output,
         build_file = build_file,
         build_file_content = build_file_content,
         nixopts = nixopts,
