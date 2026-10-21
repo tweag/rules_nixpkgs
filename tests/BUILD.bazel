@@ -1,3 +1,6 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 package(default_testonly = 1)
 
 sh_test(
@@ -20,4 +23,24 @@ sh_test(
     # MacOS sandbox fails this test with the following error:
     #   sandbox-exec: sandbox_apply: Operation not permitted
     tags = ["no-sandbox"],
+)
+
+cc_binary(
+    name = "signature_probe",
+    srcs = ["signature_probe.c"],
+    linkshared = True,
+)
+
+sh_test(
+    name = "install_name_tool_signature_test",
+    srcs = ["install_name_tool_signature_test.sh"],
+    args = [
+        "$(location :signature_probe)",
+        "$(location @nixpkgs_config_cc_info//:CC_TOOLCHAIN_INFO)",
+    ],
+    data = [
+        ":signature_probe",
+        "@nixpkgs_config_cc_info//:CC_TOOLCHAIN_INFO",
+    ],
+    # tags = ["manual"],
 )
