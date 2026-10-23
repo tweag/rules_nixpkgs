@@ -14,7 +14,7 @@
 
 """Bazel rules for creating Java toolchains."""
 
-load("@rules_java//java:defs.bzl", "java_toolchain")
+load("@rules_java//java:defs.bzl", "java_common", "java_toolchain")
 
 # JVM options, without patching java.compiler and jdk.compiler modules.
 BASE_JDK9_JVM_OPTS = [
