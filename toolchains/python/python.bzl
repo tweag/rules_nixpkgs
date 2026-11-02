@@ -27,7 +27,7 @@ def _nixpkgs_python_toolchain_impl(repository_ctx):
         python3_runtime = repository_ctx.attr.python3_repo + ":runtime"
 
     repository_ctx.file("BUILD.bazel", executable = False, content = """
-load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
+load("@rules_python//python:defs.bzl", "py_runtime_pair")
 py_runtime_pair(
     name = "py_runtime_pair",
     py3_runtime = {python3_runtime},
