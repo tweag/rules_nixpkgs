@@ -484,6 +484,24 @@ def _nixpkgs_build_and_symlink(repository_ctx, nix_build_cmd, expr_args, build_f
             default_output = eval_result.stdout.strip()
             output_path = default_output if default_output in output_paths else output_paths[0]
 
+    # Publish the built closure to a binary cache, if one is configured.
+    # This makes the Nix paths available to remote build workers that
+    # substitute from that cache, without requiring a writable or shared
+    # store on the workers (see docs/remote-execution-tutorial.md).
+    nix_cache = repository_ctx.os.environ.get("BAZEL_NIX_CACHE", "")
+    if nix_cache:
+        repository_ctx.report_progress("Publishing Nix derivation to cache")
+        execute_or_fail(
+            repository_ctx,
+            [nix_path, "copy", "--to", nix_cache, output_path],
+            failure_message = "Cannot publish Nix derivation for package '@{}' to BAZEL_NIX_CACHE '{}'.".format(
+                repository_ctx.name,
+                nix_cache,
+            ),
+            quiet = repository_ctx.attr.quiet,
+            timeout = timeout,
+        )
+
     repository_ctx.report_progress("Creating local folders")
 
     # ensure that the output is a directory
@@ -633,6 +651,10 @@ def _nixpkgs_package_impl(repository_ctx):
 
 _nixpkgs_package = repository_rule(
     implementation = _nixpkgs_package_impl,
+    # Changes to these variables must invalidate the repository, in
+    # particular so that a newly set BAZEL_NIX_CACHE triggers a publish
+    # of an already-built repository.
+    environ = ["BAZEL_NIX_CACHE", "BAZEL_NIX_REMOTE"],
     attrs = {
         "attribute_path": attr.string(),
         "build_file": attr.label(),
@@ -861,6 +883,7 @@ def _nixpkgs_flake_package_impl(repository_ctx):
 
 _nixpkgs_flake_package = repository_rule(
     implementation = _nixpkgs_flake_package_impl,
+    environ = ["BAZEL_NIX_CACHE", "BAZEL_NIX_REMOTE"],
     attrs = {
         "build_file": attr.label(),
         "build_file_content": attr.string(),

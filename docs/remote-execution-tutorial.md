@@ -129,3 +129,29 @@ build --remote_executor=grpc://<REMOTE_API_ADDR>:<REMOTE_API_PORT>
 You can use one of the
 [examples](https://github.com/tweag/rules_nixpkgs/tree/master/examples/toolchains) to test this
 setup.
+
+### Alternative: publish to a binary cache instead of a Nix server
+
+The `BAZEL_NIX_REMOTE` approach requires a single writable Nix server. An alternative is to make the
+executors fetch Nix paths from a binary cache on demand, e.g. by running a substituting store such as
+[snix-store](https://github.com/tvixnet/snix) on each executor. In that setup no writable store is
+needed on the executors, but the paths built by `rules_nixpkgs` — toolchains in particular — must be
+published to the cache.
+
+Set the `BAZEL_NIX_CACHE` environment variable to a Nix store URL to publish every repository built
+by `rules_nixpkgs` (including its full closure) to that store whenever it is built:
+
+```console
+$ export BAZEL_NIX_CACHE='s3://my-nix-cache?region=us-east-1&secret-key=/etc/nix/my-cache-secret.key'
+$ bazel build ...  # repositories are published as they are built
+```
+
+The value is any store URL accepted by [`nix copy --to`](https://nix.dev/manual/nix/latest/command-ref/nix3/copy):
+`https://`, `s3://`, `ssh-ng://`, `file://`, and so on. Publishing fails the build if the copy does not
+succeed, so that a missing cache entry is noticed on the client rather than as a failed remote action.
+
+The variable can also be set via `--repo_env`, e.g. in `.bazelrc`:
+
+```conf
+build:remote --repo_env=BAZEL_NIX_CACHE=s3://my-nix-cache?region=us-east-1
+```

@@ -120,6 +120,25 @@ for dir in "${test_dirs[@]}"; do
     fi
 done
 
+# Check that BAZEL_NIX_CACHE publishes built repositories to a binary
+# cache (see docs/remote-execution-tutorial.md).
+echo "::group::Testing BAZEL_NIX_CACHE publish"
+nix_cache_dir="$(mktemp -d)"
+pushd testing/core >/dev/null
+bazel build @hello//:bin \
+    "${extra_flags[@]}" \
+    --repo_env=BAZEL_NIX_CACHE="file://${nix_cache_dir}" \
+    || FAILURES+=( "BAZEL_NIX_CACHE publish" )
+bazel shutdown
+popd >/dev/null
+if compgen -G "${nix_cache_dir}/*.narinfo" >/dev/null; then
+    write_summary '| BAZEL_NIX_CACHE publish | Pass :white_check_mark: | - |'
+else
+    write_summary '| BAZEL_NIX_CACHE publish | Fail :red_circle: | - |'
+    FAILURES+=( "BAZEL_NIX_CACHE publish" )
+fi
+echo '::endgroup::'
+
 # Local Variables:
 # mode: sh
 # End:
