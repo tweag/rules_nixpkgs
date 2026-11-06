@@ -1,5 +1,10 @@
 workspace(name = "io_tweag_rules_nixpkgs")
 
+local_repository(
+    name = "io_tweag_rules_nixpkgs",
+    path = ".",
+)
+
 # For documentation
 
 local_repository(
@@ -28,8 +33,8 @@ load(
 )
 
 nixpkgs_package(
-    name = "nix_2_24",
-    attribute_path = "nixVersions.nix_2_24",
+    name = "nix_2_34",
+    attribute_path = "nixVersions.nix_2_34",
     repositories = {"nixpkgs": "@nixpkgs"},
 )
 
@@ -57,10 +62,10 @@ rules_proto_dependencies()
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "f4a9314518ca6acfa16cc4ab43b0b8ce1e4ea64b81c38d8a3772883f153346b8",
+    sha256 = "89d2050410602142c9acafd01c95baf48b65f8dd16f4771d37c89f82f5e147f2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.50.1/rules_go-v0.50.1.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.50.1/rules_go-v0.50.1.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.56.1/rules_go-v0.56.1.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.56.1/rules_go-v0.56.1.zip",
     ],
 )
 
@@ -74,3 +79,7 @@ nixpkgs_go_configure(repository = "@nixpkgs")
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
 
 go_rules_dependencies()
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()

@@ -30,6 +30,21 @@ let
           ${darwin.sigtool}/bin/codesign -f -s - "$linkerOutput"
       '';
     };
+  installNameToolResign =
+    # install_name_tool changes the contents of the binary, so adhoc signing can
+    # fail after using it, which happens in rules_haskell. This wrapper resigns
+    # the result after it has been modified.
+    pkgs.writeShellScriptBin "install_name_tool_resign" ''
+      set -euo pipefail
+      ${pkgs.darwin.cctools}/bin/install_name_tool "$@"
+      output="''${@: -1}"
+      if [ -f "$output" ]; then
+        ${pkgs.coreutils}/bin/mv "$output" "$output.resign"
+        CODESIGN_ALLOCATE=${pkgs.darwin.cctools}/bin/codesign_allocate \
+          ${pkgs.darwin.sigtool}/bin/codesign -f -s - "$output.resign"
+        ${pkgs.coreutils}/bin/mv "$output.resign" "$output"
+      fi
+    '';
   oldDarwinCC =
     # Work around https://github.com/NixOS/nixpkgs/issues/42059.
     # See also https://github.com/NixOS/nixpkgs/pull/41589.
@@ -70,8 +85,9 @@ let
           echo "-Wno-elaborated-enum-base" >> $out/nix-support/cc-cflags
           echo "-isystem ${pkgs.llvmPackages.libcxx.dev}/include/c++/v1" >> $out/nix-support/cc-cflags
           echo "-isystem ${pkgs.llvmPackages.clang-unwrapped.lib}/lib/clang/${cc.version}/include" >> $out/nix-support/cc-cflags
-          echo "-isystem ${pkgs.darwin.libresolvHeaders}/include" >> $out/nix-support/cc-cflags
+          echo "-isystem ${pkgs.lib.getInclude pkgs.darwin.libresolv}/include" >> $out/nix-support/cc-cflags
           echo "-L${pkgs.llvmPackages.libcxx}/lib" >> $out/nix-support/cc-cflags
+          echo "-L${pkgs.libiconv}/lib" >> $out/nix-support/cc-cflags
           echo "-resource-dir=${pkgs.stdenv.cc}/resource-root" >> $out/nix-support/cc-cflags
         ''
         + pkgs.lib.optionalString (builtins.hasAttr "libcxxabi" pkgs.llvmPackages) ''
@@ -110,6 +126,7 @@ let
         // (pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
           # only add tools from darwin.cctools, but don't overwrite existing tools
           postBuild = ''
+            ln -sf ${installNameToolResign}/bin/install_name_tool_resign $out/bin/install_name_tool_resign
             for tool in libtool objdump; do
                if [[ ! -e $out/bin/$tool ]]; then
                  ln -s -t $out/bin ${pkgs.darwin.cctools}/bin/$tool

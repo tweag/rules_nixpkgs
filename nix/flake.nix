@@ -1,13 +1,24 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
-    poetry2nix = {
-      url = "github:nix-community/poetry2nix";
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    build-system-pkgs = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.uv2nix.follows = "uv2nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -27,10 +38,13 @@
             # for nixpkgs cc wrappers, select C++ explicitly (see https://github.com/NixOS/nixpkgs/issues/150655)
             BAZEL_CXXOPTS = "-x:c++";
 
+            # rules_java needs JAVA_HOME to determine the location of the local SDK
+            JAVA_HOME = "${openjdk_headless}";
+
             name = "rules_nixpkgs_shell";
             buildInputs = lib.optional pkgs.stdenv.isDarwin darwin.cctools;
             packages = [
-              bazel_6
+              bazel_7
               bazel-buildtools
               cacert
               gcc

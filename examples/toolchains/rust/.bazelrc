@@ -1,5 +1,8 @@
 import %workspace%/../../../.bazelrc.remote-cache
 
+# TODO(cb) migrate to bzlmod
+common --noenable_bzlmod
+
 # merge env and action_env variables for action.run
 # (note, this is the default in Bazel 7)
 build --incompatible_merge_fixed_and_default_shell_env

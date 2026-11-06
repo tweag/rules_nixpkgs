@@ -1,9 +1,10 @@
 {
     "extends": [
-        "github>tweag/renovate-presets:ruleset_base",
-        "github>tweag/renovate-presets:mergify"
+        "github>tweag/renovate-presets:ruleset_base"
     ],
-    "ignorePaths": ["registry/**"],
+    "ignorePaths": [
+        "registry/**"
+    ],
     "packageRules": [
         {
             "matchFileNames": [

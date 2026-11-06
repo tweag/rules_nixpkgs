@@ -14,6 +14,7 @@
 
 """Rules for importing and registering a local JDK."""
 
+load("@rules_java//java:defs.bzl", "java_runtime")
 load(":default_java_toolchain.bzl", "NONPREBUILT_TOOLCHAIN_CONFIGURATION", "default_java_toolchain")
 
 def _detect_java_version(repository_ctx, java_bin):
@@ -58,7 +59,7 @@ def local_java_runtime(name, java_home, version, runtime_name = None, visibility
     """
     if runtime_name == None:
         runtime_name = name
-        native.java_runtime(
+        java_runtime(
             name = runtime_name,
             java_home = java_home,
             version = version,

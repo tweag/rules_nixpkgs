@@ -208,6 +208,8 @@ setting up projects for use with Nix, we choose the newer "flake" method over
 the legacy method (involving a `shell.nix` file) that you may run into in other
 places.
 
+### Flakes introduction
+
 A _flake_, defined in a file conventionally called `flake.nix`, can be thought
 of as a self-contained "Nix module". For our purposes, it will suffice to think
 of it as a way to define a cross-platform development shell, with the versions
@@ -299,8 +301,9 @@ play well together.
 
 As with all dependencies, it's good to upgrade the version of the `nixpkgs`
 input from time to time, which will bump the versions of all Nix-provided
-dependencies. In the example above, the `nixpkgs` dependency is set to follow
-the `nixos-24.05` tag, and we can pull the latest commit from that branch using:
+dependencies. In the [previous example](#flakes-introduction), the `nixpkgs` 
+dependency is set to follow the `nixos-24.05` tag, and we can pull the latest 
+commit from that branch using:
 
 ```
 $ nix flake lock --update-input nixpkgs

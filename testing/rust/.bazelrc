@@ -1,5 +1,3 @@
-build:bzlmod --registry=file://%workspace%/../../registry
-
 import %workspace%/../../.bazelrc.remote-cache
 import %workspace%/../../.bazelrc.common
 import %workspace%/../../.bazelrc.cc

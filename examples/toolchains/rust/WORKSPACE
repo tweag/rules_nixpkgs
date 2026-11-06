@@ -6,12 +6,20 @@ local_repository(
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+http_archive(
+    name = "platforms",
+    integrity = "sha256-KXQuhydYCbXlmNwvBNhpYMx6VbMGfZciHJq7yZJr/w8=",
+    urls = [
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.11/platforms-0.0.11.tar.gz",
+    ],
+)
+
 # https://bazelbuild.github.io/rules_rust/#setup
 http_archive(
     name = "rules_rust",
-    sha256 = "f1306aac0b258b790df01ad9abc6abb0df0b65416c74b4ef27f4aab298780a64",
+    integrity = "sha256-liB1wWSmA/Q/tKPRlhWrkeQbzQWByNovcKGu8nOB/lM=",
     urls = [
-        "https://github.com/bazelbuild/rules_rust/releases/download/0.56.0/rules_rust-0.56.0.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/releases/download/0.58.0/rules_rust-0.58.0.tar.gz",
     ],
 )
 

@@ -1,6 +1,8 @@
 name: Continuous integration
 
 on:
+  merge_group:
+    branches: master
   push:
     branches: master
   pull_request:
@@ -23,6 +25,8 @@ jobs:
         os:
           - ubuntu-latest
           - macos-15
+          # nixpkgs 26.11 removes support for x86_64-darwin
+          # https://github.com/orgs/nix-community/discussions/2195
           - macos-15-intel
         bzlmodEnabled:
           - true
@@ -38,15 +42,12 @@ jobs:
             withNixRemote: true
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install nix
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
         with:
-          # Install upstream Nix rather than Determinate Nix. Determinate Nix
-          # sets `ssl-cert-file = /no-cert-file.crt`, which leaks into the
-          # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
-          # HTTPS tarball fetches (SSL CA cert error 77).
-          determinate: false
+          nix_path: nixpkgs=channel:nixos-26.05
+      - uses: ./.github/actions/fix_nix_ssl_cert
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
@@ -88,21 +89,18 @@ jobs:
           - macos-15-intel
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install nix
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
         with:
-          # Install upstream Nix rather than Determinate Nix. Determinate Nix
-          # sets `ssl-cert-file = /no-cert-file.crt`, which leaks into the
-          # `nix-build` calls rules_nixpkgs makes from within Bazel and breaks
-          # HTTPS tarball fetches (SSL CA cert error 77).
-          determinate: false
+          nix_path: nixpkgs=channel:nixos-26.05
+      - uses: ./.github/actions/fix_nix_ssl_cert
       - uses: ./.github/actions/configure_bazelrc
         with:
           buildbuddy_api_key: ${{ secrets.BUILDBUDDY_API_KEY }}
       - name: Free disk space
         if: runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           android: true
           dotnet: true
@@ -134,6 +132,10 @@ jobs:
           with_nix=( $(ls) )
           without_nix=( cc go java )
 
+          extra_bazel_flags=()
+          if [[ "$(uname)" == "Darwin" ]]; then
+              extra_bazel_flags+=("--macos_sdk_version=$(xcrun --show-sdk-version)")
+          fi
           for dir in "${with_nix[@]}"; do
               pushd "$dir"
               echo
@@ -144,7 +146,9 @@ jobs:
                   continue
               else
                   echo "::group::Running $example_name"
-                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command 'bazel run --config=nix :hello'
+                  bazel_cmd="bazel run --config=nix ${extra_bazel_flags[@]} :hello"
+                  echo "Running: $bazel_cmd"
+                  nix-shell --pure --keep GITHUB_STEP_SUMMARY --keep GITHUB_REPOSITORY --keep BZLMOD_ENABLED --keep BAZEL_NIX_REMOTE --command "$bazel_cmd"
                   # TODO: all toolchains should run without Nixpkgs
               fi
               popd
@@ -153,7 +157,9 @@ jobs:
               pushd "$dir"
               echo
               echo "::group::Running $(head -n1 README.md) without Nix"
-              bazel run :hello
+              bazel_cmd="bazel run ${extra_bazel_flags[@]} :hello"
+              echo "Running: $bazel_cmd"
+              eval "$bazel_cmd"
               popd
           done
 

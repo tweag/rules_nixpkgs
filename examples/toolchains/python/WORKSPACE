@@ -13,13 +13,18 @@ load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository")
 
 nixpkgs_git_repository(
     name = "nixpkgs",
-    revision = "22.05",
-    sha256 = "0f8c25433a6611fa5664797cd049c80faefec91575718794c701f3b033f2db01",
+    # branch nixos-25.05
+    revision = "ac62194c3917d5f474c1a844b6fd6da2db95077d",
+    sha256 = "bf13a5324bc541eeda82fb97a80ba6326acc4fa91d6bac8f78fb309ce4a31e37",
 )
 
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_python_configure")
+load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_cc_configure", "nixpkgs_python_configure")
+
+nixpkgs_cc_configure(
+    repository = "@nixpkgs",
+)
 
 nixpkgs_python_configure(
-    python3_attribute_path = "python39.withPackages(ps: with ps; [ numpy opencv4 ])",
+    python3_attribute_path = "python3.withPackages(ps: with ps; [ numpy opencv4 ])",
     repository = "@nixpkgs",
 )

@@ -10,6 +10,7 @@ generate_documentation(
     name = "README.md",
     input = "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
     symbol_names = [
+        "nixpkgs_env",
         "nixpkgs_git_repository",
         "nixpkgs_http_repository",
         "nixpkgs_local_repository",
@@ -24,6 +25,7 @@ generate_documentation(
         "nixpkgs_sh_posix_configure",
         "nixpkgs_nodejs_configure",
         "nixpkgs_nodejs_configure_platforms",
+        "run_nix_shell",
     ],
     deps = [
         "@io_tweag_rules_nixpkgs//nixpkgs",

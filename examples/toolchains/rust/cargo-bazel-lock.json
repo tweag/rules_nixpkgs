@@ -1,5 +1,5 @@
 {
-  "checksum": "a4a1aa9b0f9099653e722c7291732bd034a609ef107fb3508577bd889fc01234",
+  "checksum": "ac2aab1eb352740cc75cf730ffbb6b9ffc41e2c75a82be6b319fe8747e6761ab",
   "crates": {
     "autocfg 1.1.0": {
       "name": "autocfg",
@@ -1111,6 +1111,9 @@
     "aarch64-unknown-nto-qnx710": [
       "aarch64-unknown-nto-qnx710"
     ],
+    "aarch64-unknown-uefi": [
+      "aarch64-unknown-uefi"
+    ],
     "arm-unknown-linux-gnueabi": [
       "arm-unknown-linux-gnueabi"
     ],
@@ -1187,6 +1190,9 @@
     ],
     "x86_64-unknown-none": [
       "x86_64-unknown-none"
+    ],
+    "x86_64-unknown-uefi": [
+      "x86_64-unknown-uefi"
     ]
   },
   "direct_deps": [

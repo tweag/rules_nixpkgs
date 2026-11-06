@@ -1,15 +1,14 @@
 module(
     name = "rules_nixpkgs_java",
-    version = "0.13.0",
 )
 
-bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.14.1")
 local_path_override(
    module_name = "rules_nixpkgs_core",
    path = "../../core",
 )
-bazel_dep(name = "rules_java", version = "7.3.1")
-bazel_dep(name = "bazel_skylib", version = "1.0.3")
+bazel_dep(name = "rules_java", version = "7.6.5")
+bazel_dep(name = "bazel_skylib", version = "1.6.1")
 
 toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
 use_repo(toolchains, "remote_java_tools")

@@ -1,12 +1,16 @@
 module(
     name = "rules_nixpkgs_cc",
-    version = "0.13.0",
 )
 
-bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.14.1")
+local_path_override(
+    module_name = "rules_nixpkgs_core",
+    path = "../../core",
+)
 bazel_dep(name = "bazel_skylib", version = "1.0.3")
 
 # 0.0.17 is the first release providing //cc/common:cc_common.bzl and
 # //cc/toolchains:cc_toolchain_config_info.bzl, which the generated cc
 # toolchain repository loads.
 bazel_dep(name = "rules_cc", version = "0.0.17")
+bazel_dep(name = "platforms", version = "0.0.9")

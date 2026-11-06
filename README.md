@@ -116,6 +116,90 @@ nixpkgs_package(
 
 # Reference documentation
 
+<a id="#run_nix_shell"></a>
+
+### run_nix_shell
+
+<pre>
+run_nix_shell(<a href="#run_nix_shell-name">name</a>, <a href="#run_nix_shell-cmd">cmd</a>, <a href="#run_nix_shell-outputs">outputs</a>, <a href="#run_nix_shell-stdenv">stdenv</a>)
+</pre>
+
+
+Executes a shell command in a Nix-provided environment.
+
+Args:
+  outputs: Names of the outputs file to generate.
+  cmd: Shell command to execute. The command is run after sourcing the provided stdenv.
+  stdenv: Label pointing to a shell environment file.
+
+Example:
+  run_nix_shell(
+      name = "hello",
+      outputs = ["hello.txt"],
+      cmd = "echo Hello, world! > $1",
+      stdenv = "//:stdenv",
+  )
+
+
+#### Attributes
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="run_nix_shell-name">
+<td><code>name</code></td>
+<td>
+
+<a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
+
+<p>
+
+A unique name for this target.
+
+</p>
+</td>
+</tr>
+<tr id="run_nix_shell-cmd">
+<td><code>cmd</code></td>
+<td>
+
+String; required
+
+<p>
+
+The command to execute
+
+</p>
+</td>
+</tr>
+<tr id="run_nix_shell-outputs">
+<td><code>outputs</code></td>
+<td>
+
+List of labels; required
+
+<p>
+
+The outputs generated after running the command
+
+</p>
+</td>
+</tr>
+<tr id="run_nix_shell-stdenv">
+<td><code>stdenv</code></td>
+<td>
+
+<a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
 <a id="#nixpkgs_cc_configure"></a>
 
 ### nixpkgs_cc_configure
@@ -428,14 +512,150 @@ string, `""` by default. Obtain the default nix `apple-sdk` for the toolchain fo
 </table>
 
 
+<a id="#nixpkgs_env"></a>
+
+### nixpkgs_env
+
+<pre>
+nixpkgs_env(<a href="#nixpkgs_env-name">name</a>, <a href="#nixpkgs_env-pkgs">pkgs</a>, <a href="#nixpkgs_env-repository">repository</a>, <a href="#nixpkgs_env-repositories">repositories</a>, <a href="#nixpkgs_env-nix_file_deps">nix_file_deps</a>, <a href="#nixpkgs_env-nixopts">nixopts</a>, <a href="#nixpkgs_env-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_env-quiet">quiet</a>)
+</pre>
+
+  Creates a minimal Nix shell environment.
+
+It generates a `stdenv` file that sets up the PATH to include the specified Nix packages.
+The resulting repository can be used as the `stdenv` input for `run_nix_shell`.
+
+
+#### Parameters
+
+<table class="params-table">
+<colgroup>
+<col class="col-param" />
+<col class="col-description" />
+</colgroup>
+<tbody>
+<tr id="nixpkgs_env-name">
+<td><code>name</code></td>
+<td>
+
+required.
+
+<p>
+
+Name of the Bazel repository to create.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-pkgs">
+<td><code>pkgs</code></td>
+<td>
+
+required.
+
+<p>
+
+List of Nix package names to include in the environment.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-repository">
+<td><code>repository</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+A repository label identifying which Nixpkgs to use. Equivalent to `repositories = { "nixpkgs": ...}`
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-repositories">
+<td><code>repositories</code></td>
+<td>
+
+optional.
+default is <code>{}</code>
+
+<p>
+
+A dictionary mapping `NIX_PATH` entries to repository labels.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-nix_file_deps">
+<td><code>nix_file_deps</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Optional list of dependencies for the generated nix file.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-nixopts">
+<td><code>nixopts</code></td>
+<td>
+
+optional.
+default is <code>[]</code>
+
+<p>
+
+Extra flags to pass to Nix.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-fail_not_supported">
+<td><code>fail_not_supported</code></td>
+<td>
+
+optional.
+default is <code>True</code>
+
+<p>
+
+If True, fail on unsupported platforms (default: True).
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_env-quiet">
+<td><code>quiet</code></td>
+<td>
+
+optional.
+default is <code>False</code>
+
+<p>
+
+If True, suppress Nix output.
+
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
 <a id="#nixpkgs_flake_package"></a>
 
 ### nixpkgs_flake_package
 
 <pre>
 nixpkgs_flake_package(<a href="#nixpkgs_flake_package-name">name</a>, <a href="#nixpkgs_flake_package-nix_flake_file">nix_flake_file</a>, <a href="#nixpkgs_flake_package-nix_flake_lock_file">nix_flake_lock_file</a>, <a href="#nixpkgs_flake_package-nix_flake_file_deps">nix_flake_file_deps</a>,
-                      <a href="#nixpkgs_flake_package-nix_license_path">nix_license_path</a>, <a href="#nixpkgs_flake_package-package">package</a>, <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>, <a href="#nixpkgs_flake_package-quiet">quiet</a>,
-                      <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
+                      <a href="#nixpkgs_flake_package-nix_license_path">nix_license_path</a>, <a href="#nixpkgs_flake_package-package">package</a>, <a href="#nixpkgs_flake_package-output">output</a>, <a href="#nixpkgs_flake_package-build_file">build_file</a>, <a href="#nixpkgs_flake_package-build_file_content">build_file_content</a>, <a href="#nixpkgs_flake_package-nixopts">nixopts</a>,
+                      <a href="#nixpkgs_flake_package-quiet">quiet</a>, <a href="#nixpkgs_flake_package-fail_not_supported">fail_not_supported</a>, <a href="#nixpkgs_flake_package-legacy_path_syntax">legacy_path_syntax</a>, <a href="#nixpkgs_flake_package-kwargs">kwargs</a>)
 </pre>
 
 Make the content of a local Nix Flake package available in the Bazel workspace.
@@ -447,6 +667,11 @@ Nix may infer that the flake is the Git repository and copy the entire thing.
 As a consequence, you may want to isolate your flake from the rest of the
 repository to minimize the amount of unnecessary data that gets copied into
 the Nix Store whenever the flake is rebuilt.
+
+For multi-output derivations (e.g. `curl`, with outputs `bin`, `dev`,
+`man`, ...), the repository contains the derivation's default output.
+To use another output directly, set `output` (for example,
+`package = "curl", output = "dev"`).
 
 
 #### Parameters
@@ -533,7 +758,21 @@ default is <code>None</code>
 
 <p>
 
-Nix Flake package to make available.  The default package will be used if not specified.
+Nix Flake package to make available. The default package will be used if not specified.
+
+</p>
+</td>
+</tr>
+<tr id="nixpkgs_flake_package-output">
+<td><code>output</code></td>
+<td>
+
+optional.
+default is <code>None</code>
+
+<p>
+
+Nix derivation output to build (for example: `out`, `bin`, `dev`, `man`). When omitted, the default output is used.
 
 </p>
 </td>
@@ -1013,7 +1252,7 @@ build --tool_java_runtime_version=nixpkgs_java
 
 ##### Bazel 6
 
-#### with with [Bzlmod](https://bazel.build/versions/6.5.0/external/overview#bzlmod)
+#### with [Bzlmod](https://bazel.build/versions/6.5.0/external/overview#bzlmod)
 
 Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
 ```bzl
@@ -1102,8 +1341,8 @@ build --tool_java_language_version=11
 
 Add the following to your `MODULE.bazel` file to depend on `rules_nixpkgs`, `rules_nixpkgs_java`, and nixpgks:
 ```bzl
-bazel_dep(name = "rules_nixpkgs_core", version = "0.13.0")
-bazel_dep(name = "rules_nixpkgs_java", version = "0.13.0")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.14.1")
+bazel_dep(name = "rules_nixpkgs_java", version = "0.14.1")
 bazel_dep(name = "rules_java", version = "7.5.0")
 bazel_dep(name = "platforms", version = "0.0.9")
 
@@ -1124,9 +1363,9 @@ register_toolchains("@nixpkgs_java_runtime_toolchain//:all")
 
 archive_override(
     module_name = "rules_nixpkgs_java",
-    urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.13.0/rules_nixpkgs-0.13.0.tar.gz",
+    urls = "https://github.com/tweag/rules_nixpkgs/releases/download/v0.14.1/rules_nixpkgs-0.14.1.tar.gz",
     integrity = "",
-    strip_prefix = "rules_nixpkgs-0.13.0/toolchains/java",
+    strip_prefix = "rules_nixpkgs-0.14.1/toolchains/java",
 )
 ```
 
@@ -2326,7 +2565,7 @@ therefore not a good idea to expose something as big as `pkgs.python3` as
 provided by nixpkgs.
 
 This rule is instead intended to expose an ad-hoc set of packages for your
-project, as can be built by poetry2nix, mach-nix, dream2nix or by manually
+project, as can be built by uv2nix, mach-nix, dream2nix or by manually
 picking the python packages you need from nixpkgs.
 
 The format is generic to support the many ways to generate such packages
@@ -2338,7 +2577,7 @@ API](https://github.com/bazelbuild/rules_python#using-the-package-installation-r
 `nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
 As such, it also provides a `requirement` function.
 
-:warning: Using the `requirement` fucntion inherits the same advantages and
+:warning: Using the `requirement` function inherits the same advantages and
 limitations as the one in rules_python. All the function does is create a
 label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
 While depending on such a label directly will work, the layout may change

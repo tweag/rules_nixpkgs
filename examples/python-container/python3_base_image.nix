@@ -18,7 +18,7 @@ let
       coreutils
 
       # Specify your Python version and packages here:
-      (python310.withPackages( p: [p.flask] ))
+      (python3.withPackages( p: [p.flask] ))
 
       stdenv.cc.cc.lib
       iana-etc

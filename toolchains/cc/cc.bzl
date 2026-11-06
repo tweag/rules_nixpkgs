@@ -183,6 +183,7 @@ def _nixpkgs_cc_toolchain_config_impl(repository_ctx):
         {
             "%{cc}": info.tool_paths["gcc"],
             "%{env}": "",
+            "%{bash}": str(repository_ctx.which("bash")),
         },
     )
     if darwin:

@@ -15,6 +15,9 @@
       {
         packages.hello = pkgs.hello;
 
+        # Multi-output derivation (bin, dev, out, man, ...)
+        packages.curl = pkgs.curl;
+
         # Custom `BUILD.bazel` that resolves `hello` in its non-default location
         packages.hello-with-build-file = with pkgs; runCommandLocal "hello-with-build-file" { } ''
           mkdir --parents $out

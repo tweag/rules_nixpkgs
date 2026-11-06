@@ -245,7 +245,7 @@ def nixpkgs_python_repository(
     provided by nixpkgs.
 
     This rule is instead intended to expose an ad-hoc set of packages for your
-    project, as can be built by poetry2nix, mach-nix, dream2nix or by manually
+    project, as can be built by uv2nix, mach-nix, dream2nix or by manually
     picking the python packages you need from nixpkgs.
 
     The format is generic to support the many ways to generate such packages
@@ -257,7 +257,7 @@ def nixpkgs_python_repository(
     `nixpkgs_python_repository` should be a drop-in replacement of `pip_parse`.
     As such, it also provides a `requirement` function.
 
-    :warning: Using the `requirement` fucntion inherits the same advantages and
+    :warning: Using the `requirement` function inherits the same advantages and
     limitations as the one in rules_python. All the function does is create a
     label of the form `@{nixpkgs_python_repository_name}//:{package_name}`.
     While depending on such a label directly will work, the layout may change
