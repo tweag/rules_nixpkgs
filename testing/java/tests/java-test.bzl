@@ -1,4 +1,5 @@
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
+load("@rules_java//java:defs.bzl", "java_common")
 
 def _java_runtime_test_impl(ctx):
     env = unittest.begin(ctx)
