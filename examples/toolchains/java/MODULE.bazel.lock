@@ -91,7 +91,7 @@
   "moduleExtensions": {
     "//:extension.bzl%toolchain_configure": {
       "general": {
-        "bzlTransitiveDigest": "RM9hA/hQsNq6NTDb5URQHYxiyLoy0bs0r9PiC1hVSqs=",
+        "bzlTransitiveDigest": "prmaNGbsPbSGteuUC3SWIhcnBlE9xFoCfuF0XuG6WrU=",
         "usagesDigest": "TpNcQo+ZbnSnYcqGxmbM0vY1x1c9+1DCjLg4BOBr9GM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
