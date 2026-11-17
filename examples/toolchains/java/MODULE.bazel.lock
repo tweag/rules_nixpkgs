@@ -255,7 +255,7 @@
     },
     "@@rules_nixpkgs_core~//extensions:repository.bzl%nix_repo": {
       "general": {
-        "bzlTransitiveDigest": "lxSv0SW+wXVSCtMnGtZwePtdstxfq9FarPAVzvac3RE=",
+        "bzlTransitiveDigest": "flvVxM4+d5Ib/PNn0NnTTuJuHsh55Tka+Ws1iKo0bZQ=",
         "usagesDigest": "ywB19RMLQ4p6VnGnuMiELxtrkvAbvE/Tq4pBUA9ZyD4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
