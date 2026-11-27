@@ -4,10 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [0.14.2] - 2026-11-27
 
-### Changed
-- Require `rules_go` >= 0.57.0 and build `pack` from the Go SDK sources, so the Nix Go toolchain also works with Go 1.25, where prebuilt `pack` binaries are no longer shipped.
+### Fixed
+
+- Require `rules_go` >= 0.57.0 and build `pack` from the Go SDK sources, so the Nix Go toolchain also works with Go 1.25. See [#708].
+- Improved compatibility with Bazel 9. See [#779].
+
+### Added
+
+- Support multi-output derivations. See [#783].
+- Add `install_name_tool_resign` cc toolchain helper. See [#785].
+
+[#708]: https://github.com/tweag/rules_nixpkgs/pull/708
+[#779]: https://github.com/tweag/rules_nixpkgs/pull/779
+[#783]: https://github.com/tweag/rules_nixpkgs/pull/783
+[#785]: https://github.com/tweag/rules_nixpkgs/pull/785
 
 ## [0.14.1] - 2026-09-30
 
