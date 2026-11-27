@@ -137,7 +137,8 @@ def declare_toolchains(host_goos, host_goarch):
             goos = p.goos,
             goarch = p.goarch,
             sdk = "@{sdk_repo}//:go_sdk",
-            builder = "@{sdk_repo}//:builder",
+            builder = "@{sdk_repo}//:builder_reset",
+            pack = "@{sdk_repo}//:pack_reset",
             link_flags = link_flags,
             cgo_link_flags = cgo_link_flags,
             visibility = ["//visibility:public"],
@@ -211,6 +212,7 @@ nixpkgs_go_toolchain = repository_rule(
 go_sdk_build = """
 load("@{rules_go}//go/private/rules:binary.bzl", "go_tool_binary")
 load("@{rules_go}//go/private/rules:sdk.bzl", "package_list")
+load("@{rules_go}//go/private/rules:transition.bzl", "non_go_reset_target")
 load("@{rules_go}//go:def.bzl", "go_sdk", "RULES_GO_VERSION")
 load("@{helpers}//:go_sdk.bzl", "go_sdk_for_arch")
 load(":go_version.bzl", "go_version")
@@ -244,6 +246,19 @@ go_tool_binary(
     srcs = ["@{rules_go}//go/tools/builders:builder_srcs"],
     ldflags = "-X main.rulesGoStdlibPrefix=@{rules_go}//stdlib:" if TOOL_BINARY_NEEDS_STDLIB_PREFIX else None,
     sdk = ":go_sdk",
+    # The .exe suffix is required on Windows and harmless on other platforms.
+    # Output attributes are not configurable, so we use it everywhere.
+    out_pack = "pack.exe",
+)
+
+non_go_reset_target(
+    name = "builder_reset",
+    dep = ":builder",
+)
+
+non_go_reset_target(
+    name = "pack_reset",
+    dep = ":pack.exe",
 )
 
 package_list(
